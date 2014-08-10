@@ -1,0 +1,1 @@
+tsd     Tensor Scale Descriptor (Gray level images)     Paulo A. V. Miranda, Ricardo da S. Torres, Alexandre X. Falcão       FORMA 
