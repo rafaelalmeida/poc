@@ -1,3 +1,4 @@
-/system/data/
-!/system/data/.data
-/system/scratch/
+system/data
+system/scratch
+.DS_Store
+system/.DS_Store
