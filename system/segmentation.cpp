@@ -35,5 +35,13 @@ list<Mat> segmentation::segmentLWIRMeanShift(Mat M) {
 
 list<Mat> segmentation::segmentLWIRCanny(Mat M) {
 	list<Mat> ret;
+
+	Mat conv = floatImageTo8UC3Image(M);
+
+	Mat edges;
+	int thres = 10;
+	Canny(conv, edges, thres, 3*thres, 3);
+	showImage("img", edges);
+	
 	return ret;
 }

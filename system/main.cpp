@@ -42,7 +42,7 @@ int main() {
   		drawContours(repr, contours, -1, Scalar(0, 0, 255), 1);
 	}
 
-	showImage("win", repr);
+	//showImage("win", repr);
 
 	// Calculate and show stats
 	vector<float> sizes(segments.size());
