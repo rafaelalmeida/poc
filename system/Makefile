@@ -12,16 +12,17 @@ EXE = classify
 BINDIR = bin
 OBJDIR = obj
 
-SRCS=$(wildcard *.cpp)
-OBJS=$(SRCS:.cpp=.o)
-
-build: $(OBJS)
+build: gdal_driver main
 	mkdir -p $(BINDIR)
 	g++ $(OBJDIR)/*.o $(LFLAGS) -o $(BINDIR)/$(EXE)
 
-%.o: $(SRCS)
+main: main.cpp
 	mkdir -p $(OBJDIR)
-	g++ -c $(CFLAGS) -o $(OBJDIR)/$@ $^
+	g++ -o $(OBJDIR)/main.o -c $(CFLAGS) main.cpp
+
+gdal_driver: gdal_driver.cpp
+	mkdir -p $(OBJDIR)
+	g++ -o $(OBJDIR)/gdal_driver.o -c $(CFLAGS) gdal_driver.cpp
 
 run:
 	./$(BINDIR)/$(EXE)

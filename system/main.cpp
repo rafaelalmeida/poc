@@ -7,6 +7,8 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+#include "gdal_driver.h"
+
 using namespace std;
 using namespace cv;
 
@@ -19,9 +21,9 @@ Mat floatImageTo8UC3Image(Mat floatImage);
 void showImage(const char *winname, Mat img, int delay=0);
 
 int main() {
-	Mat training = readTrainingData("data/subset/TrainingMap_ENVI_RAW_format.raw");
-	Mat vis = readVIS("data/subset/TelopsDatasetCityVisible_20cm_Subset.img");
-	vector<Mat> matx = readLWIR("data/subset/TelopsDatasetCityLWIR_Subset.img");
+	Mat training = gdal_driver::loadTrainingData("data/subset/TrainingMap_ENVI_RAW_format.raw");
+	Mat vis = gdal_driver::loadVIS("data/subset/TelopsDatasetCityVisible_20cm_Subset.img");
+	vector<Mat> matx = gdal_driver::loadLWIR("data/subset/TelopsDatasetCityLWIR_Subset.img");
 	return 0;
 
 	Mat M = matx[0];
@@ -177,95 +179,4 @@ vector<float> statSummary(vector<float> samples) {
 	stats.push_back(max);
 
 	return stats;
-}
-
-vector<Mat> readLWIR(const char* path) {
-	GDALAllRegister();
-	GDALDataset *data = (GDALDataset*) GDALOpen(path, GA_ReadOnly);
-
-	int bands = data->GetRasterCount();
-	int width = data->GetRasterXSize();
-	int height = data->GetRasterYSize();
-
-	vector<Mat> matx(bands);
-
-	for (int channel = 0; channel < bands; channel++) {
-		Mat M(height, width, CV_32FC1);
-
-		GDALRasterBand *band = data->GetRasterBand(channel + 1);
-		float *scanline = new float[width];
-
-		for (int row = 0; row < height; row++) {
-			band->RasterIO(GF_Read, 0, row, width, 1, scanline, width, 1, GDT_Float32, 0, 0);
-
-			for (int col = 0; col < width; col++) {
-				M.at<float>(row, col) = scanline[col];
-			}
-		}
-
-		matx[channel] = M;
-		delete scanline;
-	}
-
-	return matx;
-}
-
-Mat readVIS(const char* path) {
-	GDALAllRegister();
-	GDALDataset *data = (GDALDataset*) GDALOpen(path, GA_ReadOnly);
-
-	int bands = data->GetRasterCount();
-	int width = data->GetRasterXSize();
-	int height = data->GetRasterYSize();
-
-	assert(bands == 3);
-
-	Mat M(height, width, CV_8UC3);
-	GDALRasterBand *bandRed = data->GetRasterBand(1);
-	GDALRasterBand *bandGreen = data->GetRasterBand(2);
-	GDALRasterBand *bandBlue = data->GetRasterBand(3);
-
-	uint16_t *scanlineRed = new uint16_t[width];
-	uint16_t *scanlineGreen = new uint16_t[width];
-	uint16_t *scanlineBlue = new uint16_t[width];
-
-	for (int row = 0; row < height; row++) {
-		bandRed->RasterIO(GF_Read, 0, row, width, 1, scanlineRed, width, 1, GDT_UInt16, 0, 0);
-		bandGreen->RasterIO(GF_Read, 0, row, width, 1, scanlineGreen, width, 1, GDT_UInt16, 0, 0);
-		bandBlue->RasterIO(GF_Read, 0, row, width, 1, scanlineBlue, width, 1, GDT_UInt16, 0, 0);
-
-		for (int col = 0; col < width; col++) {
-			M.at<Vec3b>(row, col) = Vec3b(scanlineBlue[col], scanlineGreen[col], scanlineRed[col]);
-		}
-	}
-
-	delete scanlineRed;
-	delete scanlineGreen;
-	delete scanlineBlue;
-
-	return M;
-}
-
-Mat readTrainingData(const char* path) {
-	GDALAllRegister();
-	GDALDataset *data = (GDALDataset*) GDALOpen(path, GA_ReadOnly);
-
-	int bands = data->GetRasterCount();
-	int width = data->GetRasterXSize();
-	int height = data->GetRasterYSize();
-
-	assert(bands == 1);
-	GDALRasterBand *band = data->GetRasterBand(1);
-
-	Mat M(height, width, CV_8UC1);
-	unsigned char *scanline = new unsigned char[width];
-	for (int row = 0; row < height; row++) {
-		band->RasterIO(GF_Read, 0, row, width, 1, scanline, width, 1, GDT_Byte, 0, 0);
-
-		for (int col = 0; col < width; col++) {
-			M.at<unsigned char>(row, col) = scanline[col];
-		}
-	}
-
-	return M;
 }
