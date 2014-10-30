@@ -12,13 +12,17 @@ EXE = classify
 BINDIR = bin
 OBJDIR = obj
 
-build: gdal_driver main
+build: gdal_driver main utils
 	mkdir -p $(BINDIR)
 	g++ $(OBJDIR)/*.o $(LFLAGS) -o $(BINDIR)/$(EXE)
 
 main: main.cpp
 	mkdir -p $(OBJDIR)
 	g++ -o $(OBJDIR)/main.o -c $(CFLAGS) main.cpp
+
+utils: utils.cpp
+	mkdir -p $(OBJDIR)
+	g++ -o $(OBJDIR)/utils.o -c $(CFLAGS) utils.cpp
 
 gdal_driver: gdal_driver.cpp
 	mkdir -p $(OBJDIR)
