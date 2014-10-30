@@ -12,7 +12,7 @@ EXE = classify
 BINDIR = bin
 OBJDIR = obj
 
-build: gdal_driver main utils
+build: gdal_driver main utils statistics segmentation
 	mkdir -p $(BINDIR)
 	g++ $(OBJDIR)/*.o $(LFLAGS) -o $(BINDIR)/$(EXE)
 
@@ -27,6 +27,14 @@ utils: utils.cpp
 gdal_driver: gdal_driver.cpp
 	mkdir -p $(OBJDIR)
 	g++ -o $(OBJDIR)/gdal_driver.o -c $(CFLAGS) gdal_driver.cpp
+
+statistics: statistics.cpp
+	mkdir -p $(OBJDIR)
+	g++ -o $(OBJDIR)/statistics.o -c $(CFLAGS) statistics.cpp
+
+segmentation: segmentation.cpp
+	mkdir -p $(OBJDIR)
+	g++ -o $(OBJDIR)/segmentation.o -c $(CFLAGS) segmentation.cpp
 
 run:
 	./$(BINDIR)/$(EXE)
