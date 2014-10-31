@@ -7,39 +7,33 @@ LFLAGS =
 LFLAGS += `pkg-config --libs gdal`
 LFLAGS += `pkg-config --libs opencv`
 
-EXE = classify
-
 BINDIR = bin
 OBJDIR = obj
 
-build: gdal_driver main utils statistics segmentation
+SRCS = $(wildcard *.cpp)
+OBJS = $(addprefix $(OBJDIR)/,$(SRCS:.cpp=.o))
+
+EXE = classify
+
+.PHONY: directories
+
+build: directories $(OBJS)
+	g++ $(OBJS) $(LFLAGS) -o $(BINDIR)/$(EXE)
+
+$(OBJDIR)/%.o : %.cpp
+	g++ -c $(CFLAGS) $< -o $@
+
+directories: $(OBJDIR) $(BINDIR)
+
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
+
+$(BINDIR):
 	mkdir -p $(BINDIR)
-	g++ $(OBJDIR)/*.o $(LFLAGS) -o $(BINDIR)/$(EXE)
-
-main: main.cpp
-	mkdir -p $(OBJDIR)
-	g++ -o $(OBJDIR)/main.o -c $(CFLAGS) main.cpp
-
-utils: utils.cpp
-	mkdir -p $(OBJDIR)
-	g++ -o $(OBJDIR)/utils.o -c $(CFLAGS) utils.cpp
-
-gdal_driver: gdal_driver.cpp
-	mkdir -p $(OBJDIR)
-	g++ -o $(OBJDIR)/gdal_driver.o -c $(CFLAGS) gdal_driver.cpp
-
-statistics: statistics.cpp
-	mkdir -p $(OBJDIR)
-	g++ -o $(OBJDIR)/statistics.o -c $(CFLAGS) statistics.cpp
-
-segmentation: segmentation.cpp
-	mkdir -p $(OBJDIR)
-	g++ -o $(OBJDIR)/segmentation.o -c $(CFLAGS) segmentation.cpp
 
 run:
 	./$(BINDIR)/$(EXE)
 
 clean:
-	rm -rf $(BINDIR)
 	rm -rf $(OBJDIR)
-	rm -f $(OBJS)
+	rm -rf $(BINDIR)
