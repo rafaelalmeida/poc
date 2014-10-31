@@ -56,3 +56,75 @@ std::vector<float> statistics::summary(std::vector<float> samples) {
 
 	return stats;
 }
+
+double statistics::kappa(cv::Mat A, cv::Mat B) {
+	assert(A.rows == B.rows && A.cols == B.cols && A.type() == B.type());
+
+	typedef map<unsigned char, int> LabelCountMap;
+	LabelCountMap labelsA;
+	LabelCountMap labelsB;
+
+	int agreementCount = 0;
+	int pixelsConsidered = 0;
+
+	// Loop through the image to count the occurence of each category
+	// and the agreements
+	for (int row = 0; row < A.rows; row++) {
+		for (int col = 0; col < A.cols; col++) {
+			unsigned char labelA = A.at<unsigned char>(col, row);
+			unsigned char labelB = B.at<unsigned char>(col, row);
+
+			// Disconsider pixels marked as "not classified" (category id 0)
+			if (labelA != (unsigned char)0 && labelB != (unsigned char)0) {
+				// Update A labels count
+				if (labelsA.count(labelA) == 0) {
+					labelsA[labelA] = 1;
+				}
+				else {
+					labelsA[labelA]++;
+				}
+
+				// Update B labels count
+				if (labelsB.count(labelB) == 0) {
+					labelsB[labelB] = 1;
+				}
+				else {
+					labelsB[labelB]++;
+				}
+
+				// Update agreement count
+				if (labelA == labelB) {
+					agreementCount++;
+				}
+
+				// Update pixels considered
+				pixelsConsidered++;
+			}
+		}
+	}
+
+	// Calculates Pr(e), the hypothetical probability of chance agreement
+	double pr_e = 0.0;
+	for (LabelCountMap::iterator it = labelsA.begin(); it != labelsA.end(); ++it) {
+		double probA = 1.0 * it->second / pixelsConsidered;
+		double probB;
+
+		LabelCountMap::iterator valB = labelsB.find(it->first);
+		if (valB == labelsB.end()) {
+			probB = 0;
+		}
+		else {
+			probB = 1.0 * valB->second / pixelsConsidered;
+		}
+
+		pr_e += probA * probB;
+	}
+
+	// Calculates Pr(a), the relative agreement observed
+	double pr_a = 1.0 * agreementCount / pixelsConsidered;
+
+	// Calculates the Cohen's Kappa
+	double kappa = (pr_a - pr_e) / (1 - pr_e);
+
+	return kappa;
+}
