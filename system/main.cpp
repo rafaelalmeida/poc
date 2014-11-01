@@ -11,6 +11,7 @@
 #include "utils.h"
 #include "statistics.h"
 #include "segmentation.h"
+#include "description_lwir.h"
 
 using namespace std;
 using namespace cv;
