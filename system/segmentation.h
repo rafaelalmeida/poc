@@ -15,6 +15,8 @@
 namespace segmentation {
 	std::list<cv::Mat> segmentLWIRMeanShift(cv::Mat M);
 	std::list<cv::Mat> segmentLWIRCanny(cv::Mat M);
+
+	float getSegmentLabel(cv::Mat classificationMap, cv::Mat mask);
 }
 
 #endif

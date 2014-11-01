@@ -1,6 +1,7 @@
 #include "utils.h"
 
 using namespace cv;
+using namespace std;
 
 Mat floatImageTo8UC3Image(Mat floatImage) {
 	Mat M = floatImage;
@@ -23,3 +24,5 @@ void showImage(const char *winname, Mat img, int delay) {
 	imshow(winname, img);
 	waitKey(delay);
 }
+
+

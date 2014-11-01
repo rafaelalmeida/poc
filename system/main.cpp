@@ -18,6 +18,16 @@ using namespace cv;
 
 int main() {
 	Mat training = gdal_driver::loadTrainingData("data/subset/TrainingMap_ENVI_RAW_format.raw");
+	vector<Mat> matx = gdal_driver::loadLWIR("data/subset/TelopsDatasetCityLWIR_Subset.img");
+
+	Mat mask = Mat::ones(training.rows, training.cols, training.type()) * 255;
+	cout << segmentation::getSegmentLabel(training, mask) << endl;
+
+	return 0;
+}
+
+int main2() {
+	Mat training = gdal_driver::loadTrainingData("data/subset/TrainingMap_ENVI_RAW_format.raw");
 	Mat vis = gdal_driver::loadVIS("data/subset/TelopsDatasetCityVisible_20cm_Subset.img");
 	vector<Mat> matx = gdal_driver::loadLWIR("data/subset/TelopsDatasetCityLWIR_Subset.img");
 

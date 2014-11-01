@@ -45,3 +45,18 @@ list<Mat> segmentation::segmentLWIRCanny(Mat M) {
 	
 	return ret;
 }
+
+float segmentation::getSegmentLabel(Mat classificationMap, Mat mask) {
+	typedef unsigned char uchar;
+
+	Mat roi = classificationMap & mask;
+	Counter<uchar> counter;
+
+	for (int row = 0; row < roi.rows; row++) {
+		for (int col = 0; col < roi.cols; col++) {
+			counter.inc(roi.at<uchar>(row, col));
+		}
+	}
+
+	return (float) counter.top();
+}
