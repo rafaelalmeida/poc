@@ -1,5 +1,5 @@
-#ifndef CLASSIFICATION_H
-#define CLASSIFICATION_H
+#ifndef ENSEMBLE_H
+#define ENSEMBLE_H
 
 #include <stdio.h>
 #include <iostream>
@@ -10,8 +10,6 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-namespace classification {
-	void buildDataset();
-}
+
 
 #endif

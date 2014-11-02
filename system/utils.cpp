@@ -24,5 +24,3 @@ void showImage(const char *winname, Mat img, int delay) {
 	imshow(winname, img);
 	waitKey(delay);
 }
-
-
