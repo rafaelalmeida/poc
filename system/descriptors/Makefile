@@ -7,12 +7,9 @@ OBJDIR = obj
 SRCS = $(wildcard *.c)
 OBJS = $(addprefix $(OBJDIR)/,$(SRCS:.c=.o))
 
-EXE = classify
-
 .PHONY: directories
 
-build: directories $(OBJS)
-	cc $(OBJS) $(LFLAGS) -o $(BINDIR)/$(EXE)
+objs: directories $(OBJS)
 
 $(OBJDIR)/%.o : %.c
 	cc -c $(CFLAGS) $< -o $@
