@@ -1,4 +1,4 @@
-CFLAGS = -Wall -pedantic
+CFLAGS = -Wall -pedantic -Wno-format-security
 LFLAGS =
 
 BINDIR = bin

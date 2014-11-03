@@ -12,33 +12,7 @@
 
 #define SIZE 64
 
-typedef struct _Property {
-  int color;
-  int frequency;
-} Property;
-
-typedef struct _VisualFeature {
-  ulong *lowH;
-  ulong *highH;
-  int n;
-} VisualFeature;
-
-typedef struct _CompressedVisualFeature {
-  uchar *lowH;
-  uchar *highH;
-  int n;
-} CompressedVisualFeature;
-
-Property *AllocPropertyArray(int n)
-{
-  Property *v=NULL;
-  v = (Property *) calloc(n,sizeof(Property));
-  if (v==NULL)
-    Error(MSG1,"AllocPropertyArray");
-  return(v);
-}
-
-VisualFeature *CreateVisualFeature(int n)
+VisualFeature *CCVCreateVisualFeature(int n)
 {
   VisualFeature *vf=NULL;
 
@@ -48,12 +22,12 @@ VisualFeature *CreateVisualFeature(int n)
     vf->highH = AllocULongArray(n);
     vf->n = n;
   } else {
-    Error(MSG1,"CreateVisualFeature");
+    Error(MSG1,"CCVCreateVisualFeature");
   }
   return(vf);
 }
 
-void DestroyVisualFeature(VisualFeature **vf)
+void CCVDestroyVisualFeature(VisualFeature **vf)
 {
   VisualFeature *aux;
 
@@ -66,7 +40,7 @@ void DestroyVisualFeature(VisualFeature **vf)
   }
 }
 
-CompressedVisualFeature *CreateCompressedVisualFeature(int n)
+CompressedVisualFeature *CCVCreateCompressedVisualFeature(int n)
 {
   CompressedVisualFeature *cvf=NULL;
 
@@ -76,12 +50,12 @@ CompressedVisualFeature *CreateCompressedVisualFeature(int n)
     cvf->highH = AllocUCharArray(n);
     cvf->n = n;
   } else {
-    Error(MSG1,"CreateCompressedVisualFeature");
+    Error(MSG1,"CCVCreateCompressedVisualFeature");
   }
   return(cvf);
 }
 
-void DestroyCompressedVisualFeature(CompressedVisualFeature **cvf)
+void CCVDestroyCompressedVisualFeature(CompressedVisualFeature **cvf)
 {
   CompressedVisualFeature *aux;
 
@@ -94,7 +68,7 @@ void DestroyCompressedVisualFeature(CompressedVisualFeature **cvf)
   }
 }
 
-int *QuantizeColors(CImage *cimg, int color_dim)
+int *CCVQuantizeColors(CImage *cimg, int color_dim)
 {
   ulong i;
   ulong r, g, b;
@@ -118,7 +92,7 @@ int *QuantizeColors(CImage *cimg, int color_dim)
   return(color);
 }
 
-void CompressHistogram(uchar *ch, ulong *h, ulong max, int size)
+void CCVCompressHistogram(uchar *ch, ulong *h, ulong max, int size)
 {
   int i;
   uchar v;
@@ -129,7 +103,7 @@ void CompressHistogram(uchar *ch, ulong *h, ulong max, int size)
   }
 }
 
-void ComputeFrequencyProperty(Image *img, Property *ppt, int npixels)
+void CCVComputeFrequencyProperty(Image *img, Property *ppt, int npixels)
 { 
   int i, x, y, p, q;
   Image *label;
@@ -190,7 +164,7 @@ void ComputeFrequencyProperty(Image *img, Property *ppt, int npixels)
   free(area);
 }
 
-Property *ComputePixelsProperties(CImage *cimg)
+Property *CCVComputePixelsProperties(CImage *cimg)
 {
   Property *p=NULL;
   int *color, i, n;
@@ -199,22 +173,22 @@ Property *ComputePixelsProperties(CImage *cimg)
   
   p = AllocPropertyArray(n);
   
-  color = QuantizeColors(cimg, 4);
+  color = CCVQuantizeColors(cimg, 4);
   for(i=0; i<n; i++) 
     p[i].color=color[i];
-  ComputeFrequencyProperty(cimg->C[0], p, n);
+  CCVComputeFrequencyProperty(cimg->C[0], p, n);
   
   free(color);
   return(p);
 }
 
-VisualFeature *ComputeHistograms(Property *p, Image *mask, 
+VisualFeature *CCVComputeHistograms(Property *p, Image *mask, 
                                  int npixels, int *npoints)
 {
   VisualFeature *vf=NULL;
   ulong i;
   
-  vf = CreateVisualFeature(SIZE);
+  vf = CCVCreateVisualFeature(SIZE);
   for(i=0; i<SIZE; i++){
     vf->lowH[i] = 0;
     vf->highH[i] = 0;
@@ -232,18 +206,18 @@ VisualFeature *ComputeHistograms(Property *p, Image *mask,
   return(vf);
 }
 
-CompressedVisualFeature *CompressHistograms(VisualFeature *vf, int npixels)
+CompressedVisualFeature *CCVCompressHistograms(VisualFeature *vf, int npixels)
 {
   CompressedVisualFeature *cvf=NULL;
   
-  cvf = CreateCompressedVisualFeature(SIZE);
-  CompressHistogram(cvf->lowH, vf->lowH, npixels, SIZE);
-  CompressHistogram(cvf->highH, vf->highH, npixels, SIZE);
+  cvf = CCVCreateCompressedVisualFeature(SIZE);
+  CCVCompressHistogram(cvf->lowH, vf->lowH, npixels, SIZE);
+  CCVCompressHistogram(cvf->highH, vf->highH, npixels, SIZE);
   
   return(cvf);
 }
 
-CompressedVisualFeature *ReadCompressedVisualFeatures(char *filename)
+CompressedVisualFeature *CCVReadCompressedVisualFeatures(char *filename)
 {
   CompressedVisualFeature *cvf=NULL;
   FILE *fp;
@@ -256,7 +230,7 @@ CompressedVisualFeature *ReadCompressedVisualFeatures(char *filename)
     exit(-1);
   }
   fscanf(fp,"%d\n",&n);
-  cvf = CreateCompressedVisualFeature(n);
+  cvf = CCVCreateCompressedVisualFeature(n);
   for (i=0; i<n; i++) {
     fscanf(fp,"%c%c",&l,&h);
     cvf->lowH[i] = l;
@@ -266,7 +240,7 @@ CompressedVisualFeature *ReadCompressedVisualFeatures(char *filename)
   return(cvf);
 }
 
-void WriteCompressedVisualFeatures(CompressedVisualFeature *cvf,char *filename)
+void CCVWriteCompressedVisualFeatures(CompressedVisualFeature *cvf,char *filename)
 {
   FILE *fp;
   int i;
@@ -284,7 +258,7 @@ void WriteCompressedVisualFeatures(CompressedVisualFeature *cvf,char *filename)
   fclose(fp);
 }
 
-CompressedVisualFeature *ExtractCompressedVisualFeatures(CImage *cimg, 
+CompressedVisualFeature *CCVExtractCompressedVisualFeatures(CImage *cimg, 
                                                           Image *mask)
 {
   CompressedVisualFeature *cvf=NULL;
@@ -295,12 +269,12 @@ CompressedVisualFeature *ExtractCompressedVisualFeatures(CImage *cimg,
   
   npixels = cimg->C[0]->nrows * cimg->C[0]->ncols;
   
-  p = ComputePixelsProperties(cimg);
-  vf = ComputeHistograms(p, mask, npixels, &npoints);
-  cvf = CompressHistograms(vf, npoints);
+  p = CCVComputePixelsProperties(cimg);
+  vf = CCVComputeHistograms(p, mask, npixels, &npoints);
+  cvf = CCVCompressHistograms(vf, npoints);
   
   free(p);
-  DestroyVisualFeature(&vf);
+  CCVDestroyVisualFeature(&vf);
   return(cvf);
 }
 
@@ -310,14 +284,14 @@ Histogram *CCV(CImage *cimg, Image *mask)
   CompressedVisualFeature *cvf;
   int i;
   
-  cvf = ExtractCompressedVisualFeatures(cimg, mask);
+  cvf = CCVExtractCompressedVisualFeatures(cimg, mask);
 
   histogram = CreateHistogram(2*SIZE);  
   for (i=0; i<SIZE; i++){
     histogram->v[i] = cvf->lowH[i];
     histogram->v[i+SIZE] = cvf->highH[i];
   }
-  DestroyCompressedVisualFeature(&cvf);
+  CCVDestroyCompressedVisualFeature(&cvf);
 
   return(histogram);
 }

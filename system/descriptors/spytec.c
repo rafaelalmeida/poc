@@ -48,33 +48,6 @@ void DestroyImageEdges(ImageEdges **img, int nrows) {
     }
 }
 
-
-//Encontra o minimo valor entre 3
-float min(float x, float y, float z) {
-
-    if ( (x<=y) && (x<=z) ) {
-        return x;
-    } else if ( (y<=x) && (y<=z) ) {
-        return y;
-    } else if ( (z<=x) && (z<=y) ) {
-        return z;
-    }
-    return -1;
-}
-
-//Encontra o maximo valor entre 3
-float max(float x, float y, float z) {
-
-    if ( (x>=y) && (x>=z) ) {
-        return x;
-    } else if ( (y>=x) && (y>=z) ) {
-        return y;
-    } else if ( (z>=x) && (z>=y) ) {
-        return z;
-    }
-    return -1;
-}
-
 void RGB2HSV_spytec(CImage *RGB, ImageHSV **HSV) {
 
     float r, g, b;
@@ -127,7 +100,7 @@ void RGB2HSV_spytec(CImage *RGB, ImageHSV **HSV) {
     }
 }
 
-void Sobel(Image *img, ImageEdges **imgEdges) {
+void SobelSpytec(Image *img, ImageEdges **imgEdges) {
     int i,j,k,m; //contadores
     int Gx, Gy;
     float rad; //guarda o angulo em radianos
@@ -373,10 +346,10 @@ void NormalizeMaxHH(DImage *img, double max) {
 }
 
 //Usada pelo qsort para ordenar os coeficientes
-int ComparaDouble(void * x, void * y) {
+int ComparaDouble(const void * x, const void * y) {
     double a = (*(double*)x);
     double b = (*(double*)y);
-    //printf("x=%lf\ty=%lf\n", a, b);
+    
     if ((a-b)<0.0)      return 1;
     else if ((a-b)>0.0) return -1;
     else                return  0;
@@ -392,100 +365,33 @@ double *OrdenaCoeficientes(DImage *imgHH, DImage *imgHL, DImage *imgLH, DImage *
 
     max_coefs = AllocDoubleArray(QTD_COEFS);
     coefs = AllocDoubleArray((imgHH->ncols*2)*(imgHH->nrows*2)); //cada img dos parametros tem 1/4 do tamanho original.
-                                                                //para juntar as 4, basta duplicar cada dimensao dela
-
-    //!printf("espaco alocado=%d\n",(imgHH->ncols*2)*(imgHH->nrows*2));
+                                                                 //para juntar as 4, basta duplicar cada dimensao dela
 
     for (i=0; i<(imgHH->ncols*imgHH->nrows); i++) {
         coefs[i] = imgHH->val[i]; //copia img pro vetor
     }
-    //printf("coefs[%d]=%lf\n", i-1, coefs[i-1]);
 
     n = imgHH->nrows*imgHH->ncols;
-    //!printf("fim img HH -> proximo indice do vetor de coef=%ld\n", n);
     for (i=0; i<(imgHL->ncols*imgHL->nrows); i++) {
         coefs[n+i] = imgHL->val[i]; //copia img pro vetor
     }
-    //printf("coefs[%ld]=%lf\n", n+i-1, coefs[n+i-1]);
 
     n += imgHL->nrows*imgHL->ncols;
-    //!printf("fim img HL -> proximo indice do vetor de coef=%ld\n", n);
     for (i=0; i<(imgLH->ncols*imgLH->nrows); i++) {
         coefs[n+i] = imgLH->val[i]; //copia img pro vetor
     }
-    //printf("coefs[%ld]=%lf\n", n+i-1, coefs[n+i-1]);
 
     n += imgLL->nrows*imgLL->ncols;
-    //!printf("fim img LH -> proximo indice do vetor de coef=%ld\n", n);
     for (i=0; i<(imgLL->ncols*imgLL->nrows); i++) {
         coefs[n+i] = imgLL->val[i]; //copia img pro vetor
     }
-    //printf("coefs[%ld]=%lf\n", n+i-1, coefs[n+i-1]);
 
-    //!printf("fim img LL -> ultimo indice do vetor de coef=%ld\n\n", n+i);
-/*
-    printf("Antes de ordenar:\n");
-    for (i=0; i<(imgLL->ncols*imgLL->nrows)*4; i++) {
-        printf("%lf ",coefs[i]);
-    }
-/**/
-    //!printf("\n");
-
-    qsort(coefs, ((imgHH->ncols*2)*(imgHH->nrows*2)), sizeof(double), (void*)ComparaDouble);
-
-/*
-    printf("DEpois de ordenar:\n");
-    for (i=0; i<(imgLL->ncols*imgLL->nrows)*4; i++) {
-        printf("%lf ",coefs[i]);
-    }
-/**/
-/**/
-    //!printf("Maiores coefs:\n");
+    qsort(coefs, ((imgHH->ncols*2)*(imgHH->nrows*2)), sizeof(double), ComparaDouble);
     //Nao copia o maior coeficiente - assim como em Fourier (segundo o Jurandy)
     for (i=1; i<QTD_COEFS+1; i++) {
-        //!printf("%lf ",coefs[i]);
         max_coefs[i-1] = coefs[i];  //copia para o vetor os maiores coeficientes
     }
-/**/
-    //!printf("\n");
+
     free(coefs);
     return max_coefs;
-}
-
-
-double *ReadFileDouble(char *filename, int size) {
-    FILE *fp;
-    double *fv=NULL;
-
-    fv = AllocDoubleArray(size);
-
-    if ((fp = fopen(filename, "rb")) == NULL) {
-        printf("ERRO LENDO ARQUIVO DE FV\n");
-        exit(0);
-    }
-    fread(fv, sizeof(double), size, fp);
-    fclose(fp);
-
-    return fv;
-}
-
-void WriteFileDouble(char *filename, double *vet, int size) {
-    FILE *fout;
-
-    if ((fout = fopen(filename, "wb")) == NULL) {
-        printf("ERRO CRIANDO ARQUIVO DE FV\n");
-        exit(0);
-    }
-    fwrite(vet, sizeof(double), size, fout);
-    fclose(fout);
-}
-
-double L2DoubleDistance(double *v1, double *v2, int size) {
-    int i;
-    double d=0.0;
-
-    for (i=0; i<size; i++) {
-        d += pow((v1[i]-v2[i]), 2);
-    }
-    return sqrt(d);
 }

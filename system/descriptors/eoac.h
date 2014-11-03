@@ -36,7 +36,7 @@ typedef struct _imageEdges {
 /*Funcoes auxiliares*/
 void CalculaAutocorrelograma(int nrows, int ncols, ImageEdges **img, int *distances, int **eoac);
 void RGB2HSV_eoac(CImage *RGB, ImageHSV **HSV);
-void Sobel(Image *img, ImageEdges **imgEdges);
+void EOACSobel(Image *img, ImageEdges **imgEdges);
 float *ReadEOAC(char *filename);
 
 #endif

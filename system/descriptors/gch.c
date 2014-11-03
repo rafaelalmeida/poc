@@ -5,46 +5,46 @@
 
 #define SIZE 64
 
-typedef struct _Property {
+typedef struct _GCHProperty {
   int color;
-} Property;
+} GCHProperty;
 
-typedef struct _VisualFeature {
+typedef struct _GCHVisualFeature {
   ulong *colorH;
   int n;
-} VisualFeature;
+} GCHVisualFeature;
 
-typedef struct _CompressedVisualFeature {
+typedef struct _GCHCompressedVisualFeature {
   uchar *colorH;
   int n;
-} CompressedVisualFeature;
+} GCHCompressedVisualFeature;
 
-Property *AllocPropertyArray(int n)
+GCHProperty *GCHAllocPropertyArray(int n)
 {
-  Property *v=NULL;
-  v = (Property *) calloc(n,sizeof(Property));
+  GCHProperty *v=NULL;
+  v = (GCHProperty *) calloc(n,sizeof(GCHProperty));
   if (v==NULL)
-    Error(MSG1,"AllocPropertyArray");
+    Error(MSG1,"GCHAllocPropertyArray");
   return(v);
 }
 
-VisualFeature *CreateVisualFeature(int n)
+GCHVisualFeature *GCHCreateVisualFeature(int n)
 {
-  VisualFeature *vf=NULL;
+  GCHVisualFeature *vf=NULL;
 
-  vf = (VisualFeature *) calloc(1,sizeof(VisualFeature));
+  vf = (GCHVisualFeature *) calloc(1,sizeof(GCHVisualFeature));
   if (vf != NULL) {
     vf->colorH = AllocULongArray(n);
     vf->n = n;
   } else {
-    Error(MSG1,"CreateVisualFeature");
+    Error(MSG1,"GCHCreateVisualFeature");
   }
   return(vf);
 }
 
-void DestroyVisualFeature(VisualFeature **vf)
+void GCHDestroyVisualFeature(GCHVisualFeature **vf)
 {
-  VisualFeature *aux;
+  GCHVisualFeature *aux;
 
   aux = *vf;
   if (aux != NULL) {
@@ -54,23 +54,23 @@ void DestroyVisualFeature(VisualFeature **vf)
   }
 }
 
-CompressedVisualFeature *CreateCompressedVisualFeature(int n)
+GCHCompressedVisualFeature *GCHCreateCompressedVisualFeature(int n)
 {
-  CompressedVisualFeature *cvf=NULL;
+  GCHCompressedVisualFeature *cvf=NULL;
 
-  cvf = (CompressedVisualFeature *) calloc(1,sizeof(CompressedVisualFeature));
+  cvf = (GCHCompressedVisualFeature *) calloc(1,sizeof(GCHCompressedVisualFeature));
   if (cvf != NULL) {
     cvf->colorH = AllocUCharArray(n);
     cvf->n = n;
   } else {
-    Error(MSG1,"CreateCompressedVisualFeature");
+    Error(MSG1,"GCHCreateCompressedVisualFeature");
   }
   return(cvf);
 }
 
-void DestroyCompressedVisualFeature(CompressedVisualFeature **cvf)
+void GCHDestroyCompressedVisualFeature(GCHCompressedVisualFeature **cvf)
 {
-  CompressedVisualFeature *aux;
+  GCHCompressedVisualFeature *aux;
 
   aux = *cvf;
   if (aux != NULL) {
@@ -80,7 +80,7 @@ void DestroyCompressedVisualFeature(CompressedVisualFeature **cvf)
   }
 }
 
-int *QuantizeColors(CImage *cimg, int color_dim)
+int *GCHQuantizeColors(CImage *cimg, int color_dim)
 {
   ulong i;
   ulong r, g, b;
@@ -104,7 +104,7 @@ int *QuantizeColors(CImage *cimg, int color_dim)
   return(color);
 }
 
-void CompressHistogram(uchar *ch, ulong *h, ulong max, int size)
+void GCHCompressHistogram(uchar *ch, ulong *h, ulong max, int size)
 {
   int i;
   uchar v;
@@ -115,16 +115,16 @@ void CompressHistogram(uchar *ch, ulong *h, ulong max, int size)
   }
 }
 
-Property *ComputePixelsProperties(CImage *cimg)
+GCHProperty *GCHComputePixelsProperties(CImage *cimg)
 {
-  Property *p=NULL;
+  GCHProperty *p=NULL;
   int *color, i, n;
   
   n = cimg->C[0]->nrows * cimg->C[0]->ncols;  
   
-  p = AllocPropertyArray(n);
+  p = GCHAllocPropertyArray(n);
   
-  color = QuantizeColors(cimg, 4);
+  color = GCHQuantizeColors(cimg, 4);
   for(i=0; i<n; i++) 
     p[i].color=color[i];
   
@@ -132,13 +132,13 @@ Property *ComputePixelsProperties(CImage *cimg)
   return(p);
 }
 
-VisualFeature *ComputeHistograms(Property *p, Image *mask, 
+GCHVisualFeature *GCHComputeHistograms(GCHProperty *p, Image *mask, 
                                  int npixels, int *npoints)
 {
-  VisualFeature *vf=NULL;
+  GCHVisualFeature *vf=NULL;
   ulong i;
   
-  vf = CreateVisualFeature(SIZE);
+  vf = GCHCreateVisualFeature(SIZE);
   for(i=0; i<SIZE; i++){
     vf->colorH[i] = 0;
   }
@@ -152,19 +152,19 @@ VisualFeature *ComputeHistograms(Property *p, Image *mask,
   return(vf);
 }
 
-CompressedVisualFeature *CompressHistograms(VisualFeature *vf, int npixels)
+GCHCompressedVisualFeature *GCHCompressHistograms(GCHVisualFeature *vf, int npixels)
 {
-  CompressedVisualFeature *cvf=NULL;
+  GCHCompressedVisualFeature *cvf=NULL;
   
-  cvf = CreateCompressedVisualFeature(SIZE);
-  CompressHistogram(cvf->colorH, vf->colorH, npixels, SIZE);
+  cvf = GCHCreateCompressedVisualFeature(SIZE);
+  GCHCompressHistogram(cvf->colorH, vf->colorH, npixels, SIZE);
   
   return(cvf);
 }
 
-CompressedVisualFeature *ReadCompressedVisualFeatures(char *filename)
+GCHCompressedVisualFeature *GCHReadCompressedVisualFeatures(char *filename)
 {
-  CompressedVisualFeature *cvf=NULL;
+  GCHCompressedVisualFeature *cvf=NULL;
   FILE *fp;
   int i, n;
   uchar c;
@@ -175,7 +175,7 @@ CompressedVisualFeature *ReadCompressedVisualFeatures(char *filename)
     exit(-1);
   }
   fscanf(fp,"%d\n",&n);
-  cvf = CreateCompressedVisualFeature(n);
+  cvf = GCHCreateCompressedVisualFeature(n);
   for (i=0; i<n; i++) {
     fscanf(fp,"%c\n",&c);
     cvf->colorH[i] = c;
@@ -184,7 +184,7 @@ CompressedVisualFeature *ReadCompressedVisualFeatures(char *filename)
   return(cvf);
 }
 
-void WriteCompressedVisualFeatures(CompressedVisualFeature *cvf,char *filename)
+void WriteCompressedVisualFeatures(GCHCompressedVisualFeature *cvf,char *filename)
 {
   FILE *fp;
   int i;
@@ -202,30 +202,30 @@ void WriteCompressedVisualFeatures(CompressedVisualFeature *cvf,char *filename)
   fclose(fp);
 }
 
-CompressedVisualFeature *ExtractCompressedVisualFeatures(CImage *cimg, 
+GCHCompressedVisualFeature *ExtractCompressedVisualFeatures(CImage *cimg, 
                                                           Image *mask)
 {
-  CompressedVisualFeature *cvf=NULL;
-  VisualFeature *vf;
-  Property *p;
+  GCHCompressedVisualFeature *cvf=NULL;
+  GCHVisualFeature *vf;
+  GCHProperty *p;
   int npixels;
   int npoints;
   
   npixels = cimg->C[0]->nrows * cimg->C[0]->ncols;
   
-  p = ComputePixelsProperties(cimg);
-  vf = ComputeHistograms(p, mask, npixels, &npoints);
-  cvf = CompressHistograms(vf, npoints);
+  p = GCHComputePixelsProperties(cimg);
+  vf = GCHComputeHistograms(p, mask, npixels, &npoints);
+  cvf = GCHCompressHistograms(vf, npoints);
   
   free(p);
-  DestroyVisualFeature(&vf);
+  GCHDestroyVisualFeature(&vf);
   return(cvf);
 }
 
 Histogram *GCH(CImage *cimg, Image *mask)
 {
   Histogram *histogram = NULL;
-  CompressedVisualFeature *cvf;
+  GCHCompressedVisualFeature *cvf;
   int i;
   
   cvf = ExtractCompressedVisualFeatures(cimg, mask);
@@ -233,7 +233,7 @@ Histogram *GCH(CImage *cimg, Image *mask)
   histogram = CreateHistogram(SIZE);  
   for (i=0; i<SIZE; i++)
     histogram->v[i] = cvf->colorH[i];
-  DestroyCompressedVisualFeature(&cvf);
+  GCHDestroyCompressedVisualFeature(&cvf);
 
   return(histogram);
 }

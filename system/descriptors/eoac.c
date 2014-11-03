@@ -1,6 +1,6 @@
 #include "eoac.h"
 
-bool ValidPixelEdges(int nrows, int ncols, int x, int y)
+bool EOACValidPixelEdges(int nrows, int ncols, int x, int y)
 {
   if ((x >= 0)&&(x < ncols)&&
       (y >= 0)&&(y < nrows))
@@ -29,7 +29,7 @@ void CalculaAutocorrelograma(int nrows, int ncols, ImageEdges **img, int *distan
                     viz.x = x + distances[d]*A->dx[i];
                     viz.y = y + distances[d]*A->dy[i];
 
-                    if (ValidPixelEdges(nrows, ncols, viz.x, viz.y)) { //se o ponto vizinho estiver dentro da imagem
+                    if (EOACValidPixelEdges(nrows, ncols, viz.x, viz.y)) { //se o ponto vizinho estiver dentro da imagem
 
                         //verifica se o valor de magnitude e orientacao deles eh semelhante
                         if ( (fabs(img[y][x].G-img[viz.y][viz.x].G) < TS_AMP) && 
@@ -43,32 +43,6 @@ void CalculaAutocorrelograma(int nrows, int ncols, ImageEdges **img, int *distan
         }
     }
     DestroyAdjRel(&A);
-}
-
-//Encontra o minimo valor entre 3
-float min(float x, float y, float z) {
-
-    if ( (x<=y) && (x<=z) ) {
-        return x;
-    } else if ( (y<=x) && (y<=z) ) {
-        return y;
-    } else if ( (z<=x) && (z<=y) ) {
-        return z;
-    }
-    return -1;
-}
-
-//Encontra o maximo valor entre 3
-float max(float x, float y, float z) {
-
-    if ( (x>=y) && (x>=z) ) {
-        return x;
-    } else if ( (y>=x) && (y>=z) ) {
-        return y;
-    } else if ( (z>=x) && (z>=y) ) {
-        return z;
-    }
-    return -1;
 }
 
 void RGB2HSV_eoac(CImage *RGB, ImageHSV **HSV) {
@@ -123,7 +97,7 @@ void RGB2HSV_eoac(CImage *RGB, ImageHSV **HSV) {
     }
 }
 
-void Sobel(Image *img, ImageEdges **imgEdges) {
+void EOACSobel(Image *img, ImageEdges **imgEdges) {
     int i,j,k,m; //contadores
     int Gx, Gy;
     float rad; //guarda o angulo em radianos

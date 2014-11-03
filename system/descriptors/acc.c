@@ -7,35 +7,62 @@
 #define CDIM 4
 #define SIZE (4 * CDIM * CDIM * CDIM)
 
-typedef struct _Property {
+#define BINS  4
+
+#define NBINS (BINS*BINS*SIZE)
+
+typedef struct _ACCProperty {
   int color;
   int frequency[4];
-} Property;
+} ACCProperty;
 
-typedef struct _VisualFeature {
+typedef struct _ACCVisualFeature {
   ulong *colorH;
   int n;
-} VisualFeature;
+} ACCVisualFeature;
 
-typedef struct _CompressedVisualFeature {
+typedef struct _ACCCompressedVisualFeature {
   uchar *colorH;
   int n;
-} CompressedVisualFeature;
+} ACCCompressedVisualFeature;
 
-Property *ACCAllocPropertyArray(int n)
+ACCCompressedVisualFeature *ACCCreateCompressedVisualFeature(int n);
+
+void ACCCompressHistogram(uchar *ch, ulong *h, ulong max, int size)
 {
-  Property *v=NULL;
-  v = (Property *) calloc(n,sizeof(Property));
+  int i;
+  uchar v;
+  
+  for(i=0; i<size; i++){
+    v = ComputeNorm((float) h[i] / (float) max);
+    ch[i] = (uchar)(v);
+  }
+}
+
+ACCProperty *ACCAllocPropertyArray(int n)
+{
+  ACCProperty *v=NULL;
+  v = (ACCProperty *) calloc(n,sizeof(ACCProperty));
   if (v==NULL)
     Error(MSG1,"ACCAllocPropertyArray");
   return(v);
 }
 
-VisualFeature *ACCCreateVisualFeature(int n)
+ACCCompressedVisualFeature *ACCCompressHistograms(ACCVisualFeature *vf, int npixels)
 {
-  VisualFeature *vf=NULL;
+  ACCCompressedVisualFeature *cvf=NULL;
 
-  vf = (VisualFeature *) calloc(1,sizeof(VisualFeature));
+  cvf = ACCCreateCompressedVisualFeature(NBINS);
+  ACCCompressHistogram(cvf->colorH, vf->colorH, npixels, NBINS);
+  
+  return(cvf);
+}
+
+ACCVisualFeature *ACCCreateVisualFeature(int n)
+{
+  ACCVisualFeature *vf=NULL;
+
+  vf = (ACCVisualFeature *) calloc(1,sizeof(ACCVisualFeature));
   if (vf != NULL) {
     vf->colorH = AllocULongArray(n);
     vf->n = n;
@@ -45,9 +72,9 @@ VisualFeature *ACCCreateVisualFeature(int n)
   return(vf);
 }
 
-void ACCDestroyVisualFeature(VisualFeature **vf)
+void ACCDestroyVisualFeature(ACCVisualFeature **vf)
 {
-  VisualFeature *aux;
+  ACCVisualFeature *aux;
 
   aux = *vf;
   if (aux != NULL) {
@@ -57,11 +84,11 @@ void ACCDestroyVisualFeature(VisualFeature **vf)
   }
 }
 
-CompressedVisualFeature *ACCCreateCompressedVisualFeature(int n)
+ACCCompressedVisualFeature *ACCCreateCompressedVisualFeature(int n)
 {
-  CompressedVisualFeature *cvf=NULL;
+  ACCCompressedVisualFeature *cvf=NULL;
 
-  cvf = (CompressedVisualFeature *) calloc(1,sizeof(CompressedVisualFeature));
+  cvf = (ACCCompressedVisualFeature *) calloc(1,sizeof(ACCCompressedVisualFeature));
   if (cvf != NULL) {
     cvf->colorH = AllocUCharArray(n);
     cvf->n = n;
@@ -71,9 +98,9 @@ CompressedVisualFeature *ACCCreateCompressedVisualFeature(int n)
   return(cvf);
 }
 
-void ACCDestroyCompressedVisualFeature(CompressedVisualFeature **cvf)
+void ACCDestroyCompressedVisualFeature(ACCCompressedVisualFeature **cvf)
 {
-  CompressedVisualFeature *aux;
+  ACCCompressedVisualFeature *aux;
 
   aux = *cvf;
   if (aux != NULL) {
@@ -123,25 +150,6 @@ void LinearNormalizeHistogram(uchar *ch, ulong *h, ulong max, int size)
   }
 }
 
-uchar ComputeLog(float value)
-{
-  uchar result;
-  
-  value = 255. * value;
-  if(value==0.)       result=0;
-  else if(value<1.)   result=1;
-  else if(value<2.)   result=2;
-  else if(value<4.)   result=3;
-  else if(value<8.)   result=4;
-  else if(value<16.)  result=5;
-  else if(value<32.)  result=6;
-  else if(value<64.)  result=7;
-  else if(value<128.) result=8;
-  else                result=9;
-  
-  return(result);
-}
-
 void NonLinearNormalizeHistogram(uchar *ch, ulong *h, ulong max, int size)
 {
   int i;
@@ -153,7 +161,7 @@ void NonLinearNormalizeHistogram(uchar *ch, ulong *h, ulong max, int size)
   }
 }
 
-void ComputeFrequencyProperty(Image *img, Property *ppt)
+void ComputeFrequencyProperty(Image *img, ACCProperty *ppt)
 { 
   ulong x, y, p, q;
   uchar d, r;
@@ -183,9 +191,9 @@ void ComputeFrequencyProperty(Image *img, Property *ppt)
   DestroyAdjRel(&A);
 }
 
-Property *ACCComputePixelsProperties(CImage *cimg)
+ACCProperty *ACCComputePixelsProperties(CImage *cimg)
 {
-  Property *p=NULL;
+  ACCProperty *p=NULL;
   int *color, i, n;
   
   n = cimg->C[0]->nrows * cimg->C[0]->ncols;  
@@ -201,10 +209,10 @@ Property *ACCComputePixelsProperties(CImage *cimg)
   return(p);
 }
 
-VisualFeature *ComputeHistogramsACC(Property *p, Image *mask, 
+ACCVisualFeature *ComputeHistogramsACC(ACCProperty *p, Image *mask, 
                                  int npixels, int *npoints)
 {
-  VisualFeature *vf=NULL;
+  ACCVisualFeature *vf=NULL;
   ulong i, d;
   
   vf = ACCCreateVisualFeature(SIZE);
@@ -222,9 +230,9 @@ VisualFeature *ComputeHistogramsACC(Property *p, Image *mask,
   return(vf);
 }
 
-CompressedVisualFeature *NormalizeHistograms(VisualFeature *vf, int npixels)
+ACCCompressedVisualFeature *NormalizeHistograms(ACCVisualFeature *vf, int npixels)
 {
-  CompressedVisualFeature *cvf=NULL;
+  ACCCompressedVisualFeature *cvf=NULL;
   
   cvf = ACCCreateCompressedVisualFeature(SIZE);
   NonLinearNormalizeHistogram(cvf->colorH, vf->colorH, 4 * npixels, SIZE);
@@ -232,9 +240,9 @@ CompressedVisualFeature *NormalizeHistograms(VisualFeature *vf, int npixels)
   return(cvf);
 }
 
-CompressedVisualFeature *ACCReadCompressedVisualFeatures(char *filename)
+ACCCompressedVisualFeature *ACCReadCompressedVisualFeatures(char *filename)
 {
-  CompressedVisualFeature *cvf=NULL;
+  ACCCompressedVisualFeature *cvf=NULL;
   FILE *fp;
   int i, n;
   uchar c;
@@ -254,7 +262,7 @@ CompressedVisualFeature *ACCReadCompressedVisualFeatures(char *filename)
   return(cvf);
 }
 
-void ACCWriteCompressedVisualFeatures(CompressedVisualFeature *cvf,char *filename)
+void ACCWriteCompressedVisualFeatures(ACCCompressedVisualFeature *cvf,char *filename)
 {
   FILE *fp;
   int i;
@@ -272,12 +280,12 @@ void ACCWriteCompressedVisualFeatures(CompressedVisualFeature *cvf,char *filenam
   fclose(fp);
 }
 
-CompressedVisualFeature *ExtractCompressedVisualFeaturesACC(CImage *cimg, 
+ACCCompressedVisualFeature *ExtractCompressedVisualFeaturesACC(CImage *cimg, 
                                                           Image *mask)
 {
-  CompressedVisualFeature *cvf=NULL;
-  VisualFeature *vf;
-  Property *p;
+  ACCCompressedVisualFeature *cvf=NULL;
+  ACCVisualFeature *vf;
+  ACCProperty *p;
   int npixels;
   int npoints;
   
@@ -285,7 +293,7 @@ CompressedVisualFeature *ExtractCompressedVisualFeaturesACC(CImage *cimg,
   
   p = ACCComputePixelsProperties(cimg);
   vf = ComputeHistogramsACC(p, mask, npixels, &npoints);
-  cvf = CompressHistograms(vf, npoints);
+  cvf = ACCCompressHistograms(vf, npoints);
   
   free(p);
   ACCDestroyVisualFeature(&vf);
@@ -295,7 +303,7 @@ CompressedVisualFeature *ExtractCompressedVisualFeaturesACC(CImage *cimg,
 Histogram *ACC(CImage *cimg, Image *mask)
 {
   Histogram *h = NULL;
-  CompressedVisualFeature *cvf;
+  ACCCompressedVisualFeature *cvf;
   int i;
 
   cvf = ExtractCompressedVisualFeaturesACC(cimg, mask);

@@ -72,7 +72,7 @@ void gaborFilter( gabor * pGabor, int scale, int orientation ){
   }
 }
 
-void DumpGabor(gabor * pGabor, int flag, char * fname ){
+void DumpGabor(gabor * pGabor, int flag, const char * fname ){
 
   register int i, j;
   char outname[100];

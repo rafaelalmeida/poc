@@ -123,3 +123,131 @@ uchar ComputeNorm(float value)
 {
   return((uchar)(255. * value));
 }
+
+uchar ComputeLog(float value)
+{
+  uchar result;
+  
+  value = 255. * value;
+  if(value==0.)       result=0;
+  else if(value<1.)   result=1;
+  else if(value<2.)   result=2;
+  else if(value<4.)   result=3;
+  else if(value<8.)   result=4;
+  else if(value<16.)  result=5;
+  else if(value<32.)  result=6;
+  else if(value<64.)  result=7;
+  else if(value<128.) result=8;
+  else                result=9;
+  
+  return(result);
+}
+
+Property *AllocPropertyArray(int n)
+{
+  Property *v=NULL;
+  v = (Property *) calloc(n,sizeof(Property));
+  if (v==NULL)
+    Error(MSG1,"AllocPropertyArray");
+  return(v);
+}
+
+double L2DoubleDistance(double *v1, double *v2, int size) {
+    int i;
+    double d=0.0;
+
+    for (i=0; i<size; i++) {
+        d += pow((v1[i]-v2[i]), 2);
+    }
+    return sqrt(d);
+}
+
+double *ReadFileDouble(char *filename, int size) {
+    FILE *fp;
+    double *fv=NULL;
+
+    fv = AllocDoubleArray(size);
+
+    if ((fp = fopen(filename, "rb")) == NULL) {
+        printf("ERRO CRIANDO ARQUIVO DE FV\n");
+        exit(0);
+    }
+    fread(fv, sizeof(double), size, fp);
+    fclose(fp);
+
+    return fv;
+}
+
+float *ReadFileFloat(char *filename, int size) {
+    FILE *fp;
+    float *fv=NULL;
+
+    fv = AllocFloatArray(size);
+
+    if ((fp = fopen(filename, "rb")) == NULL) {
+        printf("ERRO CRIANDO ARQUIVO DE FV\n");
+        exit(0);
+    }
+    fread(fv, sizeof(float), size, fp);
+    fclose(fp);
+
+    return fv;
+}
+
+void WriteFileDouble(char *filename, double *vet, int size) {
+    FILE *fout;
+
+    if ((fout = fopen(filename, "wb")) == NULL) {
+        printf("ERRO CRIANDO ARQUIVO DE FV\n");
+        exit(0);
+    }
+    fwrite(vet, sizeof(double), size, fout);
+    fclose(fout);
+}
+
+void WriteFileFloat(char *filename, float *vet, int size) {
+    FILE *fout;
+
+    if ((fout = fopen(filename, "wb")) == NULL) {
+        printf("ERRO CRIANDO ARQUIVO DE FV\n");
+        exit(0);
+    }
+    fwrite(vet, sizeof(float), size, fout);
+    fclose(fout);
+}
+
+double L1FloatDistance(float *v1, float *v2, int size) {
+    int i;
+    double d=0.0;
+
+    for (i=0; i<size; i++) {
+        d += (double)fabsf(v1[i]-v2[i]);
+    }
+    return d;
+}
+
+//Encontra o minimo valor entre 3
+float min(float x, float y, float z) {
+
+    if ( (x<=y) && (x<=z) ) {
+        return x;
+    } else if ( (y<=x) && (y<=z) ) {
+        return y;
+    } else if ( (z<=x) && (z<=y) ) {
+        return z;
+    }
+    return -1;
+}
+
+//Encontra o maximo valor entre 3
+float max(float x, float y, float z) {
+
+    if ( (x>=y) && (x>=z) ) {
+        return x;
+    } else if ( (y>=x) && (y>=z) ) {
+        return y;
+    } else if ( (z>=x) && (z>=y) ) {
+        return z;
+    }
+    return -1;
+}

@@ -8,34 +8,34 @@
 
 #define NBINS (BINS*BINS*SIZE)
 
-typedef struct _Property {
+typedef struct _LCHProperty {
   int color;
-} Property;
+} LCHProperty;
 
-typedef struct _VisualFeature {
+typedef struct _LCHVisualFeature {
   ulong *colorH;
   int n;
-} VisualFeature;
+} LCHVisualFeature;
 
-typedef struct _CompressedVisualFeature {
+typedef struct _LCHCompressedVisualFeature {
   uchar *colorH;
   int n;
-} CompressedVisualFeature;
+} LCHCompressedVisualFeature;
 
-Property *AllocPropertyArray(int n)
+LCHProperty *LCHAllocPropertyArray(int n)
 {
-  Property *v=NULL;
-  v = (Property *) calloc(n,sizeof(Property));
+  LCHProperty *v=NULL;
+  v = (LCHProperty *) calloc(n,sizeof(LCHProperty));
   if (v==NULL)
-    Error(MSG1,"AllocPropertyArray");
+    Error(MSG1,"LCHAllocPropertyArray");
   return(v);
 }
 
-VisualFeature *CreateVisualFeature(int n)
+LCHVisualFeature *CreateVisualFeature(int n)
 {
-  VisualFeature *vf=NULL;
+  LCHVisualFeature *vf=NULL;
 
-  vf = (VisualFeature *) calloc(1,sizeof(VisualFeature));
+  vf = (LCHVisualFeature *) calloc(1,sizeof(LCHVisualFeature));
   if (vf != NULL) {
     vf->colorH = AllocULongArray(n);
     vf->n = n;
@@ -45,9 +45,9 @@ VisualFeature *CreateVisualFeature(int n)
   return(vf);
 }
 
-void DestroyVisualFeature(VisualFeature **vf)
+void DestroyVisualFeature(LCHVisualFeature **vf)
 {
-  VisualFeature *aux;
+  LCHVisualFeature *aux;
 
   aux = *vf;
   if (aux != NULL) {
@@ -57,11 +57,11 @@ void DestroyVisualFeature(VisualFeature **vf)
   }
 }
 
-CompressedVisualFeature *CreateCompressedVisualFeature(int n)
+LCHCompressedVisualFeature *CreateCompressedVisualFeature(int n)
 {
-  CompressedVisualFeature *cvf=NULL;
+  LCHCompressedVisualFeature *cvf=NULL;
 
-  cvf = (CompressedVisualFeature *) calloc(1,sizeof(CompressedVisualFeature));
+  cvf = (LCHCompressedVisualFeature *) calloc(1,sizeof(LCHCompressedVisualFeature));
   if (cvf != NULL) {
     cvf->colorH = AllocUCharArray(n);
     cvf->n = n;
@@ -71,9 +71,9 @@ CompressedVisualFeature *CreateCompressedVisualFeature(int n)
   return(cvf);
 }
 
-void DestroyCompressedVisualFeature(CompressedVisualFeature **cvf)
+void DestroyCompressedVisualFeature(LCHCompressedVisualFeature **cvf)
 {
-  CompressedVisualFeature *aux;
+  LCHCompressedVisualFeature *aux;
 
   aux = *cvf;
   if (aux != NULL) {
@@ -118,14 +118,14 @@ void CompressHistogram(uchar *ch, ulong *h, ulong max, int size)
   }
 }
 
-Property *ComputePixelsProperties(CImage *cimg)
+LCHProperty *ComputePixelsProperties(CImage *cimg)
 {
-  Property *p=NULL;
+  LCHProperty *p=NULL;
   int *color, i, n;
   
   n = cimg->C[0]->nrows * cimg->C[0]->ncols;  
   
-  p = AllocPropertyArray(n);
+  p = LCHAllocPropertyArray(n);
   
   color = QuantizeColors(cimg, 4);
   for(i=0; i<n; i++) 
@@ -135,9 +135,9 @@ Property *ComputePixelsProperties(CImage *cimg)
   return(p);
 }
 
-VisualFeature *ComputeHistograms(Property *p, Image *mask, int *npoints)
+LCHVisualFeature *ComputeHistograms(LCHProperty *p, Image *mask, int *npoints)
 {
-  VisualFeature *vf=NULL;
+  LCHVisualFeature *vf=NULL;
   ulong fator_x, fator_y;
   ulong rows, cols;
   ulong x, y;
@@ -169,9 +169,9 @@ VisualFeature *ComputeHistograms(Property *p, Image *mask, int *npoints)
   return(vf);
 }
 
-CompressedVisualFeature *CompressHistograms(VisualFeature *vf, int npixels)
+LCHCompressedVisualFeature *CompressHistograms(LCHVisualFeature *vf, int npixels)
 {
-  CompressedVisualFeature *cvf=NULL;
+  LCHCompressedVisualFeature *cvf=NULL;
 
   cvf = CreateCompressedVisualFeature(NBINS);
   CompressHistogram(cvf->colorH, vf->colorH, npixels, NBINS);
@@ -179,9 +179,9 @@ CompressedVisualFeature *CompressHistograms(VisualFeature *vf, int npixels)
   return(cvf);
 }
 
-CompressedVisualFeature *ReadCompressedVisualFeatures(char *filename)
+LCHCompressedVisualFeature *ReadCompressedVisualFeatures(char *filename)
 {
-  CompressedVisualFeature *cvf=NULL;
+  LCHCompressedVisualFeature *cvf=NULL;
   FILE *fp;
   int i, n;
   uchar c;
@@ -201,7 +201,7 @@ CompressedVisualFeature *ReadCompressedVisualFeatures(char *filename)
   return(cvf);
 }
 
-void WriteCompressedVisualFeatures(CompressedVisualFeature *cvf,char *filename)
+void LCHWriteCompressedVisualFeatures(LCHCompressedVisualFeature *cvf,char *filename)
 {
   FILE *fp;
   int i;
@@ -219,12 +219,12 @@ void WriteCompressedVisualFeatures(CompressedVisualFeature *cvf,char *filename)
   fclose(fp);
 }
 
-CompressedVisualFeature *ExtractCompressedVisualFeatures(CImage *cimg,
+LCHCompressedVisualFeature *ExtractCompressedVisualFeaturesLCH(CImage *cimg,
                                                           Image *mask)
 {
-  CompressedVisualFeature *cvf=NULL;
-  VisualFeature *vf;
-  Property *p;
+  LCHCompressedVisualFeature *cvf=NULL;
+  LCHVisualFeature *vf;
+  LCHProperty *p;
   int npixels;
   int npoints;
 
@@ -242,10 +242,10 @@ CompressedVisualFeature *ExtractCompressedVisualFeatures(CImage *cimg,
 Histogram *LCH(CImage *cimg, Image *mask)
 {
   Histogram *histogram = NULL;
-  CompressedVisualFeature *cvf;
+  LCHCompressedVisualFeature *cvf;
   int i;
   
-  cvf = ExtractCompressedVisualFeatures(cimg, mask);
+  cvf = ExtractCompressedVisualFeaturesLCH(cimg, mask);
 
   histogram = CreateHistogram(NBINS);  
   for (i=0; i<NBINS; i++)

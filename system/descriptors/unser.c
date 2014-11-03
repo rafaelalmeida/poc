@@ -3,7 +3,7 @@
 #include "common.h"
 #include "adjacency.h"
 
-void ComputeHistograms(Image *img, Image *msk,
+void ComputeHistogramsUnser(Image *img, Image *msk,
                        float sum[4][511], float dif[4][511])
 {
   ulong x, y, p, q;
@@ -157,7 +157,7 @@ Histogram *Unser(Image *img, Image *msk)
   float mean, contrast, correlation;
   int i;
   
-  ComputeHistograms(img, msk, sum, dif);
+  ComputeHistogramsUnser(img, msk, sum, dif);
 
   h = CreateHistogram(32);
   for (i=0; i<4; i++){

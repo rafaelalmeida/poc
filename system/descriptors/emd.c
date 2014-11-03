@@ -21,7 +21,7 @@
 /* DEFINITIONS */
 #define MAX_SIG_SIZE   1000
 #define MAX_ITERATIONS 5000
-#define INFINITY       1e20
+#define MY_INFINITY       1e20
 #define EPSILON        1e-6
 
 /*****************************************************************************/
@@ -478,7 +478,7 @@ int isOptimal(node1_t *U, node1_t *V)
   int i, j, minI=NIL, minJ=NIL;
 
   /* FIND THE MINIMAL Cij-Ui-Vj OVER ALL i,j */
-  deltaMin = INFINITY;
+  deltaMin = MY_INFINITY;
   for(i=0; i < _n1; i++)
     for(j=0; j < _n2; j++)
       if (! _IsX[i][j])
@@ -496,7 +496,7 @@ int isOptimal(node1_t *U, node1_t *V)
   printf("deltaMin=%f\n", deltaMin);
 #endif
 
-   if (deltaMin == INFINITY)
+   if (deltaMin == MY_INFINITY)
      {
        fprintf(stderr, "emd: Unexpected error in isOptimal.\n");
        exit(0);
@@ -542,7 +542,7 @@ void newSol()
     steps = findLoop(Loop);
 
     /* FIND THE LARGEST VALUE IN THE LOOP */
-    xMin = INFINITY;
+    xMin = MY_INFINITY;
     for (k=1; k < steps; k+=2)
       {
 	if (Loop[k]->val < xMin)
@@ -704,7 +704,7 @@ void russel(double *S, double *D)
   for (i=0; i < _n1; i++)
     {
       CurU->i = i;
-      CurU->val = -INFINITY;
+      CurU->val = -MY_INFINITY;
       CurU->Next = CurU+1;
       CurU++;
     }
@@ -714,7 +714,7 @@ void russel(double *S, double *D)
   for (j=0; j < _n2; j++)
     {
       CurV->i = j;
-      CurV->val = -INFINITY;
+      CurV->val = -MY_INFINITY;
       CurV->Next = CurV+1;
       CurV++;
     }
@@ -754,7 +754,7 @@ void russel(double *S, double *D)
  
       /* FIND THE SMALLEST Delta[i][j] */
       found = 0; 
-      deltaMin = INFINITY;      
+      deltaMin = MY_INFINITY;      
       PrevU = &uHead;
       for (CurU=uHead.Next; CurU != NULL; CurU=CurU->Next)
 	{
@@ -797,7 +797,7 @@ void russel(double *S, double *D)
 		{
 		  /* FIND THE NEW MAXIMUM VALUE IN THE COLUMN */
 		  oldVal = CurV->val;
-		  CurV->val = -INFINITY;
+		  CurV->val = -MY_INFINITY;
 		  for (CurU=uHead.Next; CurU != NULL; CurU=CurU->Next)
 		    {
 		      int i;
@@ -824,7 +824,7 @@ void russel(double *S, double *D)
 		{
 		  /* FIND THE NEW MAXIMUM VALUE IN THE ROW */
 		  oldVal = CurU->val;
-		  CurU->val = -INFINITY;
+		  CurU->val = -MY_INFINITY;
 		  for (CurV=vHead.Next; CurV != NULL; CurV=CurV->Next)
 		    {
 		      int j;

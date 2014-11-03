@@ -9,32 +9,6 @@ bool ValidPixelEdges(int nrows, int ncols, int x, int y)
     return(false);
 }
 
-//Encontra o minimo valor entre 3
-float min(float x, float y, float z) {
-
-    if ( (x<=y) && (x<=z) ) {
-        return x;
-    } else if ( (y<=x) && (y<=z) ) {
-        return y;
-    } else if ( (z<=x) && (z<=y) ) {
-        return z;
-    }
-    return -1;
-}
-
-//Encontra o maximo valor entre 3
-float max(float x, float y, float z) {
-
-    if ( (x>=y) && (x>=z) ) {
-        return x;
-    } else if ( (y>=x) && (y>=z) ) {
-        return y;
-    } else if ( (z>=x) && (z>=y) ) {
-        return z;
-    }
-    return -1;
-}
-
 void RGB2HSV_canny(CImage *RGB, ImageHSV **HSV) {
 
     float r, g, b;

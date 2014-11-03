@@ -35,8 +35,24 @@ typedef unsigned long ulong;
 typedef int* ap_int;
 typedef double* ap_double;
 
-/* Common definitions */
+typedef struct _Property {
+  int color;
+  int frequency;
+} Property;
 
+typedef struct _VisualFeature {
+  ulong *lowH;
+  ulong *highH;
+  int n;
+} VisualFeature;
+
+typedef struct _CompressedVisualFeature {
+  uchar *lowH;
+  uchar *highH;
+  int n;
+} CompressedVisualFeature;
+
+/* Common definitions */
 
 #define PI          3.1415927
 #define INTERIOR    0
@@ -76,6 +92,7 @@ bool   *AllocBoolArray(int n);   /* It allocated 1D array of n characters */
 int    *AllocIntArray(int n);   /* It allocates 1D array of n integers */
 float  *AllocFloatArray(int n); /* It allocates 1D array of n floats   */
 double *AllocDoubleArray(int n);/* It allocates 1D array of n doubles  */
+Property *AllocPropertyArray(int n);
 
 void Error(char *msg,char *func); /* It prints error message and exits
                                      the program. */
@@ -90,5 +107,18 @@ int RandomInteger (int low, int high);
 int SafeMod(int a, int n);
 
 uchar ComputeNorm(float value);
+
+uchar ComputeLog(float value);
+
+double L2DoubleDistance(double *v1, double *v2, int size);
+
+double *ReadFileDouble(char *filename, int size);
+float *ReadFileFloat(char *filename, int size);
+void WriteFileDouble(char *filename, double *vet, int size);
+void WriteFileFloat(char *filename, float *vet, int size);
+
+//Encontra o minimo valor entre 3
+float min(float x, float y, float z);
+float max(float x, float y, float z);
 
 #endif
