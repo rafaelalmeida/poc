@@ -21,10 +21,19 @@ using namespace cv;
 
 int main() {
 	cerr << "loading VIS image..." << endl;
-	Mat vis = gdal_driver::loadVIS("data/subset/TelopsDatasetCityVisible_20cm_Subset.img");
+	Mat visOrig = gdal_driver::loadVIS("data/subset/TelopsDatasetCityVisible_20cm_Subset.img");
 	cerr << "loading training data..." << endl;
-	Mat training = gdal_driver::loadTrainingData("data/subset/TrainingMap_ENVI_RAW_format.raw");
+	Mat trainingOrig = gdal_driver::loadTrainingData("data/subset/TrainingMap_ENVI_RAW_format.raw");
 	
+	Rect roi;
+	roi.x = 940;
+	roi.y = 2619;
+	roi.width = 549;
+	roi.height = 675;
+
+	Mat vis = visOrig(roi);
+	Mat training = trainingOrig(roi);
+
 	cerr << "processing valid regions..." << endl;
 	list<Mat> masks = segmentation::makeSegmentMasksFromPosterizedImage(training);
 
