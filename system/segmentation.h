@@ -17,6 +17,7 @@ namespace segmentation {
 	std::list<cv::Mat> segmentLWIRCanny(cv::Mat M);
 
 	float getSegmentLabel(cv::Mat classificationMap, cv::Mat mask);
+	std::list<cv::Mat> makeSegmentMasksFromPosterizedImage(cv::Mat posterized);
 }
 
 #endif

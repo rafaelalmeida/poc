@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <cstdio>
 #include <iostream>
 #include <cstdint>
 #include <list>
@@ -19,9 +20,18 @@ using namespace cv;
 
 int main() {
 	Mat vis = gdal_driver::loadVIS("data/subset/TelopsDatasetCityVisible_20cm_Subset.img");
-	Mat samples = description_vis::GCH(vis, onesLike(vis));
+	Mat training = gdal_driver::loadTrainingData("data/subset/TrainingMap_ENVI_RAW_format.raw");
 
+	list<Mat> masks = segmentation::makeSegmentMasksFromPosterizedImage(training);
+	Mat samples = description_vis::GCH(vis, masks);
+
+	cout << samples << endl;
+
+	/*list<Mat> trainingSamples;
 	
+	for (list<Mat>::iterator it = masks.begin(); it != masks.end(); ++it) {
+		trainingSamples.push_back(segmentation::getSegmentLabel(training, *it));
+	}*/
 
 	return 0;
 }

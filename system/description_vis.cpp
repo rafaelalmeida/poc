@@ -2,25 +2,31 @@
 
 using namespace cv;
 
-cv::Mat description_vis::GCH(const cv::Mat image, const cv::Mat mask) {
+cv::Mat description_vis::GCH(const cv::Mat image, const std::list<cv::Mat> masks) {
 	const int HIST_BINS = 64;
 
 	CImage *cimg = matToRawColor(image);
-	Image *maskRaw = matToRawGray(mask);
 
-	Mat samples(1, HIST_BINS, CV_32FC1);
+	Mat samples(masks.size(), HIST_BINS, CV_32FC1);
 
-	Histogram *hist = GCH(cimg, maskRaw);
-	assert(hist->n == HIST_BINS);
+	int currentMask = 0;
+	for (list<Mat>::const_iterator it = masks.begin(); it != masks.end(); it++) {
+		Image *mask = matToRawGray(*it);
 
-	for (int i = 0; i < hist->n; i++) {
-		samples.at<float>(0, i) = (float) hist->v[i];
+		Histogram *hist = GCH(cimg, mask);
+		assert(hist->n == HIST_BINS);
+
+		for (int i = 0; i < hist->n; i++) {
+			samples.at<float>(currentMask, i) = (float) hist->v[i];
+		}
+
+		DestroyHistogram(&hist);
+		DestroyImage(&mask);
+
+		currentMask++;
 	}
 
-	DestroyHistogram(&hist);
-
 	DestroyCImage(&cimg);
-	DestroyImage(&maskRaw);
 
 	return samples;
 }

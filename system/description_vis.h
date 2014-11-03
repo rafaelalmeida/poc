@@ -35,7 +35,7 @@ namespace description_vis {
 	// Steerable Pyramid
 	// Unser
 
-	cv::Mat GCH(const cv::Mat image, const cv::Mat mask);
+	cv::Mat GCH(const cv::Mat image, const std::list<cv::Mat> masks);
 }
 
 #endif
