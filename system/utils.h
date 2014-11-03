@@ -20,6 +20,8 @@ using namespace std;
 
 void showImage(const char *winname, cv::Mat img, int delay=0);
 cv::Mat floatImageTo8UC3Image(cv::Mat floatImage);
+cv::Mat onesLike(cv::Mat M);
+
 Image *matToRawGray(cv::Mat gray);
 CImage *matToRawColor(cv::Mat color);
 

@@ -51,3 +51,7 @@ CImage *matToRawColor(cv::Mat color) {
 
 	return cimg;
 }
+
+cv::Mat onesLike(cv::Mat M) {
+	return 255 * Mat::ones(M.rows, M.cols, CV_8UC1);
+}

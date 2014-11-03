@@ -12,21 +12,16 @@
 #include "statistics.h"
 #include "segmentation.h"
 #include "description_lwir.h"
-
-#include "descriptors/image.h"
+#include "description_vis.h"
 
 using namespace std;
 using namespace cv;
 
 int main() {
 	Mat vis = gdal_driver::loadVIS("data/subset/TelopsDatasetCityVisible_20cm_Subset.img");
+	Mat samples = description_vis::GCH(vis, onesLike(vis));
 
-	CImage *cimg = matToRawColor(vis);
-
-	imwrite("scratch/vis.png", vis);
-	WriteCImage(cimg, "scratch/vis_converted.pgm");
-
-	DestroyCImage(&cimg);
+	
 
 	return 0;
 }

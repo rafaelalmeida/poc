@@ -10,8 +10,32 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+#include "utils.h"
+
+extern "C" {
+	#include "descriptors/image.h"
+	#include "descriptors/cimage.h"
+
+	#include "descriptors/gch.h"
+}
+
 namespace description_vis {
-	
+	// TODO DESCRIPTOR LIST
+	// ACC
+	// BIC
+	// CBC
+	// EMD
+	// EOAC
+	// Gabor
+	// IRM
+	// LCH
+	// LAS
+	// QCCH
+	// Spytec
+	// Steerable Pyramid
+	// Unser
+
+	cv::Mat GCH(const cv::Mat image, const cv::Mat mask);
 }
 
 #endif
