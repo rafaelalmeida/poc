@@ -19,17 +19,14 @@ using namespace std;
 using namespace cv;
 
 int main() {
-	//Mat vis = gdal_driver::loadVIS("data/subset/TelopsDatasetCityVisible_20cm_Subset.img");
+	Mat vis = gdal_driver::loadVIS("data/subset/TelopsDatasetCityVisible_20cm_Subset.img");
 
-	//Mat gray;
-	//cvtColor(vis, gray, CV_BGR2GRAY);
+	CImage *cimg = matToRawColor(vis);
 
-	//Image *img = matToRawGray(gray);
+	imwrite("scratch/vis.png", vis);
+	WriteCImage(cimg, "scratch/vis_converted.pgm");
 
-	//imwrite("scratch/vis.png", gray);
-	//WriteImage(img, "scratch/vis_test2.pgm");
-
-	//DestroyImage(&img);
+	DestroyCImage(&cimg);
 
 	return 0;
 }

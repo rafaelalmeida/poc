@@ -39,5 +39,15 @@ Image *matToRawGray(cv::Mat gray) {
 }
 
 CImage *matToRawColor(cv::Mat color) {
-	return NULL;
+	assert(color.type() == CV_8UC3);
+
+	Mat channels[3];
+	split(color, channels);
+
+	CImage *cimg = CreateCImage(channels[0].cols, channels[0].rows);
+	cimg->C[0] = matToRawGray(channels[2]);
+	cimg->C[1] = matToRawGray(channels[1]);
+	cimg->C[2] = matToRawGray(channels[0]);
+
+	return cimg;
 }
