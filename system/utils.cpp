@@ -24,3 +24,20 @@ void showImage(const char *winname, Mat img, int delay) {
 	imshow(winname, img);
 	waitKey(delay);
 }
+
+Image *matToRawGray(cv::Mat gray) {
+	assert(gray.type() == CV_8UC1);
+
+	Image *img = CreateImage(gray.cols, gray.rows);
+	for (int row = 0; row < gray.rows; row++) {
+		for (int col = 0; col < gray.cols; col++) {
+			img->val[row*gray.cols + col] = (int) gray.at<unsigned char>(row, col);
+		}
+	}
+
+	return img;
+}
+
+CImage *matToRawColor(cv::Mat color) {
+	return NULL;
+}

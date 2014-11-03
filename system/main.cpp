@@ -13,15 +13,23 @@
 #include "segmentation.h"
 #include "description_lwir.h"
 
+#include "descriptors/image.h"
+
 using namespace std;
 using namespace cv;
 
 int main() {
-	Mat training = gdal_driver::loadTrainingData("data/subset/TrainingMap_ENVI_RAW_format.raw");
-	vector<Mat> matx = gdal_driver::loadLWIR("data/subset/TelopsDatasetCityLWIR_Subset.img");
+	//Mat vis = gdal_driver::loadVIS("data/subset/TelopsDatasetCityVisible_20cm_Subset.img");
 
-	Mat mask = Mat::ones(training.rows, training.cols, training.type()) * 255;
-	cout << segmentation::getSegmentLabel(training, mask) << endl;
+	//Mat gray;
+	//cvtColor(vis, gray, CV_BGR2GRAY);
+
+	//Image *img = matToRawGray(gray);
+
+	//imwrite("scratch/vis.png", gray);
+	//WriteImage(img, "scratch/vis_test2.pgm");
+
+	//DestroyImage(&img);
 
 	return 0;
 }

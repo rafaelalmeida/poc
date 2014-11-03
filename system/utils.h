@@ -11,10 +11,17 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+extern "C" {
+	#include "descriptors/image.h"
+	#include "descriptors/cimage.h"
+}
+
 using namespace std;
 
 void showImage(const char *winname, cv::Mat img, int delay=0);
 cv::Mat floatImageTo8UC3Image(cv::Mat floatImage);
+Image *matToRawGray(cv::Mat gray);
+CImage *matToRawColor(cv::Mat color);
 
 template <typename T>
 class Counter {

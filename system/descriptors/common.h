@@ -24,7 +24,9 @@
 /* Common data types to all programs */ 
 
 #ifndef _WIN32
+#ifndef __cplusplus
 typedef enum boolean {false,true} bool;
+#endif
 #endif
 typedef unsigned short ushort;
 
