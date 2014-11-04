@@ -36,6 +36,12 @@ int main() {
 	Mat vis = visOrig(roi);
 	Mat training = trainingOrig(roi);
 
+	list<Mat> segments = segmentation::segmentVISGrid(vis);
+	Mat repr = segmentation::representSegmentation(segments);
+	showImage("win", repr);
+
+	return 0;
+
 	classification::trainSVM(vis, training, description_vis::GCH);
 
     cerr << "drawing land cover map..." << endl;

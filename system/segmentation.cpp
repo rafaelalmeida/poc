@@ -27,6 +27,27 @@ list<Mat> segmentation::segmentLWIRCanny(Mat M) {
 	return ret;
 }
 
+std::list<cv::Mat> segmentation::segmentVISGrid(cv::Mat M) {
+	const int GRID_SIZE = 16;
+
+	list<Mat> segments;
+
+	int regionsPerLine = M.cols / GRID_SIZE;
+	int regionsPerColumn = M.rows / GRID_SIZE;
+
+	for (int i = 0; i < regionsPerLine; i++) {
+		for (int j = 0; j < regionsPerColumn; j++) {
+			Mat segment(M.rows, M.cols, CV_8UC1);
+			Rect region(i*GRID_SIZE, j*GRID_SIZE, GRID_SIZE, GRID_SIZE);
+
+			rectangle(segment, region, Scalar(255), CV_FILLED);
+			segments.push_back(segment);
+		}
+	}
+
+	return segments;
+}
+
 float segmentation::getSegmentLabel(Mat classificationMap, Mat mask) {
 	assert(classificationMap.type() == CV_8UC1);
 	assert(mask.type() == CV_8UC1);
@@ -75,4 +96,20 @@ std::list<cv::Mat> segmentation::makeSegmentMasksFromPosterizedImage(cv::Mat pos
 	}
 
 	return segments;
+}
+
+cv::Mat segmentation::representSegmentation(std::list<cv::Mat> masks) {
+	assert(masks.size() > 0);
+	Mat M = *masks.begin();
+
+	Mat repr(M.rows, M.cols, CV_8UC3);
+	for (list<Mat>::iterator it = masks.begin(); it != masks.end(); ++it) {
+		Mat clone = it->clone();
+		vector<vector<Point> > contours;
+		findContours(clone, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+
+		drawContours(repr, contours, -1, Scalar(0, 0, 255));
+	}
+
+	return repr;
 }

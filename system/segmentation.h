@@ -16,8 +16,11 @@ namespace segmentation {
 	std::list<cv::Mat> segmentLWIRMeanShift(cv::Mat M);
 	std::list<cv::Mat> segmentLWIRCanny(cv::Mat M);
 
+	std::list<cv::Mat> segmentVISGrid(cv::Mat M);
+
 	float getSegmentLabel(cv::Mat classificationMap, cv::Mat mask);
 	std::list<cv::Mat> makeSegmentMasksFromPosterizedImage(cv::Mat posterized);
+	cv::Mat representSegmentation(std::list<cv::Mat> masks);
 }
 
 #endif
