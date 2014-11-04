@@ -36,18 +36,17 @@ int main() {
 	Mat vis = visOrig(roi);
 	Mat training = trainingOrig(roi);
 
-	list<Mat> segments = segmentation::segmentVISGrid(vis);
-	Mat repr = segmentation::representSegmentation(segments);
-	showImage("win", repr);
+	CvSVM *svm = classification::trainSVM(vis, training, description_vis::GCH);
 
-	return 0;
+	Mat map(vis.rows, vis.cols, CV_8UC1);
 
-	classification::trainSVM(vis, training, description_vis::GCH);
-
-    cerr << "drawing land cover map..." << endl;
-    Mat coverMap = makeLandCoverMap(training);
-    showImage("win", coverMap);
-    showImage("win", vis);
+	cerr << "classifying..." << endl;
+    list<Mat> segments = segmentation::segmentVISGrid(vis);
+	for (auto&& s : segments) {
+		Mat sample = description_vis::GCH(vis, s);
+		int theClass = (int) svm->predict(sample);
+		map = map | theClass * (s / 255);
+	}
 
 	return 0;
 }

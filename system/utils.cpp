@@ -99,3 +99,13 @@ cv::Mat makeLandCoverMap(cv::Mat labels) {
 
 	return map;
 }
+
+cv::Mat blend(cv::Mat M1, cv::Mat M2) {
+	assert(M1.rows == M2.rows && M1.cols == M2.cols);
+	assert(M1.type() == CV_8UC3 && M2.type() == CV_8UC3);
+
+	cv::Mat dst(M1.rows, M1.cols, CV_8UC3);
+	addWeighted(M1, 0.5, M2, 0.5, 0.0, dst);
+
+	return dst;
+}

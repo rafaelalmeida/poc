@@ -36,6 +36,7 @@ namespace description_vis {
 	// Unser
 
 	cv::Mat GCH(const cv::Mat image, const std::list<cv::Mat> masks);
+	cv::Mat GCH(const cv::Mat image, const cv::Mat mask);
 }
 
 #endif

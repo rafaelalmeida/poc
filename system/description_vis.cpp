@@ -30,3 +30,9 @@ cv::Mat description_vis::GCH(const cv::Mat image, const std::list<cv::Mat> masks
 
 	return samples;
 }
+
+cv::Mat description_vis::GCH(const cv::Mat image, const cv::Mat mask) {
+	list<Mat> masks;
+	masks.push_back(mask);
+	return GCH(image, masks);
+}

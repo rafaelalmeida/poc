@@ -24,10 +24,14 @@ void showImage(const char *winname, cv::Mat img, int delay=0);
 cv::Mat makeLandCoverMap(cv::Mat labels);
 cv::Mat floatImageTo8UC3Image(cv::Mat floatImage);
 cv::Mat onesLike(cv::Mat M);
+cv::Mat blend(cv::Mat M1, cv::Mat M2);
 
 Image *matToRawGray(cv::Mat gray);
 CImage *matToRawColor(cv::Mat color);
 
+/**
+ * Small class to count things
+ */
 template <typename T>
 class Counter {
 	std::map<T, int> _map;

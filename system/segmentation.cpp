@@ -28,7 +28,7 @@ list<Mat> segmentation::segmentLWIRCanny(Mat M) {
 }
 
 std::list<cv::Mat> segmentation::segmentVISGrid(cv::Mat M) {
-	const int GRID_SIZE = 16;
+	const int GRID_SIZE = 32;
 
 	list<Mat> segments;
 

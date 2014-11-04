@@ -7,6 +7,8 @@ LFLAGS =
 LFLAGS += `pkg-config --libs gdal`
 LFLAGS += `pkg-config --libs opencv`
 
+CPPFLAGS = -std=c++11
+
 BINDIR = bin
 OBJDIR = obj
 
@@ -23,7 +25,7 @@ build: directories descriptors $(OBJS)
 	g++ $(OBJS) $(DESCRIPTORS_OBJS) $(LFLAGS) -o $(BINDIR)/$(EXE)
 
 $(OBJDIR)/%.o : %.cpp
-	g++ -c $(CFLAGS) $< -o $@
+	g++ -c $(CFLAGS) $(CPPFLAGS) $< -o $@
 
 directories: $(OBJDIR) $(BINDIR)
 

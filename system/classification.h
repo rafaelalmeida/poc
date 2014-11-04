@@ -15,6 +15,7 @@
 
 namespace classification {
 	CvSVM *trainSVM(cv::Mat image, cv::Mat trainingMap, cv::Mat (*descriptor)(cv::Mat, const std::list<cv::Mat>));
+	
 }
 
 #endif
