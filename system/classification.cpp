@@ -39,3 +39,15 @@ CvSVM *classification::trainSVM(cv::Mat image, cv::Mat trainingMap, cv::Mat (*de
 
 	return SVM;
 }
+
+cv::Mat classification::predict(cv::Mat image, list<Mat> segments, CvSVM *classifier) {
+	Mat map(image.rows, image.cols, CV_8UC1);
+
+	for (auto&& s : segments) {
+		Mat sample = description_vis::GCH(image, s);
+		int theClass = (int) classifier->predict(sample);
+		map = map | theClass * (s / 255);
+	}
+
+	return map;
+}
