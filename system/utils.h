@@ -11,6 +11,8 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+#include "segmentation.h"
+
 extern "C" {
 	#include "descriptors/image.h"
 	#include "descriptors/cimage.h"
@@ -19,6 +21,7 @@ extern "C" {
 using namespace std;
 
 void showImage(const char *winname, cv::Mat img, int delay=0);
+cv::Mat makeLandCoverMap(cv::Mat labels);
 cv::Mat floatImageTo8UC3Image(cv::Mat floatImage);
 cv::Mat onesLike(cv::Mat M);
 
