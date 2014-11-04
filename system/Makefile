@@ -39,7 +39,7 @@ descriptors:
 	cd descriptors && $(MAKE)
 
 run:
-	./$(BINDIR)/$(EXE)
+	./run.sh
 
 clean:
 	rm -rf $(OBJDIR)

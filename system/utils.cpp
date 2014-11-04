@@ -109,3 +109,9 @@ cv::Mat blend(cv::Mat M1, cv::Mat M2) {
 
 	return dst;
 }
+
+void log(const char *msg) {
+	if (verbose) {
+		cerr << msg << endl;
+	}
+}

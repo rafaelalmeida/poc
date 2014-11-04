@@ -4,13 +4,10 @@
 #include <list>
 #include <stdio.h>
 
-#include <gdal_priv.h>
 #include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/ml/ml.hpp>
 
 #include "classification.h"
+#include "config.h"
 #include "description_lwir.h"
 #include "description_vis.h"
 #include "gdal_driver.h"
@@ -21,26 +18,37 @@
 using namespace std;
 using namespace cv;
 
-int main() {
-	cerr << "loading VIS image..." << endl;
-	Mat visOrig = gdal_driver::loadVIS("data/subset/TelopsDatasetCityVisible_20cm_Subset.img");
-	cerr << "loading LWIR image..." << endl;
-	vector<Mat> matx = gdal_driver::loadLWIR("data/subset/TelopsDatasetCityLWIR_Subset.img");
-	cerr << "loading training data..." << endl;
-	Mat trainingOrig = gdal_driver::loadTrainingData("data/subset/TrainingMap_ENVI_RAW_format.raw");
+bool verbose;
+
+int main(int argc, char **argv) {
+	Configuration conf;
+	config::parse(argv, argc, conf);
+	verbose = conf.verbose;
+
+	// Load images
+	log("loading VIS image...");
+	Mat visFull = gdal_driver::loadVIS(conf.pathVIS);
+	log("loading LWIR image...");
+	vector<Mat> lwirBands = gdal_driver::loadLWIR(conf.pathLWIR);
+	log("loading training data...");
+	Mat trainingFull = gdal_driver::loadTrainingData(conf.pathTraining);
 	
+	// Set ROI if exists
 	Rect roi;
-	roi.x = 940;
-	roi.y = 2619;
-	roi.width = 549;
-	roi.height = 675;
+	Mat vis = visFull, training = trainingFull;
+	if (conf.roiX > 0 || conf.roiY > 0 || conf.roiWidth > 0 || conf.roiHeight > 0) {
+		Rect roi(conf.roiX, conf.roiY, conf.roiWidth, conf.roiHeight);
+		vis = visFull(roi);
+		training = trainingFull(roi);
+	}
 
-	Mat vis = visOrig(roi);
-	Mat training = trainingOrig(roi);
-
+	log("training classifier...");
 	CvSVM *svm = classification::trainSVM(vis, training, description_vis::GCH);
 
+	log("segmenting image...");
 	list<Mat> segments = segmentation::segmentVISGrid(vis);
+
+	log("classifying image...");
 	Mat map = classification::predict(vis, segments, svm);
 
 	return 0;

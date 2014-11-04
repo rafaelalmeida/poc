@@ -20,6 +20,8 @@ extern "C" {
 
 using namespace std;
 
+extern bool verbose;
+
 void showImage(const char *winname, cv::Mat img, int delay=0);
 cv::Mat makeLandCoverMap(cv::Mat labels);
 cv::Mat floatImageTo8UC3Image(cv::Mat floatImage);
@@ -28,6 +30,12 @@ cv::Mat blend(cv::Mat M1, cv::Mat M2);
 
 Image *matToRawGray(cv::Mat gray);
 CImage *matToRawColor(cv::Mat color);
+
+inline int streq(const char *a, const char *b) {
+	return strcmp(a, b) == 0;
+}
+
+void log(const char *msg);
 
 /**
  * Small class to count things
