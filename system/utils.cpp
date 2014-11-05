@@ -129,3 +129,29 @@ std::vector<cv::Mat> upscaleLWIR(std::vector<cv::Mat> bands, cv::Size size) {
 
 	return upscaled;
 }
+
+cv::Mat averageLWIR(std::vector<cv::Mat> bands) {
+	Mat M = *bands.begin();
+	Mat avg(M.rows, M.cols, M.type());
+
+	for (auto&& band : bands) {
+		avg += band;
+	}
+
+	avg /= bands.size();
+
+	return avg;
+}
+
+cv::Mat equalizeLWIR(cv::Mat lwirAvg) {
+	Mat src = floatImageTo8UC3Image(lwirAvg);
+	Mat channels[3];
+	cv::split(src, channels);
+	src = channels[0];
+
+	Mat dst(src.rows, src.cols, src.type());
+
+	equalizeHist(src, dst);
+
+	return dst;
+}

@@ -46,6 +46,10 @@ int main(int argc, char **argv) {
 		training = trainingFull(roi);
 	}
 
+	Mat avg = averageLWIR(lwirBands);
+	Mat eq = equalizeLWIR(avg);
+	showImage("win", eq);
+
 	log("training classifier...");
 	CvSVM *svm = classification::trainSVM(vis, training, description_vis::GCH);
 
