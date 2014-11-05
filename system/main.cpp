@@ -58,9 +58,9 @@ int main(int argc, char **argv) {
 	Segmentation segmentation = segmentation::segmentVISGrid(vis);
 
 	// Setup classifier ensemble
-	Ensemble ensemble;
-	ensemble.addClassifier(Classifier(ClassifierEngine::SVM, vis, segmentation, description_vis::GCH));
-	ensemble.addClassifier(Classifier(ClassifierEngine::SVM, &lwir, segmentation, description_lwir::SIG));
+	Ensemble ensemble(MAJORITY_VOTING, segmentation);
+	ensemble.addClassifier(Classifier(ClassifierEngine::SVM, vis, description_vis::GCH));
+	ensemble.addClassifier(Classifier(ClassifierEngine::SVM, &lwir, description_lwir::SIG));
 
 	return 0;
 

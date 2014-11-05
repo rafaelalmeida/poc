@@ -55,23 +55,15 @@ cv::Mat classification::predict(cv::Mat image, Segmentation segmentation, CvSVM 
 	return map;
 }
 
-Classifier::Classifier(ClassifierEngine engine, cv::Mat vis, 
-		Segmentation& segmentation, 
-		cv::Mat (*descriptor)(cv::Mat, cv::Mat)) :
-
-			_segmentation(segmentation) {
+Classifier::Classifier(ClassifierEngine engine, cv::Mat vis,  
+		cv::Mat (*descriptor)(cv::Mat, cv::Mat)) {
 
 	this->_type = VIS;
-	this->_segmentation = segmentation;
 }
 
-Classifier::Classifier(ClassifierEngine engine, LWIRImage *lwir, 
-		Segmentation& segmentation, 
-		cv::Mat (*descriptor)(LWIRImage, cv::Mat)) :
-
-			_segmentation(segmentation) {
+Classifier::Classifier(ClassifierEngine engine, LWIRImage *lwir,  
+		cv::Mat (*descriptor)(LWIRImage, cv::Mat)) {
 
 	this->_type = LWIR;
-	this->_segmentation = segmentation;
 	this->_lwir = lwir;
 }

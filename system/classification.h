@@ -36,15 +36,14 @@ namespace classification {
 		// Members
 		cv::Mat _vis;
 		LWIRImage *_lwir = NULL;
-		Segmentation& _segmentation;
 
 		ClassifierType _type;
 		ClassifierEngine _engine;
 
 		public:
 			// Constructors
-			Classifier(ClassifierEngine engine, cv::Mat vis, Segmentation& segmentation, cv::Mat (*descriptor)(cv::Mat, cv::Mat));
-			Classifier(ClassifierEngine engine, LWIRImage *lwir, Segmentation& segmentation, cv::Mat (*descriptor)(LWIRImage, cv::Mat));
+			Classifier(ClassifierEngine engine, cv::Mat vis, cv::Mat (*descriptor)(cv::Mat, cv::Mat));
+			Classifier(ClassifierEngine engine, LWIRImage *lwir, cv::Mat (*descriptor)(LWIRImage, cv::Mat));
 
 			// Methods
 			void train();
