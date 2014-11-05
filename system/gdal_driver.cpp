@@ -2,7 +2,7 @@
 
 using namespace cv;
 
-std::vector<cv::Mat> gdal_driver::loadLWIR(const char* path) {
+LWIRImage gdal_driver::loadLWIR(const char* path) {
 	GDALAllRegister();
 	GDALDataset *data = (GDALDataset*) GDALOpen(path, GA_ReadOnly);
 
@@ -30,7 +30,7 @@ std::vector<cv::Mat> gdal_driver::loadLWIR(const char* path) {
 		delete scanline;
 	}
 
-	return matx;
+	return LWIRImage(matx);
 }
 
 Mat gdal_driver::loadVIS(const char* path) {

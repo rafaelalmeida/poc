@@ -10,8 +10,10 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+#include "models.h"
+
 namespace description_lwir {
-	cv::Mat spectralSignature(std::vector<cv::Mat> lwirChannels, cv::Mat mask);
+	cv::Mat spectralSignature(LWIRImage lwir, cv::Mat mask);
 }
 
 #endif

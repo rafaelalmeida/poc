@@ -127,60 +127,9 @@ void log(const char *msg) {
 	}
 }
 
-std::vector<cv::Mat> upscaleLWIR(std::vector<cv::Mat> bands, cv::Size size) {
-	vector<Mat> upscaled;
-	upscaled.reserve(bands.size());
-
-	int c = 0;
-	for (auto&& band : bands) {
-		Mat resized;
-		resize(band, resized, size);
-		upscaled.push_back(resized);
-	}
-
-	return upscaled;
-}
-
-cv::Mat averageLWIR(std::vector<cv::Mat> bands) {
-	Mat M = *bands.begin();
-	Mat avg(M.rows, M.cols, M.type());
-
-	for (auto&& band : bands) {
-		avg += band;
-	}
-
-	avg /= bands.size();
-
-	return avg;
-}
-
-cv::Mat equalizeLWIR(cv::Mat lwirAvg) {
-	Mat src = floatImageTo8UC3Image(lwirAvg);
-	Mat channels[3];
-	cv::split(src, channels);
-	src = channels[0];
-
-	Mat dst(src.rows, src.cols, src.type());
-
-	equalizeHist(src, dst);
-
-	return dst;
-}
-
 cv::Mat mergeVISandLWIR(cv::Mat vis, cv::Mat lwirAvg) {
 	Mat visGray(vis.rows, vis.cols, CV_8UC1);
 	cvtColor(vis, visGray, CV_BGR2GRAY);
 
 	return visGray;
-}
-
-std::vector<cv::Mat> cutLWIR(std::vector<cv::Mat> bands, cv::Rect roi) {
-	vector<Mat> newBands;
-	newBands.reserve(bands.size());
-
-	for (auto&& band : bands) {
-		newBands.push_back(band(roi));
-	}
-
-	return newBands;
 }

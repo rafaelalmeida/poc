@@ -28,11 +28,6 @@ cv::Mat floatImageTo8UC3Image(cv::Mat floatImage);
 cv::Mat onesLike(cv::Mat M);
 cv::Mat blend(cv::Mat M1, cv::Mat M2);
 
-std::vector<cv::Mat> upscaleLWIR(std::vector<cv::Mat> bands, cv::Size size);
-std::vector<cv::Mat> cutLWIR(std::vector<cv::Mat> bands, cv::Rect roi);
-cv::Mat averageLWIR(std::vector<cv::Mat> bands);
-cv::Mat equalizeLWIR(cv::Mat lwirAvg);
-
 cv::Mat mergeVISandLWIR(cv::Mat vis, cv::Mat lwirAvg);
 
 Image *matToRawGray(cv::Mat gray);
