@@ -19,6 +19,7 @@ class LWIRImage {
 		std::vector<cv::Mat> bands;
 
 		// Constructors
+		LWIRImage();
 		LWIRImage(std::vector<cv::Mat> bands);
 
 		// Methods

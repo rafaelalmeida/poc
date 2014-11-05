@@ -3,6 +3,7 @@
 using namespace cv;
 using namespace std;
 
+using namespace classification;
 using namespace segmentation;
 
 CvSVM *classification::trainSVM(cv::Mat image, cv::Mat trainingMap, cv::Mat (*descriptor)(cv::Mat, const std::list<cv::Mat>)) {
@@ -52,4 +53,25 @@ cv::Mat classification::predict(cv::Mat image, Segmentation segmentation, CvSVM 
 	}
 
 	return map;
+}
+
+Classifier::Classifier(ClassifierEngine engine, cv::Mat vis, 
+		Segmentation& segmentation, 
+		cv::Mat (*descriptor)(cv::Mat, cv::Mat)) :
+
+			_segmentation(segmentation) {
+
+	this->_type = VIS;
+	this->_segmentation = segmentation;
+}
+
+Classifier::Classifier(ClassifierEngine engine, LWIRImage *lwir, 
+		Segmentation& segmentation, 
+		cv::Mat (*descriptor)(LWIRImage, cv::Mat)) :
+
+			_segmentation(segmentation) {
+
+	this->_type = LWIR;
+	this->_segmentation = segmentation;
+	this->_lwir = lwir;
 }

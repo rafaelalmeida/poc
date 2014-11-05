@@ -3,6 +3,6 @@
 using namespace std;
 using namespace cv;
 
-Mat description_lwir::spectralSignature(LWIRImage lwir, Mat mask) {
+Mat description_lwir::SIG(LWIRImage lwir, Mat mask) {
 	return lwir.spectralSignature(mask);
 }

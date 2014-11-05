@@ -13,7 +13,7 @@
 #include "models.h"
 
 namespace description_lwir {
-	cv::Mat spectralSignature(LWIRImage lwir, cv::Mat mask);
+	cv::Mat SIG(LWIRImage lwir, cv::Mat mask);
 }
 
 #endif

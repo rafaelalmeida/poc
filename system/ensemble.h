@@ -20,7 +20,7 @@ class Ensemble {
 
 	public:
 		// Methods
-		void addClassifier(Classifier& c);
+		void addClassifier(Classifier c);
 };
 
 #endif
