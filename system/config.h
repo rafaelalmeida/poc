@@ -2,6 +2,7 @@
 #define CONFIG_H
 
 #include "utils.h"
+#include "constants.h"
 
 #define MAX_PATH 256
 
@@ -19,6 +20,9 @@ typedef struct {
 
 	// Verbosity
 	bool verbose = false;
+
+	// Segmentation options
+	SegmentationMode segmentationMode;
 } Configuration;
 
 namespace config {

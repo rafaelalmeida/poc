@@ -33,6 +33,10 @@ int main(int argc, char **argv) {
 	log("loading training data...");
 	Mat trainingFull = gdal_driver::loadTrainingData(conf.pathTraining);
 	
+	// Upscale LWIR image
+	log("upscaling LWIR...");
+	upscaleLWIR(lwirBands, visFull.size());
+
 	// Set ROI if exists
 	Rect roi;
 	Mat vis = visFull, training = trainingFull;
@@ -50,6 +54,10 @@ int main(int argc, char **argv) {
 
 	log("classifying image...");
 	Mat map = classification::predict(vis, segments, svm);
+
+	log("calculating kappa...");
+	float k = statistics::kappa(training, map);
+	cout << k << endl;
 
 	return 0;
 }

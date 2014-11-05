@@ -115,3 +115,17 @@ void log(const char *msg) {
 		cerr << msg << endl;
 	}
 }
+
+std::vector<cv::Mat> upscaleLWIR(std::vector<cv::Mat> bands, cv::Size size) {
+	vector<Mat> upscaled;
+	upscaled.reserve(bands.size());
+
+	int c = 0;
+	for (auto&& band : bands) {
+		Mat resized;
+		resize(band, resized, size);
+		upscaled.push_back(resized);
+	}
+
+	return upscaled;
+}

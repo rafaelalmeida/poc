@@ -12,6 +12,10 @@
 
 #include "utils.h"
 
+enum SegmentationMode {
+	GRID
+};
+
 namespace segmentation {
 	std::list<cv::Mat> segmentLWIRMeanShift(cv::Mat M);
 	std::list<cv::Mat> segmentLWIRCanny(cv::Mat M);

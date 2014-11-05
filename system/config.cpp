@@ -34,6 +34,15 @@ void config::parse(char **argv, int argc, Configuration &config) {
 			config.verbose = true;
 		}
 
+		// Segmentation mode
+		else if (streq("--segmentation-mode", argv[c])) {
+			char theMode[512];
+			strcpy(theMode, argv[++c]);
+			if (streq("GRID", theMode)) {
+				config.segmentationMode = GRID;
+			}
+		}
+
 		c++;
 	}
 }

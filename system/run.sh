@@ -10,4 +10,5 @@
 	--roiX 940 \
 	--roiY 2619 \
 	--roiW 549 \
-	--roiH 675
+	--roiH 675 \
+	--segmentation-mode GRID
