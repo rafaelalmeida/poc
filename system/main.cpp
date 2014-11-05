@@ -19,6 +19,8 @@
 using namespace std;
 using namespace cv;
 
+using namespace segmentation;
+
 bool verbose;
 
 int main(int argc, char **argv) {
@@ -54,7 +56,7 @@ int main(int argc, char **argv) {
 	CvSVM *svm = classification::trainSVM(vis, training, description_vis::GCH);
 
 	log("segmenting image...");
-	list<Mat> segments = segmentation::segmentVISGrid(vis);
+	Segmentation segments = segmentation::segmentVISGrid(vis);
 
 	log("classifying image...");
 	Mat map = classification::predict(vis, segments, svm);

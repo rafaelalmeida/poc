@@ -3,7 +3,9 @@
 using namespace cv;
 using namespace std;
 
-list<Mat> segmentation::segmentLWIRMeanShift(Mat M) {
+using namespace segmentation;
+
+Segmentation segmentation::segmentLWIRMeanShift(Mat M) {
 	// Convert to 8UC3 image
 	Mat img8uc3 = floatImageTo8UC3Image(M);
 
@@ -11,10 +13,10 @@ list<Mat> segmentation::segmentLWIRMeanShift(Mat M) {
 	Mat res;
 	pyrMeanShiftFiltering(img8uc3, res, 9, 9, 0);
 
-	return makeSegmentMasksFromPosterizedImage(res);
+	return Segmentation(makeSegmentMasksFromPosterizedImage(res));
 }
 
-list<Mat> segmentation::segmentLWIRCanny(Mat M) {
+Segmentation segmentation::segmentLWIRCanny(Mat M) {
 	list<Mat> ret;
 
 	Mat conv = floatImageTo8UC3Image(M);
@@ -23,10 +25,10 @@ list<Mat> segmentation::segmentLWIRCanny(Mat M) {
 	int thres = 10;
 	Canny(conv, edges, thres, 3*thres, 3);
 	
-	return ret;
+	return Segmentation(ret);
 }
 
-std::list<cv::Mat> segmentation::segmentVISGrid(cv::Mat M) {
+Segmentation segmentation::segmentVISGrid(cv::Mat M) {
 	const int GRID_SIZE = 32;
 
 	list<Mat> segments;
@@ -44,7 +46,7 @@ std::list<cv::Mat> segmentation::segmentVISGrid(cv::Mat M) {
 		}
 	}
 
-	return segments;
+	return Segmentation(segments);
 }
 
 float segmentation::getSegmentLabel(Mat classificationMap, Mat mask) {
@@ -103,6 +105,30 @@ cv::Mat segmentation::representSegmentation(std::list<cv::Mat> masks) {
 
 	Mat repr(M.rows, M.cols, CV_8UC3);
 	for (list<Mat>::iterator it = masks.begin(); it != masks.end(); ++it) {
+		Mat clone = it->clone();
+		vector<vector<Point> > contours;
+		findContours(clone, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+
+		drawContours(repr, contours, -1, Scalar(0, 0, 255));
+	}
+
+	return repr;
+}
+
+Segmentation::Segmentation(list<Mat> masks) {
+	this->_masks = masks;
+}
+
+list<Mat> Segmentation::getSegments() {
+	return _masks;
+}
+
+cv::Mat Segmentation::representation() {
+	assert(_masks.size() > 0);
+	Mat M = *_masks.begin();
+
+	Mat repr(M.rows, M.cols, CV_8UC3);
+	for (list<Mat>::iterator it = _masks.begin(); it != _masks.end(); ++it) {
 		Mat clone = it->clone();
 		vector<vector<Point> > contours;
 		findContours(clone, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);

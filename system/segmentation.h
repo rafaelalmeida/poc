@@ -17,10 +17,18 @@ enum SegmentationMode {
 };
 
 namespace segmentation {
-	std::list<cv::Mat> segmentLWIRMeanShift(cv::Mat M);
-	std::list<cv::Mat> segmentLWIRCanny(cv::Mat M);
+	class Segmentation {
+		std::list<cv::Mat> _masks;
 
-	std::list<cv::Mat> segmentVISGrid(cv::Mat M);
+		public:
+			Segmentation(std::list<cv::Mat> masks);
+			std::list<cv::Mat> getSegments();
+			cv::Mat representation();
+	};
+
+	Segmentation segmentLWIRMeanShift(cv::Mat M);
+	Segmentation segmentLWIRCanny(cv::Mat M);
+	Segmentation segmentVISGrid(cv::Mat M);
 
 	float getSegmentLabel(cv::Mat classificationMap, cv::Mat mask);
 	std::list<cv::Mat> makeSegmentMasksFromPosterizedImage(cv::Mat posterized);

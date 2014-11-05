@@ -10,6 +10,17 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+#include "classification.h"
 
+using namespace classification;
+
+class Ensemble {
+	// Members
+	std::list<Classifier> classifiers;
+
+	public:
+		// Methods
+		void addClassifier(Classifier& c);
+};
 
 #endif
