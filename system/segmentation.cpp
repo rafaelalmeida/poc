@@ -22,7 +22,6 @@ list<Mat> segmentation::segmentLWIRCanny(Mat M) {
 	Mat edges;
 	int thres = 10;
 	Canny(conv, edges, thres, 3*thres, 3);
-	showImage("img", edges);
 	
 	return ret;
 }

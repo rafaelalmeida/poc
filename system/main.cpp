@@ -32,10 +32,10 @@ int main(int argc, char **argv) {
 	vector<Mat> lwirBands = gdal_driver::loadLWIR(conf.pathLWIR);
 	log("loading training data...");
 	Mat trainingFull = gdal_driver::loadTrainingData(conf.pathTraining);
-	
+
 	// Upscale LWIR image
 	log("upscaling LWIR...");
-	upscaleLWIR(lwirBands, visFull.size());
+	vector<Mat> lwir = upscaleLWIR(lwirBands, visFull.size());
 
 	// Set ROI if exists
 	Rect roi;
@@ -44,11 +44,18 @@ int main(int argc, char **argv) {
 		Rect roi(conf.roiX, conf.roiY, conf.roiWidth, conf.roiHeight);
 		vis = visFull(roi);
 		training = trainingFull(roi);
+
+		log("applying ROI to LWIR...");
+		lwir = cutLWIR(lwir, roi);
 	}
 
-	Mat avg = averageLWIR(lwirBands);
-	Mat eq = equalizeLWIR(avg);
-	showImage("win", eq);
+	log("blending VIS and LWIR...");
+	Mat lwirRep = equalizeLWIR(averageLWIR(lwir));
+	Mat dest;
+	cvtColor(lwirRep, dest, CV_GRAY2BGR);
+	Mat blended = blend(vis, dest);
+
+	showImage(blended);
 
 	log("training classifier...");
 	CvSVM *svm = classification::trainSVM(vis, training, description_vis::GCH);

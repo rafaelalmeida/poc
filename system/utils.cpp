@@ -19,9 +19,20 @@ Mat floatImageTo8UC3Image(Mat floatImage) {
 	return ret;
 }
 
-void showImage(const char *winname, Mat img, int delay) {
+void showImage(Mat img, float scale, const char *winname, int delay) {
+	if (winname == NULL) {
+		winname = "win";
+	}
+
+	Mat display = img;
+	if (scale != 1.0) {
+		Mat aux;
+		resize(display, aux, aux.size(), scale, scale);
+		display = aux;
+	}
+
 	namedWindow(winname);
-	imshow(winname, img);
+	imshow(winname, display);
 	waitKey(delay);
 }
 
@@ -154,4 +165,22 @@ cv::Mat equalizeLWIR(cv::Mat lwirAvg) {
 	equalizeHist(src, dst);
 
 	return dst;
+}
+
+cv::Mat mergeVISandLWIR(cv::Mat vis, cv::Mat lwirAvg) {
+	Mat visGray(vis.rows, vis.cols, CV_8UC1);
+	cvtColor(vis, visGray, CV_BGR2GRAY);
+
+	return visGray;
+}
+
+std::vector<cv::Mat> cutLWIR(std::vector<cv::Mat> bands, cv::Rect roi) {
+	vector<Mat> newBands;
+	newBands.reserve(bands.size());
+
+	for (auto&& band : bands) {
+		newBands.push_back(band(roi));
+	}
+
+	return newBands;
 }
