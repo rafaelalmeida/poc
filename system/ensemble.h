@@ -11,6 +11,7 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #include "classification.h"
+#include "logging.h"
 #include "segmentation.h"
 
 using namespace classification;
@@ -32,6 +33,8 @@ class Ensemble {
 
 	CoverMap _training;
 
+	Logger *_logger = NULL;
+
 	public:
 		// Constructors
 		Ensemble(ConsensusType t, Segmentation& s, CoverMap training);
@@ -43,6 +46,7 @@ class Ensemble {
 		void addClassifier(Classifier* c);
 		void train();
 		CoverMap classify();
+		void setLogger(Logger *logger);
 };
 
 #endif

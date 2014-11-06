@@ -12,3 +12,4 @@
 	--roiW 549 \
 	--roiH 675 \
 	--segmentation-mode GRID
+	--log-path scratch/logs

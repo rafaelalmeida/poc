@@ -12,6 +12,7 @@
 #include "description_vis.h"
 #include "ensemble.h"
 #include "gdal_driver.h"
+#include "logging.h"
 #include "models.h"
 #include "segmentation.h"
 #include "statistics.h"
@@ -29,6 +30,12 @@ int main(int argc, char **argv) {
 	Configuration conf;
 	config::parse(argv, argc, conf);
 	verbose = conf.verbose;
+
+	// Setup logger
+	Logger *logger = NULL;
+	if (conf.logEnabled) {
+		logger = new Logger(conf.logPath);
+	}
 
 	// Load images
 	log("loading VIS image...");
@@ -60,8 +67,10 @@ int main(int argc, char **argv) {
 	// Setup classifier ensemble
 	CoverMap tMap(training);
 	Ensemble ensemble(MAJORITY_VOTING, segmentation, tMap);
+	ensemble.setLogger(logger);
+	
 	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, vis, new GCHDescriptor()));
-	//ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, &lwir, new SIGDescriptor()));
+	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, &lwir, new SIGDescriptor()));
 
 	log("training classifier...");
 	ensemble.train();
@@ -71,6 +80,9 @@ int main(int argc, char **argv) {
 
 	Mat coloredMap = classification.coloredMap();
 	showImage(blend(vis, coloredMap));
+
+	// Destroy logger
+	delete logger;
 
 	return 0;
 

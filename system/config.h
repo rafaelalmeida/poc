@@ -23,6 +23,11 @@ typedef struct {
 
 	// Segmentation options
 	SegmentationMode segmentationMode;
+
+	// Log options
+	bool logEnabled = false;
+	char logPath[MAX_PATH];
+	
 } Configuration;
 
 namespace config {

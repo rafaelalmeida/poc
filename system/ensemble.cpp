@@ -17,6 +17,10 @@ void Ensemble::addClassifier(Classifier *c) {
 	classifiers.push_back(c);
 }
 
+void Ensemble::setLogger(Logger *logger) {
+	_logger = logger;
+}
+
 void Ensemble::train() {
 	for (auto c : classifiers) {
 		c->train(_training);

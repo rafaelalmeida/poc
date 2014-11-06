@@ -43,6 +43,12 @@ void config::parse(char **argv, int argc, Configuration &config) {
 			}
 		}
 
+		// Log
+		else if (streq("--log-path", argv[c])) {
+			strcpy(config.logPath, argv[++c]);
+			config.logEnabled = true;
+		}
+
 		c++;
 	}
 }
