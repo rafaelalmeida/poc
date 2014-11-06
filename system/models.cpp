@@ -10,10 +10,18 @@ cv::Mat LWIRImage::spectralSignature(cv::Mat mask) {
 	int bands = this->bands.size();
 	Mat sig(bands, 1, CV_32FC1);
 
-	int c = 1;
+	int c = 0;
 	for (auto band : this->bands) {
-		Mat roi = band & mask;
-		sig.at<float>(c, 1) = mean(roi)[0];
+		Mat cropped = band(this->roi);
+		assert((cropped.size() == mask.size()) && "Mask is not the correct size");
+
+		Mat floatMask;
+		mask.convertTo(floatMask, CV_32FC1);
+		Mat normalizedFloatMask = floatMask / 255;
+
+		Mat theRoi = cropped & normalizedFloatMask;
+
+		sig.at<float>(c, 0) = mean(theRoi)[0];
 		c++;
 	}
 
@@ -29,24 +37,13 @@ void LWIRImage::upscale(cv::Size size) {
 	}
 }
 
-LWIRImage LWIRImage::operator()(cv::Rect roi) {
-	vector<Mat> newBands;
-	newBands.reserve(bands.size());
-
-	for (auto band : bands) {
-		Mat newBand = band.clone();
-		newBands.push_back(newBand(roi));
-	}
-
-	return LWIRImage(newBands);
-}
-
 cv::Mat LWIRImage::average() {
-	Mat M = *(this->bands.begin());
+	Mat full = *(this->bands.begin());
+	Mat M = full(roi);
 	Mat avg(M.rows, M.cols, M.type());
 
 	for (auto&& band : this->bands) {
-		avg += band;
+		avg += band(roi);
 	}
 
 	avg /= this->bands.size();
@@ -65,4 +62,41 @@ cv::Mat LWIRImage::equalized() {
 	equalizeHist(src, dst);
 
 	return dst;
+}
+
+int LWIRImage::numBands() {
+	return this->bands.size();
+}
+
+void LWIRImage::setRoi(cv::Rect roi) {
+	this->roi = roi;
+}
+
+CoverMap::CoverMap(Mat training) {
+	_map = training;
+}
+
+cv::Mat CoverMap::asMat() {
+	return _map;
+}
+
+float CoverMap::getRegionClass(cv::Mat mask) {
+	assert(_map.type() == CV_8UC1);
+	assert(mask.type() == CV_8UC1);
+	assert((_map.rows == mask.rows) && (_map.cols = mask.cols));
+
+	typedef unsigned char uchar;
+
+	Counter<uchar> counter;
+
+	for (int row = 0; row < _map.rows; row++) {
+		for (int col = 0; col < _map.cols; col++) {
+			if (mask.at<uchar>(row, col)) {
+				uchar val = _map.at<uchar>(row, col);
+				counter.inc(val);
+			}
+		}
+	}
+
+	return (float) counter.top();
 }

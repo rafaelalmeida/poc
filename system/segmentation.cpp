@@ -13,7 +13,7 @@ Segmentation segmentation::segmentLWIRMeanShift(Mat M) {
 	Mat res;
 	pyrMeanShiftFiltering(img8uc3, res, 9, 9, 0);
 
-	return Segmentation(makeSegmentMasksFromPosterizedImage(res));
+	return Segmentation(getColorBlobs(res));
 }
 
 Segmentation segmentation::segmentLWIRCanny(Mat M) {
@@ -70,7 +70,7 @@ float segmentation::getSegmentLabel(Mat classificationMap, Mat mask) {
 	return (float) counter.top();
 }
 
-std::list<cv::Mat> segmentation::makeSegmentMasksFromPosterizedImage(cv::Mat posterized) {
+std::list<cv::Mat> segmentation::getColorBlobs(cv::Mat posterized) {
 	list<Mat> segments;
 
 	Mat clone = posterized.clone();
@@ -97,22 +97,6 @@ std::list<cv::Mat> segmentation::makeSegmentMasksFromPosterizedImage(cv::Mat pos
 	}
 
 	return segments;
-}
-
-cv::Mat segmentation::representSegmentation(std::list<cv::Mat> masks) {
-	assert(masks.size() > 0);
-	Mat M = *masks.begin();
-
-	Mat repr(M.rows, M.cols, CV_8UC3);
-	for (list<Mat>::iterator it = masks.begin(); it != masks.end(); ++it) {
-		Mat clone = it->clone();
-		vector<vector<Point> > contours;
-		findContours(clone, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
-
-		drawContours(repr, contours, -1, Scalar(0, 0, 255));
-	}
-
-	return repr;
 }
 
 Segmentation::Segmentation(list<Mat> masks) {

@@ -50,75 +50,25 @@ int main(int argc, char **argv) {
 		vis = visFull(roi);
 		training = trainingFull(roi);
 
-		//log("applying ROI to LWIR...");
-		//lwir = lwir(roi);
+		log("applying ROI to LWIR...");
+		lwir.setRoi(roi);
 	}
 
 	log("segmenting image...");
 	Segmentation segmentation = segmentation::segmentVISGrid(vis);
 
 	// Setup classifier ensemble
-	Ensemble ensemble(MAJORITY_VOTING, segmentation);
-	ensemble.addClassifier(Classifier(ClassifierEngine::SVM, vis, description_vis::GCH));
-	ensemble.addClassifier(Classifier(ClassifierEngine::SVM, &lwir, description_lwir::SIG));
-
-	return 0;
-
-
 	log("training classifier...");
-	CvSVM *svm = classification::trainSVM(vis, training, description_vis::GCH);
+	CoverMap tMap(training);
+	Ensemble ensemble(MAJORITY_VOTING, segmentation, tMap);
+	ensemble.addClassifier(Classifier(ClassifierEngine::SVM, vis, new GCHDescriptor()));
+	ensemble.addClassifier(Classifier(ClassifierEngine::SVM, &lwir, new SIGDescriptor()));
 
-	log("classifying image...");
-	Mat map = classification::predict(vis, segmentation, svm);
-
-	log("calculating kappa...");
-	float k = statistics::kappa(training, map);
-	cout << k << endl;
+	ensemble.train();
 
 	return 0;
-}
 
-int main2(int argc, char **argv) {
-	Configuration conf;
-	config::parse(argv, argc, conf);
-	verbose = conf.verbose;
-
-	// Load images
-	log("loading VIS image...");
-	Mat visFull = gdal_driver::loadVIS(conf.pathVIS);
-	log("loading LWIR image...");
-	LWIRImage lwir = gdal_driver::loadLWIR(conf.pathLWIR);
-	log("loading training data...");
-	Mat trainingFull = gdal_driver::loadTrainingData(conf.pathTraining);
-
-	// Upscale LWIR image
-	log("upscaling LWIR...");
-	lwir.upscale(visFull.size());
-
-	// Set ROI if exists
-	Rect roi;
-	Mat vis = visFull, training = trainingFull;
-	if (conf.roiX > 0 || conf.roiY > 0 || conf.roiWidth > 0 || conf.roiHeight > 0) {
-		roi = Rect(conf.roiX, conf.roiY, conf.roiWidth, conf.roiHeight);
-		vis = visFull(roi);
-		training = trainingFull(roi);
-
-		log("applying ROI to LWIR...");
-		lwir = lwir(roi);
-	}
-
-	log("training classifier...");
-	CvSVM *svm = classification::trainSVM(vis, training, description_vis::GCH);
-
-	log("segmenting image...");
-	Segmentation segments = segmentation::segmentVISGrid(vis);
-
-	log("classifying image...");
-	Mat map = classification::predict(vis, segments, svm);
-
-	log("calculating kappa...");
+	/*log("calculating kappa...");
 	float k = statistics::kappa(training, map);
-	cout << k << endl;
-
-	return 0;
+	cout << k << endl;*/
 }

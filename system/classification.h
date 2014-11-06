@@ -12,15 +12,16 @@
 #include <opencv2/ml/ml.hpp>
 
 #include "classification.h"
+#include "description.h"
 #include "description_vis.h"
 #include "description_lwir.h"
 #include "models.h"
 #include "segmentation.h"
+#include "utils.h"
 
 using namespace segmentation;
 
 namespace classification {
-	CvSVM *trainSVM(cv::Mat image, cv::Mat trainingMap, cv::Mat (*descriptor)(cv::Mat, const std::list<cv::Mat>));
 	cv::Mat predict(cv::Mat image, segmentation::Segmentation segmentation, CvSVM *classifier);
 
 	enum ClassifierType {
@@ -37,16 +38,18 @@ namespace classification {
 		cv::Mat _vis;
 		LWIRImage *_lwir = NULL;
 
+		Descriptor *_descriptor;
+
 		ClassifierType _type;
 		ClassifierEngine _engine;
 
 		public:
 			// Constructors
-			Classifier(ClassifierEngine engine, cv::Mat vis, cv::Mat (*descriptor)(cv::Mat, cv::Mat));
-			Classifier(ClassifierEngine engine, LWIRImage *lwir, cv::Mat (*descriptor)(LWIRImage, cv::Mat));
+			Classifier(ClassifierEngine engine, cv::Mat vis, Descriptor *descriptor);
+			Classifier(ClassifierEngine engine, LWIRImage *lwir, Descriptor *descriptor);
 
 			// Methods
-			void train();
+			void train(CoverMap training);
 			cv::Mat classify();
 	};
 }

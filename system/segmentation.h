@@ -10,6 +10,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+#include "models.h"
 #include "utils.h"
 
 enum SegmentationMode {
@@ -31,7 +32,7 @@ namespace segmentation {
 	Segmentation segmentVISGrid(cv::Mat M);
 
 	float getSegmentLabel(cv::Mat classificationMap, cv::Mat mask);
-	std::list<cv::Mat> makeSegmentMasksFromPosterizedImage(cv::Mat posterized);
+	std::list<cv::Mat> getColorBlobs(cv::Mat posterized);
 	cv::Mat representSegmentation(std::list<cv::Mat> masks);
 }
 

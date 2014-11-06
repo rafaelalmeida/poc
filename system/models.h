@@ -17,6 +17,7 @@ class LWIRImage {
 	public:
 		// Members
 		std::vector<cv::Mat> bands;
+		cv::Rect roi;
 
 		// Constructors
 		LWIRImage();
@@ -25,12 +26,21 @@ class LWIRImage {
 		// Methods
 		cv::Mat average();
 		cv::Mat equalized();
+		int numBands();
 		cv::Mat spectralSignature(cv::Mat mask);
 		void upscale(cv::Size size);
+		void setRoi(cv::Rect roi);
 
-		// Operators
-		LWIRImage operator()(cv::Rect roi);
+};
 
+class CoverMap {
+	cv::Mat _map;
+
+	public:
+		CoverMap(cv::Mat training);
+
+		cv::Mat asMat();
+		float getRegionClass(cv::Mat mask);
 };
 
 #endif

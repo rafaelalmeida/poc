@@ -73,7 +73,7 @@ cv::Mat makeLandCoverMap(cv::Mat labels) {
 	Mat labelsClone = labels.clone();
 	Mat map(labels.rows, labels.cols, CV_8UC3);
 
-	list<Mat> regions = segmentation::makeSegmentMasksFromPosterizedImage(labels);
+	list<Mat> regions = segmentation::getColorBlobs(labels);
 	for (list<Mat>::iterator it = regions.begin(); it != regions.end(); ++it) {
 		vector<Mat> contours;
 		findContours(*it, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);

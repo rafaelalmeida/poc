@@ -26,12 +26,16 @@ class Ensemble {
 	ConsensusType _consensusType;
 	Segmentation& _segmentation;
 
+	CoverMap _training;
+
 	public:
 		// Constructors
-		Ensemble(ConsensusType t, Segmentation& s);
+		Ensemble(ConsensusType t, Segmentation& s, CoverMap training);
 
 		// Methods
 		void addClassifier(Classifier c);
+		void train();
+		void classify();
 };
 
 #endif
