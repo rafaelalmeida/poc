@@ -49,6 +49,7 @@ class Counter {
 	public:
 		void inc(T item);
 		T top();
+		std::map<T, int> getCounts();
 };
 
 template <typename T>
@@ -73,6 +74,11 @@ T Counter<T>::top() {
 	}
 
 	return cMax;
+}
+
+template <typename T>
+std::map<T, int> Counter<T>::getCounts() {
+	return _map;
 }
 
 #endif

@@ -28,19 +28,19 @@ CoverMap Ensemble::classify() {
 	list<Mat> classifiedSegments;
 
 	// Runs all classifiers for each segment
-	int c = 1;
+	int i = 1;
 	int n = _segmentation.getSegments().size();
 	for (auto mask : _segmentation.getSegments()) {
-		cerr << "classifying segment " << c << " of " << n << endl;
 		// Gets the opinion of all classifiers for this segment
 		vector<Mat> classifications;
 		classifications.reserve(classifiers.size());
 		for (auto c : classifiers) {
-			classifications.push_back(c->classify(mask));
+			Mat classification = c->classify(mask);
+			classifications.push_back(classification);
 		}
 
 		// Initializes the consensus matrix for this segment
-		Mat consensus(mapSize, CV_8UC1);
+		Mat consensus = Mat::zeros(mapSize, CV_8UC1);
 
 		if (_consensusType == MAJORITY_VOTING) {
 			consensus += classifications[0];
@@ -50,11 +50,11 @@ CoverMap Ensemble::classify() {
 		}
 
 		classifiedSegments.push_back(consensus);
-		c++;
+		i++;
 	}
 
 	// Builds the map from the segments
-	Mat theMap(mapSize, CV_8UC1);
+	Mat theMap = Mat::zeros(mapSize, CV_8UC1);
 	for (auto seg : classifiedSegments) {
 		theMap += seg;
 	}

@@ -143,3 +143,15 @@ cv::Mat CoverMap::coloredMap() {
 
 	return map;
 }
+
+std::map<unsigned char, int> CoverMap::getClassesCounts() {
+	Counter<unsigned char> counter;
+
+	for (int row = 0; row < _map.rows; row++) {
+		for (int col = 0; col < _map.cols; col++) {
+			counter.inc(_map.at<unsigned char>(row, col));
+		}
+	}
+
+	return counter.getCounts();
+}

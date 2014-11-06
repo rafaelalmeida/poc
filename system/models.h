@@ -28,10 +28,10 @@ class LWIRImage {
 		// Methods
 		cv::Mat average();
 		cv::Mat equalized();
-		int numBands();
 		cv::Mat spectralSignature(cv::Mat mask);
-		void upscale(cv::Size size);
+		int numBands();
 		void setRoi(cv::Rect roi);
+		void upscale(cv::Size size);
 };
 
 class CoverMap {
@@ -41,8 +41,9 @@ class CoverMap {
 		CoverMap(cv::Mat training);
 
 		cv::Mat asMat();
-		float getRegionClass(cv::Mat mask);
 		cv::Mat coloredMap();
+		float getRegionClass(cv::Mat mask);
+		std::map<unsigned char, int> getClassesCounts();
 };
 
 #endif

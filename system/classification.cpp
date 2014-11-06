@@ -110,6 +110,6 @@ Mat Classifier::classify(cv::Mat mask) {
 	// Fill the matrix
 	Mat classification = Mat::zeros(mask.size(), CV_8UC1);
 	classification += theClass * (mask / 255);
-
+	
 	return classification;
 }
