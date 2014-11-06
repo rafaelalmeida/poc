@@ -20,9 +20,13 @@ enum ConsensusType {
 	MAJORITY_VOTING
 };
 
+/**
+ * Defines a classifier ensemble. Classifiers are automatically destroyed
+ * when Ensemble is destroyed.
+ */
 class Ensemble {
 	// Members
-	std::list<Classifier> classifiers;
+	std::list<Classifier*> classifiers;
 	ConsensusType _consensusType;
 	Segmentation& _segmentation;
 
@@ -32,8 +36,11 @@ class Ensemble {
 		// Constructors
 		Ensemble(ConsensusType t, Segmentation& s, CoverMap training);
 
+		// Destructors
+		~Ensemble();
+
 		// Methods
-		void addClassifier(Classifier c);
+		void addClassifier(Classifier* c);
 		void train();
 		void classify();
 };

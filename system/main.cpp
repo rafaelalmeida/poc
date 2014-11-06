@@ -58,12 +58,12 @@ int main(int argc, char **argv) {
 	Segmentation segmentation = segmentation::segmentVISGrid(vis);
 
 	// Setup classifier ensemble
-	log("training classifier...");
 	CoverMap tMap(training);
 	Ensemble ensemble(MAJORITY_VOTING, segmentation, tMap);
-	ensemble.addClassifier(Classifier(ClassifierEngine::SVM, vis, new GCHDescriptor()));
-	ensemble.addClassifier(Classifier(ClassifierEngine::SVM, &lwir, new SIGDescriptor()));
+	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, vis, new GCHDescriptor()));
+	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, &lwir, new SIGDescriptor()));
 
+	log("training classifier...");
 	ensemble.train();
 
 	return 0;

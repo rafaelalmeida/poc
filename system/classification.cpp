@@ -18,16 +18,22 @@ cv::Mat classification::predict(cv::Mat image, Segmentation segmentation, CvSVM 
 	return map;
 }
 
-Classifier::Classifier(ClassifierEngine engine, cv::Mat vis, Descriptor *descriptor) {
-	this->_type = VIS;
-	this->_vis = vis;
-	this->_descriptor = descriptor;
+Classifier::Classifier(ClassifierEngine engine, cv::Mat vis, Descriptor *descriptor)
+    : _engine(engine),
+      _vis(vis),
+      _descriptor(descriptor),
+      _type(VIS) {
 }
 
-Classifier::Classifier(ClassifierEngine engine, LWIRImage *lwir,  Descriptor *descriptor) {
-	this->_type = LWIR;
-	this->_lwir = lwir;
-	this->_descriptor = descriptor;
+Classifier::Classifier(ClassifierEngine engine, LWIRImage *lwir, Descriptor *descriptor)
+    : _engine(engine),
+      _lwir(lwir),
+      _descriptor(descriptor),
+      _type(LWIR) {
+}
+
+Classifier::~Classifier() {
+	delete _descriptor;
 }
 
 void Classifier::train(CoverMap training) {
@@ -58,18 +64,25 @@ void Classifier::train(CoverMap training) {
 	if (_type == VIS) {
 		features = _descriptor->describe(_vis, validSegments);
 	}
-	else {
+	else if (_type == LWIR) {
 		features = _descriptor->describe(*_lwir, validSegments);
 	}
+	else {
+		assert(false && "Unknown Classifier type");
+	}
 
-	// Instantiate and train SVM
-	CvSVM *SVM = new CvSVM();
-	CvSVMParams *params = new CvSVMParams();
-    params->svm_type    = CvSVM::C_SVC;
-    params->kernel_type = CvSVM::LINEAR;
-    params->term_crit   = cvTermCriteria(CV_TERMCRIT_ITER, 100, 1e-6);
+	// Train the correct classifier
+	if (_engine == SVM) {
+		CvSVMParams params;
+	    params.svm_type    = CvSVM::C_SVC;
+	    params.kernel_type = CvSVM::LINEAR;
+	    params.term_crit   = cvTermCriteria(CV_TERMCRIT_ITER, 100, 1e-6);
 
-    SVM->train(features, labelsMat, Mat(), Mat(), *params);
+	    _svm.train(features, labelsMat, Mat(), Mat(), params);
+	}
+	else {
+		assert(false && "Unknown classifier engine");
+	}
 }
 
 Mat Classifier::classify() {

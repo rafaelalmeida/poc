@@ -33,6 +33,10 @@ namespace classification {
 		SVM
 	};
 
+	/**
+	 * Defines a classifier. Descriptors are automatically destroyed when
+	 * Classifier is destroyed.
+	 */
 	class Classifier {
 		// Members
 		cv::Mat _vis;
@@ -43,10 +47,15 @@ namespace classification {
 		ClassifierType _type;
 		ClassifierEngine _engine;
 
+		CvSVM _svm;
+
 		public:
 			// Constructors
 			Classifier(ClassifierEngine engine, cv::Mat vis, Descriptor *descriptor);
 			Classifier(ClassifierEngine engine, LWIRImage *lwir, Descriptor *descriptor);
+
+			// Destructors
+			~Classifier();
 
 			// Methods
 			void train(CoverMap training);

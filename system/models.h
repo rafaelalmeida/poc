@@ -1,15 +1,17 @@
 #ifndef MODELS_H
 #define MODELS_H
 
-#include <stdio.h>
-#include <iostream>
 #include <cstdint>
+#include <fstream>
+#include <iostream>
 #include <list>
 #include <map>
+#include <stdio.h>
+
 #include <gdal_priv.h>
 #include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #include "utils.h"
 
@@ -30,7 +32,6 @@ class LWIRImage {
 		cv::Mat spectralSignature(cv::Mat mask);
 		void upscale(cv::Size size);
 		void setRoi(cv::Rect roi);
-
 };
 
 class CoverMap {
