@@ -33,8 +33,8 @@ CoverMap Ensemble::classify() {
 	list<Mat> classifiedSegments;
 
 	// Saves individual classifications for debugging
-	vector<Mat> classifications(classifiers.size());
-	for (auto& c : classifications) {
+	_classifications.resize(classifiers.size());
+	for (auto& c : _classifications) {
 		c = Mat::zeros(mapSize, CV_8UC1);
 	}
 
@@ -50,7 +50,7 @@ CoverMap Ensemble::classify() {
 			opinions.push_back(classification);
 
 			// Save this segment individually for debugging
-			classifications[i] += classification;
+			_classifications[i] += classification;
 
 			i++;
 		}
@@ -68,17 +68,6 @@ CoverMap Ensemble::classify() {
 		classifiedSegments.push_back(consensus);
 	}
 
-	// Saves debugging images, if applies
-	int i = 1;
-	for (auto& c : classifications) {
-		char path[16];
-		sprintf(path, "classification_%d", i);
-
-		_logger->saveImage(path, CoverMap(c).coloredMap());
-
-		i++;
-	}
-
 	// Builds the map from the segments
 	Mat theMap = Mat::zeros(mapSize, CV_8UC1);
 	for (auto seg : classifiedSegments) {
@@ -86,4 +75,8 @@ CoverMap Ensemble::classify() {
 	}
 
 	return CoverMap(theMap);
+}
+
+vector<Mat> Ensemble::individualClassifications() {
+	return _classifications;
 }

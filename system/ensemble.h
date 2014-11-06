@@ -35,6 +35,8 @@ class Ensemble {
 
 	Logger *_logger = NULL;
 
+	std::vector<cv::Mat> _classifications;
+
 	public:
 		// Constructors
 		Ensemble(ConsensusType t, Segmentation& s, CoverMap training);
@@ -47,6 +49,7 @@ class Ensemble {
 		void train();
 		CoverMap classify();
 		void setLogger(Logger *logger);
+		std::vector<cv::Mat> individualClassifications();
 };
 
 #endif

@@ -70,7 +70,8 @@ int main(int argc, char **argv) {
 	ensemble.setLogger(logger);
 
 	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, vis, new GCHDescriptor()));
-	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, &lwir, new SIGDescriptor()));
+	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, vis, new GCHDescriptor()));
+	//ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, &lwir, new SIGDescriptor()));
 
 	log("training classifier...");
 	ensemble.train();
@@ -78,8 +79,25 @@ int main(int argc, char **argv) {
 	log("classifying image...");
 	CoverMap classification = ensemble.classify();
 
-	Mat coloredMap = classification.coloredMap();
-	showImage(blend(vis, coloredMap));
+	if (logger) {
+		vector<Mat> allClassifications = ensemble.individualClassifications();
+
+		int i = 0;
+		for (auto c : allClassifications) {
+			char path[16];
+			sprintf(path, "classifier_%d", i);
+
+			logger->saveImage(path, blend(vis, CoverMap(c).coloredMap()));
+			i++;
+		}
+
+		Mat coloredMap = classification.coloredMap();
+		logger->saveImage("consensus", blend(vis, coloredMap));
+	}
+	else {
+		Mat coloredMap = classification.coloredMap();
+		showImage(blend(vis, coloredMap));	
+	}
 
 	// Destroy logger
 	delete logger;
