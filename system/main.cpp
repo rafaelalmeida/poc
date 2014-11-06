@@ -61,10 +61,16 @@ int main(int argc, char **argv) {
 	CoverMap tMap(training);
 	Ensemble ensemble(MAJORITY_VOTING, segmentation, tMap);
 	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, vis, new GCHDescriptor()));
-	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, &lwir, new SIGDescriptor()));
+	//ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, &lwir, new SIGDescriptor()));
 
 	log("training classifier...");
 	ensemble.train();
+
+	log("classifying image...");
+	CoverMap classification = ensemble.classify();
+
+	Mat coloredMap = classification.coloredMap();
+	showImage(blend(vis, coloredMap));
 
 	return 0;
 

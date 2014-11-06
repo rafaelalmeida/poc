@@ -59,7 +59,7 @@ namespace classification {
 
 			// Methods
 			void train(CoverMap training);
-			cv::Mat classify();
+			cv::Mat classify(cv::Mat mask);
 	};
 }
 

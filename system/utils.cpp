@@ -67,50 +67,6 @@ cv::Mat onesLike(cv::Mat M) {
 	return 255 * Mat::ones(M.rows, M.cols, CV_8UC1);
 }
 
-cv::Mat makeLandCoverMap(cv::Mat labels) {
-	assert(labels.type() == CV_8UC1);
-
-	Mat labelsClone = labels.clone();
-	Mat map(labels.rows, labels.cols, CV_8UC3);
-
-	list<Mat> regions = segmentation::getColorBlobs(labels);
-	for (list<Mat>::iterator it = regions.begin(); it != regions.end(); ++it) {
-		vector<Mat> contours;
-		findContours(*it, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
-		float label = segmentation::getSegmentLabel(labels, *it);
-
-		Scalar color;
-		if (label == 0) { // UNCLASSIFIED
-			color = Scalar(0, 0, 0); // BLACK
-		}
-		else if (label == 1) { // ROAD
-			color = Scalar(255, 0, 255); // MAGENTA
-		}
-		else if (label == 2) { // TREES
-			color = Scalar(0, 255, 0); // GREEN
-		}
-		else if (label == 3) { // RED ROOF
-			color = Scalar(0, 0, 255); // RED
-		}
-		else if (label == 4) { // GREY ROOF
-			color = Scalar(255, 255, 0); // CYAN
-		}
-		else if (label == 5) { // CONCRETE ROOF
-			color = Scalar(128, 0, 128); // PURPLE
-		}
-		else if (label == 6) { // VEGETATION
-			color = Scalar(87, 139, 46); // SEA GREEN
-		}
-		else if (label == 7) { // BARE SOIL
-			color = Scalar(0, 255, 255); // YELLOW
-		}
-
-		drawContours(map, contours, -1, color, CV_FILLED);
-	}
-
-	return map;
-}
-
 cv::Mat blend(cv::Mat M1, cv::Mat M2) {
 	assert(M1.rows == M2.rows && M1.cols == M2.cols);
 	assert(M1.type() == CV_8UC3 && M2.type() == CV_8UC3);

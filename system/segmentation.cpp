@@ -85,7 +85,7 @@ std::list<cv::Mat> segmentation::getColorBlobs(cv::Mat posterized) {
 				Mat previousMask = mask.clone();
 
 				floodFill(clone, mask, Point(x,y), Scalar(0, 0, 0), 0, 
-				          Scalar::all(1), Scalar::all(1));
+				          Scalar::all(0), Scalar::all(0));
 
 				Mat difference = previousMask ^ mask;
 				Mat segmentMask = 255 * difference(Range(1, difference.rows - 1),
@@ -121,4 +121,8 @@ cv::Mat Segmentation::representation() {
 	}
 
 	return repr;
+}
+
+cv::Size Segmentation::getMapSize() {
+	return _masks.begin()->size();
 }

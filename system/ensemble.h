@@ -42,7 +42,7 @@ class Ensemble {
 		// Methods
 		void addClassifier(Classifier* c);
 		void train();
-		void classify();
+		CoverMap classify();
 };
 
 #endif

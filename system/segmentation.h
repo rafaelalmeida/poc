@@ -25,6 +25,7 @@ namespace segmentation {
 			Segmentation(std::list<cv::Mat> masks);
 			std::list<cv::Mat> getSegments();
 			cv::Mat representation();
+			cv::Size getMapSize();
 	};
 
 	Segmentation segmentLWIRMeanShift(cv::Mat M);

@@ -68,7 +68,7 @@ void Classifier::train(CoverMap training) {
 		features = _descriptor->describe(*_lwir, validSegments);
 	}
 	else {
-		assert(false && "Unknown Classifier type");
+		assert(false && "Unknown classifier type");
 	}
 
 	// Train the correct classifier
@@ -85,7 +85,31 @@ void Classifier::train(CoverMap training) {
 	}
 }
 
-Mat Classifier::classify() {
-	Mat ret;
-	return ret;
+Mat Classifier::classify(cv::Mat mask) {
+	// Compute features
+	Mat features;
+	if (_type == VIS) {
+		features = _descriptor->describe(_vis, mask);
+	}
+	else if (_type == LWIR) {
+		features = _descriptor->describe(*_lwir, mask);
+	}
+	else {
+		assert(false && "Unknown classifier type");
+	}
+
+	// Predict the class
+	float theClass;
+	if (_engine == SVM) {
+		theClass = _svm.predict(features);
+	}
+	else {
+		assert(false && "Unknown classifier engine");
+	}
+
+	// Fill the matrix
+	Mat classification = Mat::zeros(mask.size(), CV_8UC1);
+	classification += theClass * (mask / 255);
+
+	return classification;
 }

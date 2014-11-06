@@ -42,6 +42,7 @@ class CoverMap {
 
 		cv::Mat asMat();
 		float getRegionClass(cv::Mat mask);
+		cv::Mat coloredMap();
 };
 
 #endif
