@@ -28,32 +28,54 @@ void Ensemble::train() {
 }
 
 CoverMap Ensemble::classify() {
+	// Some initialization
 	Size mapSize = _segmentation.getMapSize();
 	list<Mat> classifiedSegments;
 
+	// Saves individual classifications for debugging
+	vector<Mat> classifications(classifiers.size());
+	for (auto& c : classifications) {
+		c = Mat::zeros(mapSize, CV_8UC1);
+	}
+
 	// Runs all classifiers for each segment
-	int i = 1;
-	int n = _segmentation.getSegments().size();
 	for (auto mask : _segmentation.getSegments()) {
 		// Gets the opinion of all classifiers for this segment
-		vector<Mat> classifications;
-		classifications.reserve(classifiers.size());
+		vector<Mat> opinions;
+		opinions.reserve(classifiers.size());
+
+		int i = 0;
 		for (auto c : classifiers) {
 			Mat classification = c->classify(mask);
-			classifications.push_back(classification);
+			opinions.push_back(classification);
+
+			// Save this segment individually for debugging
+			classifications[i] += classification;
+
+			i++;
 		}
 
 		// Initializes the consensus matrix for this segment
 		Mat consensus = Mat::zeros(mapSize, CV_8UC1);
 
 		if (_consensusType == MAJORITY_VOTING) {
-			consensus += classifications[0];
+			consensus += opinions[0];
 		}
 		else {
 			assert(false && "Unknown consensus type");
 		}
 
 		classifiedSegments.push_back(consensus);
+	}
+
+	// Saves debugging images, if applies
+	int i = 1;
+	for (auto& c : classifications) {
+		char path[16];
+		sprintf(path, "classification_%d", i);
+
+		_logger->saveImage(path, CoverMap(c).coloredMap());
+
 		i++;
 	}
 

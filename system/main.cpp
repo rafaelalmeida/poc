@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
 	CoverMap tMap(training);
 	Ensemble ensemble(MAJORITY_VOTING, segmentation, tMap);
 	ensemble.setLogger(logger);
-	
+
 	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, vis, new GCHDescriptor()));
 	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, &lwir, new SIGDescriptor()));
 

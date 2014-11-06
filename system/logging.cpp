@@ -17,6 +17,7 @@ Logger::Logger(const char *basePath) {
 	strcat(fullPath, "/");
 	strcat(fullPath, buffer);
 
+	mkdir(basePath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	mkdir(fullPath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
 	_fullPath = string(fullPath);
