@@ -28,6 +28,14 @@ void config::parse(char **argv, int argc, Configuration &config) {
 		else if (streq("--roiH", argv[c])) {
 			config.roiHeight = atoi(argv[++c]);
 		}
+		else if (streq("--disable-roi", argv[c])) {
+			// Resets the ROI even if it was filled before,
+			// for easy command-line manipulation
+			config.roiX = 0;
+			config.roiY = 0;
+			config.roiWidth = 0;
+			config.roiHeight = 0;
+		}
 
 		// Verbosity
 		else if (streq("--verbose", argv[c])) {
