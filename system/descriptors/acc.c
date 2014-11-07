@@ -308,8 +308,6 @@ Histogram *ACC(CImage *cimg, Image *mask)
 
   cvf = ExtractCompressedVisualFeaturesACC(cimg, mask);
 
-	printf("TESTE");
-
   h = CreateHistogram(SIZE);  
   for (i=0; i<SIZE; i++)
     h->v[i] = cvf->colorH[i];

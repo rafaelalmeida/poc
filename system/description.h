@@ -20,6 +20,7 @@ extern "C" {
 	#include "descriptors/cimage.h"
 
 	#include "descriptors/gch.h"
+	#include "descriptors/acc.h"
 }
 
 class Descriptor {
@@ -32,6 +33,11 @@ class Descriptor {
 };
 
 class GCHDescriptor : public Descriptor {
+	public:
+		virtual cv::Mat describe(cv::Mat image, std::list<cv::Mat> masks) override;
+};
+
+class ACCDescriptor : public Descriptor {
 	public:
 		virtual cv::Mat describe(cv::Mat image, std::list<cv::Mat> masks) override;
 };

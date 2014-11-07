@@ -52,6 +52,35 @@ cv::Mat GCHDescriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
 	return samples;
 }
 
+cv::Mat ACCDescriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
+	const int HIST_BINS = 4 * 4 * 4 * 4;
+	
+	CImage *cimg = matToRawColor(image);
+
+	Mat samples(masks.size(), HIST_BINS, CV_32FC1);
+
+	int currentMask = 0;
+	for (auto mask : masks) {
+		Image *cMask = matToRawGray(mask);
+
+		Histogram *hist = ACC(cimg, cMask);
+		assert(hist->n == HIST_BINS);
+
+		for (int i = 0; i < hist->n; i++) {
+			samples.at<float>(currentMask, i) = (float) hist->v[i];
+		}
+
+		DestroyHistogram(&hist);
+		DestroyImage(&cMask);
+
+		currentMask++;
+	}
+
+	DestroyCImage(&cimg);
+
+	return samples;
+}
+
 cv::Mat SIGDescriptor::describe(LWIRImage image, std::list<cv::Mat> masks) {
 	Mat samples(masks.size(), image.numBands(), CV_32FC1);
 

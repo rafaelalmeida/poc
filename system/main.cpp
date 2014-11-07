@@ -83,10 +83,19 @@ int main(int argc, char **argv) {
 		lwir.setRoi(roi);
 	}
 
+	// Log cropped images
+	if (logger) {
+		logger->saveImage("training-ROI", blend(vis, CoverMap(training).coloredMap()));
+		logger->saveImage("vis-ROI", vis);
+	}
+
 	log("segmenting image...");
 	Segmentation segmentation;
 	if (conf.segmentationMode == GRID) {
 		segmentation = segmentation::segmentVISGrid(vis);
+		if (logger) {
+			logger->saveImage("segmentation", segmentation.representation());
+		}
 	}
 	else {
 		assert(false && "Unsupported segmentation mode");
@@ -98,6 +107,7 @@ int main(int argc, char **argv) {
 	ensemble.setLogger(logger);
 
 	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, vis, new GCHDescriptor()));
+	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, vis, new ACCDescriptor()));
 	//ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, &lwir, new SIGDescriptor()));
 
 	log("training classifier...");

@@ -35,7 +35,7 @@ namespace segmentation {
 
 	float getSegmentLabel(cv::Mat classificationMap, cv::Mat mask);
 	std::list<cv::Mat> getColorBlobs(cv::Mat posterized);
-	cv::Mat representSegmentation(std::list<cv::Mat> masks);
+	cv::Mat represent();
 }
 
 #endif
