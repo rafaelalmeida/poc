@@ -6,6 +6,11 @@
 
 #define MAX_PATH 256
 
+enum SamplingMode {
+	UPSAMPLE_LWIR,
+	DOWNSAMPLE_VIS
+};
+
 typedef struct {
 	// File paths
 	char pathVIS[MAX_PATH];
@@ -27,7 +32,10 @@ typedef struct {
 	// Log options
 	bool logEnabled = false;
 	char logPath[MAX_PATH];
-	
+
+	// Sampling mode
+	SamplingMode samplingMode;
+
 } Configuration;
 
 namespace config {

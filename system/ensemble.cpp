@@ -2,10 +2,13 @@
 
 using namespace cv;
 
-Ensemble::Ensemble(ConsensusType t, Segmentation& s, CoverMap training) :
-	_consensusType(t),
-	_segmentation(s),
-	_training(training) {}
+Ensemble::Ensemble(ConsensusType t, Segmentation& s, CoverMap training) 
+    : _consensusType(t),
+	  _segmentation(s),
+	  _training(training) {
+
+	assert(training.asMat().type() == CV_8UC1);
+}
 
 Ensemble::~Ensemble() {
 	for (auto c : classifiers) {

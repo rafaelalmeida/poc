@@ -45,31 +45,58 @@ int main(int argc, char **argv) {
 	log("loading training data...");
 	Mat trainingFull = gdal_driver::loadTrainingData(conf.pathTraining);
 
-	// Upscale LWIR image
-	log("upscaling LWIR...");
-	lwir.upscale(visFull.size());
+	// Matrixes with default settings
+	Mat vis = visFull, training = trainingFull;
+
+	// Set sampling mode
+	if (conf.samplingMode == UPSAMPLE_LWIR) {
+		log("upscaling LWIR...");
+		lwir.upscale(visFull.size());
+	}
+	else {
+		log("downsampling VIS...");
+		Mat resizedVis, resizedTraining;
+		resize(visFull, resizedVis, lwir.size());
+		resize(trainingFull, resizedTraining, lwir.size());
+
+		vis = resizedVis;
+		training = resizedTraining;
+
+		if (logger) {
+			logger->saveImage("vis", vis);
+		}
+	}
+
+	// Save training map for debugging
+	if (logger) {
+		logger->saveImage("training", blend(vis, CoverMap(training).coloredMap()));
+	}
 
 	// Set ROI if exists
 	Rect roi;
-	Mat vis = visFull, training = trainingFull;
-	if (conf.roiX > 0 || conf.roiY > 0 || conf.roiWidth > 0 || conf.roiHeight > 0) {
+	if (conf.roiWidth > 0 && conf.roiHeight > 0) {
 		roi = Rect(conf.roiX, conf.roiY, conf.roiWidth, conf.roiHeight);
-		vis = visFull(roi);
-		training = trainingFull(roi);
+		vis = vis(roi);
+		training = training(roi);
 
 		log("applying ROI to LWIR...");
 		lwir.setRoi(roi);
 	}
 
 	log("segmenting image...");
-	Segmentation segmentation = segmentation::segmentVISGrid(vis);
+	Segmentation segmentation;
+	if (conf.segmentationMode == GRID) {
+		segmentation = segmentation::segmentVISGrid(vis);
+	}
+	else {
+		assert(false && "Unsupported segmentation mode");
+	}
 
 	// Setup classifier ensemble
 	CoverMap tMap(training);
 	Ensemble ensemble(MAJORITY_VOTING, segmentation, tMap);
 	ensemble.setLogger(logger);
 
-	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, vis, new GCHDescriptor()));
 	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, vis, new GCHDescriptor()));
 	//ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, &lwir, new SIGDescriptor()));
 
@@ -100,7 +127,9 @@ int main(int argc, char **argv) {
 	}
 
 	// Destroy logger
-	delete logger;
+	if (logger) {
+		delete logger;
+	}
 
 	return 0;
 

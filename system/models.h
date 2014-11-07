@@ -29,6 +29,7 @@ class LWIRImage {
 		cv::Mat average();
 		cv::Mat equalized();
 		cv::Mat spectralSignature(cv::Mat mask);
+		cv::Size size();
 		int numBands();
 		void setRoi(cv::Rect roi);
 		void upscale(cv::Size size);

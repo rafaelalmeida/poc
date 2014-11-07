@@ -22,6 +22,7 @@ namespace segmentation {
 		std::list<cv::Mat> _masks;
 
 		public:
+			Segmentation() {};
 			Segmentation(std::list<cv::Mat> masks);
 			std::list<cv::Mat> getSegments();
 			cv::Mat representation();

@@ -155,3 +155,7 @@ std::map<unsigned char, int> CoverMap::getClassesCounts() {
 
 	return counter.getCounts();
 }
+
+cv::Size LWIRImage::size() {
+	return bands[0].size();
+}

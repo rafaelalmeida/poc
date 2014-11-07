@@ -57,6 +57,18 @@ void config::parse(char **argv, int argc, Configuration &config) {
 			config.logEnabled = true;
 		}
 
+		// Sampling mode
+		else if (streq("--sampling-mode", argv[c])) {
+			char theMode[512];
+			strcpy(theMode, argv[++c]);
+			if (streq("UPSAMPLE_LWIR", theMode)) {
+				config.samplingMode = UPSAMPLE_LWIR;
+			} 
+			else if (streq("DOWNSAMPLE_VIS", theMode)) {
+				config.samplingMode = DOWNSAMPLE_VIS;
+			}
+		}
+
 		c++;
 	}
 }

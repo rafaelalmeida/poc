@@ -54,20 +54,7 @@ float segmentation::getSegmentLabel(Mat classificationMap, Mat mask) {
 	assert(mask.type() == CV_8UC1);
 	assert((classificationMap.rows == mask.rows) && (classificationMap.cols = mask.cols));
 
-	typedef unsigned char uchar;
-
-	Counter<uchar> counter;
-
-	for (int row = 0; row < classificationMap.rows; row++) {
-		for (int col = 0; col < classificationMap.cols; col++) {
-			if (mask.at<uchar>(row, col)) {
-				uchar val = classificationMap.at<uchar>(row, col);
-				counter.inc(val);
-			}
-		}
-	}
-
-	return (float) counter.top();
+	return (float) mean(classificationMap, mask)[0];
 }
 
 std::list<cv::Mat> segmentation::getColorBlobs(cv::Mat posterized) {
@@ -76,12 +63,9 @@ std::list<cv::Mat> segmentation::getColorBlobs(cv::Mat posterized) {
 	Mat clone = posterized.clone();
 	Mat mask(posterized.rows+2, posterized.cols+2, CV_8UC1, Scalar::all(0));
 
-	for (int y = 0; y < clone.rows; y++)
-	{
-		for (int x = 0; x < clone.cols; x++)
-		{
-			if (mask.at<uchar>(y+1, x+1) == 0)
-			{
+	for (int y = 0; y < clone.rows; y++) {
+		for (int x = 0; x < clone.cols; x++) {
+			if (mask.at<uchar>(y+1, x+1) == 0) {
 				Mat previousMask = mask.clone();
 
 				floodFill(clone, mask, Point(x,y), Scalar(0, 0, 0), 0, 
@@ -89,7 +73,7 @@ std::list<cv::Mat> segmentation::getColorBlobs(cv::Mat posterized) {
 
 				Mat difference = previousMask ^ mask;
 				Mat segmentMask = 255 * difference(Range(1, difference.rows - 1),
-				                             Range(1, difference.cols - 1));
+				                                   Range(1, difference.cols - 1));
 
 				segments.push_back(segmentMask);
 			}
