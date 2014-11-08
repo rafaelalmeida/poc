@@ -57,6 +57,69 @@ int main(int argc, char **argv) {
 		training = resizedTraining;
 	}
 
+	int lowVal;
+	int highVal;
+
+	namedWindow("win");
+	createTrackbar("low threshold", "win", &lowVal, 1000*10);
+	createTrackbar("high threshold", "win", &highVal, 1000*10);
+
+	while (true) {
+		double low = lowVal / 10.0;
+		double high = highVal / 10.0;
+
+		cout << 
+			"low threshold = " << low << endl <<
+			"high threshold = " << high << endl;
+
+
+		Mat gray;
+		cvtColor(vis, gray, CV_BGR2GRAY);
+
+		Mat edges(gray.size(), gray.type());
+		Canny(gray, edges, low, high);
+
+		imshow("win", edges);
+
+		// Wait for enter
+		int key = waitKey(0);
+		if (key == 'q') break;
+	}
+
+	return 0;
+}
+
+int main3(int argc, char **argv) {
+	Configuration conf;
+	config::parse(argv, argc, conf);
+	verbose = conf.verbose;
+
+	// Load images
+	log("loading VIS image...");
+	Mat visFull = gdal_driver::loadVIS(conf.pathVIS);
+	log("loading LWIR image...");
+	LWIRImage lwir = gdal_driver::loadLWIR(conf.pathLWIR);
+	log("loading training data...");
+	Mat trainingFull = gdal_driver::loadTrainingData(conf.pathTraining);
+
+	// Matrixes with default settings
+	Mat vis = visFull, training = trainingFull;
+
+	// Set sampling mode
+	if (conf.samplingMode == UPSAMPLE_LWIR) {
+		log("upscaling LWIR...");
+		lwir.upscale(visFull.size());
+	}
+	else {
+		log("downsampling VIS...");
+		Mat resizedVis, resizedTraining;
+		resize(visFull, resizedVis, lwir.size());
+		resize(trainingFull, resizedTraining, lwir.size());
+
+		vis = resizedVis;
+		training = resizedTraining;
+	}
+
 	int spVal;
 	int srVal;
 
