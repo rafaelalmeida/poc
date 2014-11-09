@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include <opencv2/core/core.hpp>
+#include <opencv2/gpu/gpu.hpp>
 
 #include "classification.h"
 #include "config.h"
@@ -27,6 +28,44 @@ using namespace classification;
 bool verbose;
 
 int main(int argc, char **argv) {
+	Configuration conf;
+	config::parse(argv, argc, conf);
+	verbose = conf.verbose;
+
+	// Load images
+	log("loading VIS image...");
+	Mat visFull = gdal_driver::loadVIS(conf.pathVIS);
+	log("loading LWIR image...");
+	LWIRImage lwir = gdal_driver::loadLWIR(conf.pathLWIR);
+	log("loading training data...");
+	Mat trainingFull = gdal_driver::loadTrainingData(conf.pathTraining);
+
+	// Matrixes with default settings
+	Mat vis = visFull, training = trainingFull;
+
+	// Set sampling mode
+	if (conf.samplingMode == UPSAMPLE_LWIR) {
+		log("upscaling LWIR...");
+		lwir.upscale(visFull.size());
+	}
+	else {
+		log("downsampling VIS...");
+		Mat resizedVis, resizedTraining;
+		resize(visFull, resizedVis, lwir.size());
+		resize(trainingFull, resizedTraining, lwir.size());
+
+		vis = resizedVis;
+		training = resizedTraining;
+	}
+
+	cerr << "segmenting..." << endl;
+	Segmentation S = segmentation::segmentVISGrid(vis);
+	showImage(S.representation());
+
+	return 0;
+}
+
+int main_(int argc, char **argv) {
 	Configuration conf;
 	config::parse(argv, argc, conf);
 	verbose = conf.verbose;

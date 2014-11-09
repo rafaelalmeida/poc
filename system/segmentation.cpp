@@ -16,6 +16,14 @@ Segmentation segmentation::segmentLWIRMeanShift(Mat M) {
 	return Segmentation(getColorBlobs(res));
 }
 
+Segmentation segmentation::segmentVISMeanShift(Mat M) {
+	// Executes the filtering
+	Mat res;
+	pyrMeanShiftFiltering(M, res, 9, 9, 0);
+
+	return Segmentation(getColorBlobs(res));
+}
+
 Segmentation segmentation::segmentLWIRCanny(Mat M) {
 	list<Mat> ret;
 
@@ -23,18 +31,45 @@ Segmentation segmentation::segmentLWIRCanny(Mat M) {
 
 	Mat edges;
 	int thres = 10;
-	Canny(conv, edges, thres, 3*thres, 3);
+	Canny(conv, edges, thres, 3*thres, 5);
 	
 	return Segmentation(ret);
 }
 
+Segmentation segmentation::segmentVISCanny(Mat M) {
+	list<Mat> ret;
+
+	Mat gray(M.size(), CV_8UC1);
+	cvtColor(M, gray, CV_BGR2GRAY);
+
+	Mat edges;
+	int thres = 50;
+	Canny(gray, edges, thres, 3*thres, 3);
+
+	vector<vector<Point> > contours;
+	findContours(edges, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+
+	Mat cont = Mat::zeros(edges.size(), edges.type());
+	drawContours(cont, contours, -1, Scalar(255), CV_FILLED);
+	
+	showImage(cont, 0.2);
+
+	return Segmentation(ret);
+}
+
 Segmentation segmentation::segmentVISGrid(cv::Mat M) {
-	const int GRID_SIZE = 32;
+	const int GRID_SIZE = 10;
 
 	list<Mat> segments;
 
-	int regionsPerLine = M.cols / GRID_SIZE;
-	int regionsPerColumn = M.rows / GRID_SIZE;
+	int regionsPerLine = (M.cols / GRID_SIZE) + (M.cols % GRID_SIZE);
+	int regionsPerColumn = (M.rows / GRID_SIZE) + (M.rows % GRID_SIZE);
+
+	Mat gray(M.size(), CV_8UC1);
+	cvtColor(M, gray, CV_BGR2GRAY);
+
+	Mat bin(gray.size(), CV_8UC1);
+	threshold(gray, bin, 1, 255, CV_THRESH_BINARY);
 
 	for (int i = 0; i < regionsPerLine; i++) {
 		for (int j = 0; j < regionsPerColumn; j++) {
@@ -42,7 +77,11 @@ Segmentation segmentation::segmentVISGrid(cv::Mat M) {
 			Rect region(i*GRID_SIZE, j*GRID_SIZE, GRID_SIZE, GRID_SIZE);
 
 			rectangle(segment, region, Scalar(255), CV_FILLED);
-			segments.push_back(segment);
+
+			Mat filteredSegment = segment & bin;
+			if (countNonZero(filteredSegment) > 0) {
+				segments.push_back(filteredSegment);
+			}
 		}
 	}
 
@@ -65,6 +104,10 @@ std::list<cv::Mat> segmentation::getColorBlobs(cv::Mat posterized) {
 
 	for (int y = 0; y < clone.rows; y++) {
 		for (int x = 0; x < clone.cols; x++) {
+			if ((y*clone.rows + x) % 1000 == 0) {
+				cerr << x << ", " << y << endl;
+			}
+
 			if (mask.at<uchar>(y+1, x+1) == 0) {
 				Mat previousMask = mask.clone();
 
@@ -96,8 +139,8 @@ cv::Mat Segmentation::representation() {
 	Mat M = *_masks.begin();
 
 	Mat repr(M.rows, M.cols, CV_8UC3);
-	for (list<Mat>::iterator it = _masks.begin(); it != _masks.end(); ++it) {
-		Mat clone = it->clone();
+	for (auto mask : _masks) {
+		Mat clone = mask.clone();
 		vector<vector<Point> > contours;
 		findContours(clone, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
 

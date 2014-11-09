@@ -30,12 +30,13 @@ namespace segmentation {
 	};
 
 	Segmentation segmentLWIRMeanShift(cv::Mat M);
+	Segmentation segmentVISMeanShift(cv::Mat M);
 	Segmentation segmentLWIRCanny(cv::Mat M);
+	Segmentation segmentVISCanny(cv::Mat M);
 	Segmentation segmentVISGrid(cv::Mat M);
 
 	float getSegmentLabel(cv::Mat classificationMap, cv::Mat mask);
 	std::list<cv::Mat> getColorBlobs(cv::Mat posterized);
-	cv::Mat represent();
 }
 
 #endif
