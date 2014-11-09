@@ -32,44 +32,6 @@ int main(int argc, char **argv) {
 	config::parse(argv, argc, conf);
 	verbose = conf.verbose;
 
-	// Load images
-	log("loading VIS image...");
-	Mat visFull = gdal_driver::loadVIS(conf.pathVIS);
-	log("loading LWIR image...");
-	LWIRImage lwir = gdal_driver::loadLWIR(conf.pathLWIR);
-	log("loading training data...");
-	Mat trainingFull = gdal_driver::loadTrainingData(conf.pathTraining);
-
-	// Matrixes with default settings
-	Mat vis = visFull, training = trainingFull;
-
-	// Set sampling mode
-	if (conf.samplingMode == UPSAMPLE_LWIR) {
-		log("upscaling LWIR...");
-		lwir.upscale(visFull.size());
-	}
-	else {
-		log("downsampling VIS...");
-		Mat resizedVis, resizedTraining;
-		resize(visFull, resizedVis, lwir.size());
-		resize(trainingFull, resizedTraining, lwir.size());
-
-		vis = resizedVis;
-		training = resizedTraining;
-	}
-
-	cerr << "segmenting..." << endl;
-	Segmentation S = segmentation::segmentVISGrid(vis);
-	showImage(S.representation());
-
-	return 0;
-}
-
-int main_(int argc, char **argv) {
-	Configuration conf;
-	config::parse(argv, argc, conf);
-	verbose = conf.verbose;
-
 	// Setup logger
 	Logger *logger = NULL;
 	if (conf.logEnabled) {
@@ -149,7 +111,7 @@ int main_(int argc, char **argv) {
 	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, vis, new ACCDescriptor()));
 	//ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, &lwir, new SIGDescriptor()));
 
-	log("training classifier...");
+	log("training ensemble...");
 	ensemble.train();
 
 	log("classifying image...");

@@ -25,8 +25,30 @@ void Ensemble::setLogger(Logger *logger) {
 }
 
 void Ensemble::train() {
+	// Extract regions from training map
+	list<Mat> masks = segmentation::getColorBlobs(_training.asMat());
+
+	// Recover region labels
+	list<float> labels;
+	list<Mat> validSegments;
+	for (auto mask : masks) {
+		float label = _training.getRegionClass(mask);
+		if (label != 0) { // Disconsider unclassified regions
+			labels.push_back(label);
+			validSegments.push_back(mask);
+		}
+	}
+
+	// Create labels training matrix
+	Mat labelsMat(labels.size(), 1, CV_32FC1);
+	int c = 0;
+	for (auto label : labels) {
+		labelsMat.at<float>(c) = label;
+		c++;
+	}
+
 	for (auto c : classifiers) {
-		c->train(_training);
+		c->train(labelsMat, Segmentation(validSegments));
 	}
 }
 

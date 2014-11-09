@@ -58,7 +58,7 @@ namespace classification {
 			~Classifier();
 
 			// Methods
-			void train(CoverMap training);
+			void train(cv::Mat labels, Segmentation trainingSegments);
 			cv::Mat classify(cv::Mat mask);
 	};
 }

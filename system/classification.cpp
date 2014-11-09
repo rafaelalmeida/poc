@@ -36,28 +36,9 @@ Classifier::~Classifier() {
 	delete _descriptor;
 }
 
-void Classifier::train(CoverMap training) {
-	// Extract regions from training map
-	list<Mat> masks = segmentation::getColorBlobs(training.asMat());
-
-	// Recover region labels
-	list<float> labels;
-	list<Mat> validSegments;
-	for (auto mask : masks) {
-		float label = training.getRegionClass(mask);
-		if (label != 0) { // Disconsider unclassified regions
-			labels.push_back(label);
-			validSegments.push_back(mask);
-		}
-	}
-
-	// Create labels training matrix
-	Mat labelsMat(labels.size(), 1, CV_32FC1);
-	int c = 0;
-	for (auto label : labels) {
-		labelsMat.at<float>(c) = label;
-		c++;
-	}
+void Classifier::train(Mat labels, Segmentation trainingSegments) {
+	// Get valid segments
+	list<Mat> validSegments = trainingSegments.getSegments();
 
 	// Compute features
 	Mat features;
@@ -78,7 +59,7 @@ void Classifier::train(CoverMap training) {
 	    params.kernel_type = CvSVM::LINEAR;
 	    params.term_crit   = cvTermCriteria(CV_TERMCRIT_ITER, 100, 1e-6);
 
-	    _svm.train(features, labelsMat, Mat(), Mat(), params);
+	    _svm.train(features, labels, Mat(), Mat(), params);
 	}
 	else {
 		assert(false && "Unknown classifier engine");
