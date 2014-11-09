@@ -47,9 +47,17 @@ void Ensemble::train() {
 		c++;
 	}
 
+	int i = 1;
+	int n = classifiers.size();
+
 	for (auto c : classifiers) {
+		cerr << "training classifier " << i << " of " << n << "     \r" << flush;
+
 		c->train(labelsMat, Segmentation(validSegments));
+		i++;
 	}
+
+	cerr << "training classifiers... done     " << endl;
 }
 
 CoverMap Ensemble::classify() {
@@ -64,7 +72,13 @@ CoverMap Ensemble::classify() {
 	}
 
 	// Runs all classifiers for each segment
+	int c = 1;
+	int n = _segmentation.getSegments().size();
+
 	for (auto mask : _segmentation.getSegments()) {
+		// Show progress
+		cerr << "classifying segment " << c << " of " << n << "     \r" << flush;
+
 		// Gets the opinion of all classifiers for this segment
 		vector<Mat> opinions;
 		opinions.reserve(classifiers.size());
@@ -91,7 +105,10 @@ CoverMap Ensemble::classify() {
 		}
 
 		classifiedSegments.push_back(consensus);
+		c++;
 	}
+
+	cerr << "classyfing segments... done   " << endl;
 
 	// Builds the map from the segments
 	Mat theMap = Mat::zeros(mapSize, CV_8UC1);

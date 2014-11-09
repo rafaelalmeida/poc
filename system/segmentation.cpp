@@ -73,7 +73,7 @@ Segmentation segmentation::segmentVISGrid(cv::Mat M) {
 
 	for (int i = 0; i < regionsPerLine; i++) {
 		for (int j = 0; j < regionsPerColumn; j++) {
-			Mat segment(M.rows, M.cols, CV_8UC1);
+			Mat segment = Mat::zeros(M.size(), CV_8UC1);
 			Rect region(i*GRID_SIZE, j*GRID_SIZE, GRID_SIZE, GRID_SIZE);
 
 			rectangle(segment, region, Scalar(255), CV_FILLED);

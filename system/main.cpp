@@ -137,14 +137,14 @@ int main(int argc, char **argv) {
 		showImage(blend(vis, coloredMap));	
 	}
 
+	log("calculating kappa...");
+	float k = statistics::kappa(training, classification.asMat());
+	cout << k << endl;
+	
 	// Destroy logger
 	if (logger) {
 		delete logger;
 	}
 
 	return 0;
-
-	/*log("calculating kappa...");
-	float k = statistics::kappa(training, map);
-	cout << k << endl;*/
 }

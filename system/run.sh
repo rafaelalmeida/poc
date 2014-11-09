@@ -11,7 +11,6 @@
 	--roiY 384 \
 	--roiW 111 \
 	--roiH 122 \
-	--disable-roi \
 	--segmentation-mode GRID \
 	--sampling-mode DOWNSAMPLE_VIS \
 	--log-path "scratch/logs" \
