@@ -255,3 +255,6 @@ Histogram *LCH(CImage *cimg, Image *mask)
   return(histogram);
 }
 
+int LCHDimensions() {
+  return NBINS;
+}

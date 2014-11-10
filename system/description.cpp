@@ -141,3 +141,32 @@ cv::Mat BICDescriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
 
 	return samples;
 }
+
+cv::Mat LCHDescriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
+	int dimensions = LCHDimensions();
+	
+	CImage *cimg = matToRawColor(image);
+
+	Mat samples(masks.size(), dimensions, CV_32FC1);
+
+	int currentMask = 0;
+	for (auto mask : masks) {
+		Image *cMask = matToRawGray(mask);
+
+		Histogram *hist = LCH(cimg, cMask);
+		assert(hist->n == dimensions);
+
+		for (int i = 0; i < hist->n; i++) {
+			samples.at<float>(currentMask, i) = (float) hist->v[i];
+		}
+
+		DestroyHistogram(&hist);
+		DestroyImage(&cMask);
+
+		currentMask++;
+	}
+
+	DestroyCImage(&cimg);
+
+	return samples;
+}

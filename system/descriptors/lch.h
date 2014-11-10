@@ -5,5 +5,6 @@
 #include "histogram.h"
 
 Histogram *LCH(CImage *cimg, Image *mask);
+int LCHDimensions();
 
 #endif
