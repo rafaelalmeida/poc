@@ -19,8 +19,9 @@ extern "C" {
 	#include "descriptors/image.h"
 	#include "descriptors/cimage.h"
 
-	#include "descriptors/gch.h"
 	#include "descriptors/acc.h"
+	#include "descriptors/bic.h"
+	#include "descriptors/gch.h"
 }
 
 class Descriptor {
@@ -32,12 +33,29 @@ class Descriptor {
 		virtual cv::Mat describe(LWIRImage image, std::list<cv::Mat> masks);
 };
 
+// CBC
+// EMD
+// EOAC
+// Gabor
+// IRM
+// LCH
+// LAS
+// QCCH
+// Spytec
+// Steerable Pyramid
+// Unser
+
 class GCHDescriptor : public Descriptor {
 	public:
 		virtual cv::Mat describe(cv::Mat image, std::list<cv::Mat> masks) override;
 };
 
 class ACCDescriptor : public Descriptor {
+	public:
+		virtual cv::Mat describe(cv::Mat image, std::list<cv::Mat> masks) override;
+};
+
+class BICDescriptor : public Descriptor {
 	public:
 		virtual cv::Mat describe(cv::Mat image, std::list<cv::Mat> masks) override;
 };

@@ -264,3 +264,7 @@ Histogram *BIC(CImage *cimg, Image *mask)
 
   return(histogram);
 }
+
+int BICDimensions() {
+  return 2*SIZE;
+}
