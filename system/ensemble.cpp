@@ -66,7 +66,9 @@ CoverMap Ensemble::classify() {
 	list<Mat> classifiedSegments;
 
 	// Saves individual classifications for debugging
+	_classifications.clear();
 	_classifications.resize(classifiers.size());
+
 	for (auto& c : _classifications) {
 		c = Mat::zeros(mapSize, CV_8UC1);
 	}
@@ -98,7 +100,14 @@ CoverMap Ensemble::classify() {
 		Mat consensus = Mat::zeros(mapSize, CV_8UC1);
 
 		if (_consensusType == MAJORITY_VOTING) {
-			consensus += opinions[0];
+			Counter<int> counter;
+
+			for (auto op : opinions) {
+				int theClass = (int) segmentation::getSegmentLabel(op, mask);
+				counter.inc(theClass);
+			}
+
+			consensus = counter.top() * (mask / 255);
 		}
 		else {
 			assert(false && "Unknown consensus type");
