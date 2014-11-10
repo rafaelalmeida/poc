@@ -135,7 +135,7 @@ int main(int argc, char **argv) {
 	
 	// Destroy logger
 	if (logger) {
-		delete logger;
+		//delete logger;
 	}
 
 	return 0;

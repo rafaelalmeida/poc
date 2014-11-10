@@ -12,11 +12,10 @@
 	--roiW 111 \
 	--roiH 122 \
 	--segmentation-mode GRID \
-	--grid-tile-size 10 \
 	--sampling-mode DOWNSAMPLE_VIS \
-	--resampling-method CUBIC \
+	--resampling-method NEAREST \
 	--log-path "scratch/logs" \
-	#--parallel \
+	--parallel \
 
 # --roiX 940 \
 # --roiY 2619 \

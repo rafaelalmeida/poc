@@ -30,7 +30,7 @@ enum ConsensusType {
  */
 class Ensemble {
 	// Members
-	std::list<Classifier*> classifiers;
+	std::vector<Classifier*> classifiers;
 	ConsensusType _consensusType;
 	Segmentation& _segmentation;
 
@@ -39,7 +39,6 @@ class Ensemble {
 	Logger *_logger = NULL;
 
 	std::vector<std::pair<std::string, cv::Mat> > _classifications;
-	std::vector<string> _classifierIDs;
 
 	bool _parallel = false;
 	int numThreads;
