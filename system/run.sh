@@ -12,6 +12,7 @@
 	--roiW 111 \
 	--roiH 122 \
 	--segmentation-mode GRID \
+	--grid-tile-size 10 \
 	--sampling-mode DOWNSAMPLE_VIS \
 	--resampling-method CUBIC \
 	--log-path "scratch/logs" \

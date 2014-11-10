@@ -33,7 +33,7 @@ namespace segmentation {
 	Segmentation segmentVISMeanShift(cv::Mat M);
 	Segmentation segmentLWIRCanny(cv::Mat M);
 	Segmentation segmentVISCanny(cv::Mat M);
-	Segmentation segmentVISGrid(cv::Mat M);
+	Segmentation segmentVISGrid(cv::Mat M, int tileSize=10);
 
 	float getSegmentLabel(cv::Mat classificationMap, cv::Mat mask);
 	std::list<cv::Mat> getColorBlobs(cv::Mat posterized);

@@ -51,6 +51,11 @@ void config::parse(char **argv, int argc, Configuration &config) {
 			}
 		}
 
+		// Segmentation parameters - GRID
+		else if (streq("--grid-tile-size", argv[c])) {
+			config.gridTileSize = atoi(argv[++c]);
+		}
+
 		// Log
 		else if (streq("--log-path", argv[c])) {
 			strcpy(config.logPath, argv[++c]);

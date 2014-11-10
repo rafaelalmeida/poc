@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
 	log("segmenting image...");
 	Segmentation segmentation;
 	if (conf.segmentationMode == GRID) {
-		segmentation = segmentation::segmentVISGrid(vis);
+		segmentation = segmentation::segmentVISGrid(vis, conf.gridTileSize);
 		if (logger) {
 			logger->saveImage("segmentation", segmentation.representation());
 		}

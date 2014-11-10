@@ -57,13 +57,11 @@ Segmentation segmentation::segmentVISCanny(Mat M) {
 	return Segmentation(ret);
 }
 
-Segmentation segmentation::segmentVISGrid(cv::Mat M) {
-	const int GRID_SIZE = 10;
-
+Segmentation segmentation::segmentVISGrid(cv::Mat M, int tileSize) {
 	list<Mat> segments;
 
-	int regionsPerLine = (M.cols / GRID_SIZE) + (M.cols % GRID_SIZE);
-	int regionsPerColumn = (M.rows / GRID_SIZE) + (M.rows % GRID_SIZE);
+	int regionsPerLine = (M.cols / tileSize) + (M.cols % tileSize);
+	int regionsPerColumn = (M.rows / tileSize) + (M.rows % tileSize);
 
 	Mat gray(M.size(), CV_8UC1);
 	cvtColor(M, gray, CV_BGR2GRAY);
@@ -74,7 +72,7 @@ Segmentation segmentation::segmentVISGrid(cv::Mat M) {
 	for (int i = 0; i < regionsPerLine; i++) {
 		for (int j = 0; j < regionsPerColumn; j++) {
 			Mat segment = Mat::zeros(M.size(), CV_8UC1);
-			Rect region(i*GRID_SIZE, j*GRID_SIZE, GRID_SIZE, GRID_SIZE);
+			Rect region(i*tileSize, j*tileSize, tileSize, tileSize);
 
 			rectangle(segment, region, Scalar(255), CV_FILLED);
 

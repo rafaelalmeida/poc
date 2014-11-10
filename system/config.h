@@ -35,6 +35,9 @@ typedef struct {
 	// Segmentation options
 	SegmentationMode segmentationMode;
 
+	// Segmentation paramaters - GRID
+	int gridTileSize = 10;
+
 	// Log options
 	bool logEnabled = false;
 	char logPath[MAX_PATH];
