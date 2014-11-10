@@ -97,12 +97,14 @@ int main(int argc, char **argv) {
 	ensemble.setLogger(logger);
 	ensemble.setParallel(conf.parallel);
 
-	ensemble.addClassifier(new Classifier("SVM-GCH", ClassifierEngine::SVM, 
+	/*ensemble.addClassifier(new Classifier("SVM-GCH", ClassifierEngine::SVM, 
 		vis, new GCHDescriptor()));
 	ensemble.addClassifier(new Classifier("SVM-ACC", ClassifierEngine::SVM, 
-		vis, new ACCDescriptor()));
-	//ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, &lwir, 
-	//	new SIGDescriptor()));
+		vis, new ACCDescriptor()));*/
+	ensemble.addClassifier(new Classifier("SVM-SIG", ClassifierEngine::SVM, 
+		&lwir, new SIGDescriptor()));
+	ensemble.addClassifier(new Classifier("SVM-ENERGY", ClassifierEngine::SVM, 
+		&lwir, new ENERGYDescriptor()));
 
 	log("training ensemble...");
 	ensemble.train();

@@ -17,7 +17,14 @@
 	--log-path "scratch/logs" \
 	--parallel \
 
+# TEST ROI - HIGH RES
 # --roiX 940 \
 # --roiY 2619 \
 # --roiW 549 \
 # --roiH 675 \
+
+# TEST ROI - LOW RES
+# --roiX 285 \
+# --roiY 384 \
+# --roiW 111 \
+# --roiH 122 \

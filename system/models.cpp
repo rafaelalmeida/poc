@@ -12,7 +12,14 @@ cv::Mat LWIRImage::spectralSignature(cv::Mat mask) {
 
 	int c = 0;
 	for (auto band : this->bands) {
-		Mat cropped = band(this->roi);
+		Mat cropped;
+		if (this->roi.area() > 0) {
+			cropped = band(this->roi);
+		}
+		else {
+			cropped = band;
+		}
+		
 		assert((cropped.size() == mask.size()) && "Mask is not the correct size");
 
 		Mat floatMask;
@@ -22,6 +29,7 @@ cv::Mat LWIRImage::spectralSignature(cv::Mat mask) {
 		Mat theRoi = cropped & normalizedFloatMask;
 
 		sig.at<float>(c, 0) = mean(theRoi)[0];
+
 		c++;
 	}
 

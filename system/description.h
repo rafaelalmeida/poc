@@ -47,4 +47,9 @@ class SIGDescriptor : public Descriptor {
 		virtual cv::Mat describe(LWIRImage image, std::list<cv::Mat> masks) override;
 };
 
+class ENERGYDescriptor : public Descriptor {
+	public:
+		virtual cv::Mat describe(LWIRImage image, std::list<cv::Mat> masks) override;
+};
+
 #endif

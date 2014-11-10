@@ -96,3 +96,19 @@ cv::Mat SIGDescriptor::describe(LWIRImage image, std::list<cv::Mat> masks) {
 
 	return samples;
 }
+
+cv::Mat ENERGYDescriptor::describe(LWIRImage image, std::list<cv::Mat> masks) {
+	Mat samples(masks.size(), 1, CV_32FC1);
+
+	int i = 0;
+	for (auto mask : masks) {
+		Mat sig = image.spectralSignature(mask);
+		float meanEnergy = mean(sig)[0];
+
+		samples.at<float>(i, 0) = meanEnergy;
+
+		i++;
+	}
+
+	return samples;
+}
