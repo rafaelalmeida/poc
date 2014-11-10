@@ -69,6 +69,11 @@ void config::parse(char **argv, int argc, Configuration &config) {
 			}
 		}
 
+		// Parallelization
+		else if (streq("--parallel", argv[c])) {
+			config.parallel = true;
+		}
+
 		c++;
 	}
 }

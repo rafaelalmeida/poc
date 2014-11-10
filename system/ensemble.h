@@ -1,14 +1,17 @@
 #ifndef ENSEMBLE_H
 #define ENSEMBLE_H
 
-#include <stdio.h>
-#include <iostream>
 #include <cstdint>
+#include <iomanip>
+#include <iostream>
 #include <list>
+#include <stdio.h>
+#include <thread>
+
 #include <gdal_priv.h>
 #include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #include "classification.h"
 #include "logging.h"
@@ -37,7 +40,9 @@ class Ensemble {
 
 	std::vector<cv::Mat> _classifications;
 
+	bool _parallel = false;
 	int numThreads;
+	mutex _mutex;
 
 	public:
 		// Constructors
@@ -47,11 +52,15 @@ class Ensemble {
 		~Ensemble();
 
 		// Methods
-		void addClassifier(Classifier* c);
-		void train();
 		CoverMap classify();
-		void setLogger(Logger *logger);
 		std::vector<cv::Mat> individualClassifications();
+		void addClassifier(Classifier* c);
+		void doClassify(Classifier* C, Segmentation S, int *cursor, 
+			int *classifiedSegments, int totalToClassify);
+		void setLogger(Logger *logger);
+		void setThreads(int n);
+		void train();
+		void setParallel(bool p);
 };
 
 #endif

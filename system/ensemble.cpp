@@ -60,30 +60,69 @@ void Ensemble::train() {
 	cerr << "training classifiers... done     " << endl;
 }
 
+void Ensemble::doClassify(Classifier* C, Segmentation S, int *cursor, 
+		int *classifiedSegments, int totalToClassify) {
+
+	Mat classification = Mat::zeros(S.getMapSize(), CV_8UC1);
+
+	int i = 1, n = S.getSegments().size();
+	for (auto mask : S.getSegments()) {
+		float progress = 100.0 * (*classifiedSegments) / totalToClassify;
+		cerr << "\rclassification: " << 
+			setprecision(2) << 
+			progress << "%        \r" << flush;
+
+		classification += C->classify(mask);
+		i++;
+		(*classifiedSegments)++;
+	}
+
+	if (!_parallel) {
+		_mutex.lock();
+	}
+
+	_classifications[*cursor] = classification;
+	(*cursor)++;
+
+	if (!_parallel) {
+		_mutex.unlock();
+	}
+}
+
 CoverMap Ensemble::classify() {
 	// Some initialization
 	Size mapSize = _segmentation.getMapSize();
-	list<Mat> classifiedSegments;
 
-	// Saves individual classifications for debugging
+	// Initializes individual classifications
 	_classifications.clear();
 	_classifications.resize(classifiers.size());
 
-	for (auto& c : _classifications) {
-		c = Mat::zeros(mapSize, CV_8UC1);
-	}
+	int currentCursor = 0;
+	int totalClassified = 0;
+	int totalToClassify = _segmentation.getSegments().size() * 
+		classifiers.size();
 
-	// Runs all classifiers for each segment
-	int i = 0;
-	int n = _segmentation.getSegments().size();
-
-	for (auto& c : classifiers) {
-		for (auto mask : _segmentation.getSegments()) {
-			Mat classification = c->classify(mask);
-			_classifications[i] += classification;
+	// Runs all classifiers
+	if (_parallel) {
+		// Creates the threads
+		list<thread> threads;
+		for (auto& c : classifiers) {
+			threads.push_back(thread(&Ensemble::doClassify, this, c, 
+					_segmentation, &currentCursor, &totalClassified,
+					totalToClassify));
 		}
 
-		i++;
+		// Wait for all threads to finish
+		for (auto& t : threads) {
+			t.join();
+		}	
+	}
+	else {
+		// Run serially
+		for (auto& c : classifiers) {
+			this->doClassify(c, _segmentation, &currentCursor, 
+				&totalClassified, totalToClassify);
+		}
 	}
 
 	// Get consensus
@@ -110,4 +149,12 @@ CoverMap Ensemble::classify() {
 
 vector<Mat> Ensemble::individualClassifications() {
 	return _classifications;
+}
+
+void Ensemble::setThreads(int n) {
+	numThreads = n;
+}
+
+void Ensemble::setParallel(bool p) {
+	_parallel = p;
 }

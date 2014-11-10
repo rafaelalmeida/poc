@@ -106,9 +106,10 @@ int main(int argc, char **argv) {
 	CoverMap tMap(training);
 	Ensemble ensemble(MAJORITY_VOTING, segmentation, tMap);
 	ensemble.setLogger(logger);
+	ensemble.setParallel(conf.parallel);
 
-	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, vis, new GCHDescriptor()));
-	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, vis, new ACCDescriptor()));
+	ensemble.addClassifier(new Classifier("SVM-GCH", ClassifierEngine::SVM, vis, new GCHDescriptor()));
+	ensemble.addClassifier(new Classifier("SVM-ACC", ClassifierEngine::SVM, vis, new ACCDescriptor()));
 	//ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, &lwir, new SIGDescriptor()));
 
 	log("training ensemble...");
@@ -116,6 +117,7 @@ int main(int argc, char **argv) {
 
 	log("classifying image...");
 	CoverMap classification = ensemble.classify();
+	log("classifying image... done     ");
 
 	if (logger) {
 		vector<Mat> allClassifications = ensemble.individualClassifications();

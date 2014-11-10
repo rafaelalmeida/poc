@@ -18,15 +18,17 @@ cv::Mat classification::predict(cv::Mat image, Segmentation segmentation, CvSVM 
 	return map;
 }
 
-Classifier::Classifier(ClassifierEngine engine, cv::Mat vis, Descriptor *descriptor)
-    : _engine(engine),
+Classifier::Classifier(string id, ClassifierEngine engine, cv::Mat vis, Descriptor *descriptor)
+    : _id(id),
+      _engine(engine),
       _vis(vis),
       _descriptor(descriptor),
       _type(VIS) {
 }
 
-Classifier::Classifier(ClassifierEngine engine, LWIRImage *lwir, Descriptor *descriptor)
-    : _engine(engine),
+Classifier::Classifier(string id, ClassifierEngine engine, LWIRImage *lwir, Descriptor *descriptor)
+    : _id(id),
+      _engine(engine),
       _lwir(lwir),
       _descriptor(descriptor),
       _type(LWIR) {
@@ -93,4 +95,8 @@ Mat Classifier::classify(cv::Mat mask) {
 	classification += theClass * (mask / 255);
 	
 	return classification;
+}
+
+string Classifier::getID() {
+	return _id;
 }

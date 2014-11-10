@@ -36,6 +36,9 @@ typedef struct {
 	// Sampling mode
 	SamplingMode samplingMode;
 
+	// Parallelization
+	bool parallel = false;
+
 } Configuration;
 
 namespace config {

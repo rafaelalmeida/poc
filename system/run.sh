@@ -14,6 +14,7 @@
 	--segmentation-mode GRID \
 	--sampling-mode DOWNSAMPLE_VIS \
 	--log-path "scratch/logs" \
+	--parallel
 
 # --roiX 940 \
 # --roiY 2619 \

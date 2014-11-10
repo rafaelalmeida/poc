@@ -47,12 +47,15 @@ namespace classification {
 		ClassifierType _type;
 		ClassifierEngine _engine;
 
+		string _id;
+
+		// Classifier object members
 		CvSVM _svm;
 
 		public:
 			// Constructors
-			Classifier(ClassifierEngine engine, cv::Mat vis, Descriptor *descriptor);
-			Classifier(ClassifierEngine engine, LWIRImage *lwir, Descriptor *descriptor);
+			Classifier(string id, ClassifierEngine engine, cv::Mat vis, Descriptor *descriptor);
+			Classifier(string id, ClassifierEngine engine, LWIRImage *lwir, Descriptor *descriptor);
 
 			// Destructors
 			~Classifier();
@@ -60,6 +63,7 @@ namespace classification {
 			// Methods
 			void train(cv::Mat labels, Segmentation trainingSegments);
 			cv::Mat classify(cv::Mat mask);
+			string getID();
 	};
 }
 

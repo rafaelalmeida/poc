@@ -106,7 +106,7 @@ std::list<cv::Mat> segmentation::getColorBlobs(cv::Mat posterized) {
 		for (int x = 0; x < clone.cols; x++) {
 			if ((y*clone.rows + x) % 1000 == 0) {
 				int progress = 100.0 * ((y*clone.cols + x)) / (clone.rows * clone.cols);
-				cerr << "finding blobs... " << progress << "%%...     " << "\r" << flush;
+				cerr << "finding blobs... " << progress << "%...     " << "\r" << flush;
 			}
 
 			if (mask.at<uchar>(y+1, x+1) == 0) {
