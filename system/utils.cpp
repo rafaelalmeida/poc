@@ -89,3 +89,20 @@ cv::Mat mergeVISandLWIR(cv::Mat vis, cv::Mat lwirAvg) {
 
 	return visGray;
 }
+
+void colorReduce(cv::Mat& image, int div) {    
+    int nl = image.rows;                    // number of lines
+    int nc = image.cols * image.channels(); // number of elements per line
+
+    for (int j = 0; j < nl; j++)
+    {
+        // get the address of row j
+        uchar* data = image.ptr<uchar>(j);
+
+        for (int i = 0; i < nc; i++)
+        {
+            // process each pixel
+            data[i] = data[i] / div * div + div / 2;
+        }
+    }
+}
