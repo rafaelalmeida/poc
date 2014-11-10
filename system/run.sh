@@ -13,8 +13,9 @@
 	--roiH 122 \
 	--segmentation-mode GRID \
 	--sampling-mode DOWNSAMPLE_VIS \
+	--resampling-method CUBIC \
 	--log-path "scratch/logs" \
-	#--parallel
+	#--parallel \
 
 # --roiX 940 \
 # --roiY 2619 \

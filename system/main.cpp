@@ -26,6 +26,10 @@ using namespace segmentation;
 using namespace classification;
 
 bool verbose;
+Logger *logger = NULL;
+
+void resample(Mat& vis, Mat& training, LWIRImage& lwir, 
+		SamplingMode samplingMode, ResamplingMethod resamplingMethod);
 
 int main(int argc, char **argv) {
 	Configuration conf;
@@ -33,7 +37,6 @@ int main(int argc, char **argv) {
 	verbose = conf.verbose;
 
 	// Setup logger
-	Logger *logger = NULL;
 	if (conf.logEnabled) {
 		logger = new Logger(conf.logPath);
 	}
@@ -50,27 +53,12 @@ int main(int argc, char **argv) {
 	Mat vis = visFull, training = trainingFull;
 
 	// Set sampling mode
-	if (conf.samplingMode == UPSAMPLE_LWIR) {
-		log("upscaling LWIR...");
-		lwir.upscale(visFull.size());
-	}
-	else {
-		log("downsampling VIS...");
-		Mat resizedVis, resizedTraining;
-		resize(visFull, resizedVis, lwir.size());
-		resize(trainingFull, resizedTraining, lwir.size());
-
-		vis = resizedVis;
-		training = resizedTraining;
-
-		if (logger) {
-			logger->saveImage("vis", vis);
-		}
-	}
+	resample(vis, training, lwir, conf.samplingMode, conf.resamplingMethod);
 
 	// Save training map for debugging
 	if (logger) {
-		logger->saveImage("training", blend(vis, CoverMap(training).coloredMap()));
+		logger->saveImage("training", 
+			blend(vis, CoverMap(training).coloredMap()));
 	}
 
 	// Set ROI if exists
@@ -86,7 +74,8 @@ int main(int argc, char **argv) {
 
 	// Log cropped images
 	if (logger) {
-		logger->saveImage("training-ROI", blend(vis, CoverMap(training).coloredMap()));
+		logger->saveImage("training-ROI", 
+			blend(vis, CoverMap(training).coloredMap()));
 		logger->saveImage("vis-ROI", vis);
 	}
 
@@ -108,9 +97,12 @@ int main(int argc, char **argv) {
 	ensemble.setLogger(logger);
 	ensemble.setParallel(conf.parallel);
 
-	ensemble.addClassifier(new Classifier("SVM-GCH", ClassifierEngine::SVM, vis, new GCHDescriptor()));
-	ensemble.addClassifier(new Classifier("SVM-ACC", ClassifierEngine::SVM, vis, new ACCDescriptor()));
-	//ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, &lwir, new SIGDescriptor()));
+	ensemble.addClassifier(new Classifier("SVM-GCH", ClassifierEngine::SVM, 
+		vis, new GCHDescriptor()));
+	ensemble.addClassifier(new Classifier("SVM-ACC", ClassifierEngine::SVM, 
+		vis, new ACCDescriptor()));
+	//ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, &lwir, 
+	//	new SIGDescriptor()));
 
 	log("training ensemble...");
 	ensemble.train();
@@ -147,4 +139,41 @@ int main(int argc, char **argv) {
 	}
 
 	return 0;
+}
+
+void resample(Mat& vis, Mat& training, LWIRImage& lwir, 
+		SamplingMode samplingMode, ResamplingMethod resamplingMethod) {
+
+	// Set sampling mode
+	if (samplingMode == UPSAMPLE_LWIR) {
+		log("upscaling LWIR...");
+		lwir.upscale(vis.size());
+	}
+	else {
+		int interpolationMode;
+		if (resamplingMethod == NEAREST_NEIGHBOR) {
+			interpolationMode = INTER_NEAREST;
+		}
+		else if (resamplingMethod == LINEAR) {
+			interpolationMode = INTER_LINEAR;
+		}
+		else if (resamplingMethod == CUBIC) {
+			interpolationMode = INTER_CUBIC;
+		}
+
+		log("downsampling VIS...");
+		Mat resizedVis, resizedTraining;
+		resize(vis, resizedVis, lwir.size(), 0, 0, interpolationMode);
+
+		// Training map needs nearest neighbor interpolation to keep the
+		// semantics of the gray values (which represent labels)
+		resize(training, resizedTraining, lwir.size(), 0, 0, INTER_NEAREST);
+
+		vis = resizedVis;
+		training = resizedTraining;
+
+		if (logger) {
+			logger->saveImage("vis", vis);
+		}
+	}
 }

@@ -69,6 +69,21 @@ void config::parse(char **argv, int argc, Configuration &config) {
 			}
 		}
 
+		// Resampling method
+		else if (streq("--resampling-method", argv[c])) {
+			char theMethod[512];
+			strcpy(theMethod, argv[++c]);
+			if (streq("NEAREST_NEIGHBOR", theMethod)) {
+				config.resamplingMethod = NEAREST_NEIGHBOR;
+			}
+			else if (streq("LINEAR" , theMethod)) {
+				config.resamplingMethod = LINEAR;
+			}
+			else if (streq("CUBIC" , theMethod)) {
+				config.resamplingMethod = CUBIC;
+			}
+		}
+
 		// Parallelization
 		else if (streq("--parallel", argv[c])) {
 			config.parallel = true;

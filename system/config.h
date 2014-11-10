@@ -11,6 +11,12 @@ enum SamplingMode {
 	DOWNSAMPLE_VIS
 };
 
+enum ResamplingMethod {
+	NEAREST_NEIGHBOR,
+	LINEAR,
+	CUBIC
+};
+
 typedef struct {
 	// File paths
 	char pathVIS[MAX_PATH];
@@ -33,8 +39,9 @@ typedef struct {
 	bool logEnabled = false;
 	char logPath[MAX_PATH];
 
-	// Sampling mode
+	// Sampling and resampling
 	SamplingMode samplingMode;
+	ResamplingMethod resamplingMethod = NEAREST_NEIGHBOR;
 
 	// Parallelization
 	bool parallel = false;
