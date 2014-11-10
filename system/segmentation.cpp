@@ -141,7 +141,7 @@ cv::Mat Segmentation::representation() {
 	assert(_masks.size() > 0);
 	Mat M = *_masks.begin();
 
-	Mat repr(M.rows, M.cols, CV_8UC3);
+	Mat repr = Mat::zeros(M.size(), CV_8UC3);
 	for (auto mask : _masks) {
 		Mat clone = mask.clone();
 		vector<vector<Point> > contours;
