@@ -38,7 +38,8 @@ class Ensemble {
 
 	Logger *_logger = NULL;
 
-	std::vector<cv::Mat> _classifications;
+	std::vector<std::pair<std::string, cv::Mat> > _classifications;
+	std::vector<string> _classifierIDs;
 
 	bool _parallel = false;
 	int numThreads;
@@ -53,7 +54,7 @@ class Ensemble {
 
 		// Methods
 		CoverMap classify();
-		std::vector<cv::Mat> individualClassifications();
+		std::vector<std::pair<std::string, cv::Mat> > individualClassifications();
 		void addClassifier(Classifier* c);
 		void doClassify(Classifier* C, Segmentation S, int *cursor, 
 			int *classifiedSegments, int totalToClassify);

@@ -81,7 +81,8 @@ void Ensemble::doClassify(Classifier* C, Segmentation S, int *cursor,
 		_mutex.lock();
 	}
 
-	_classifications[*cursor] = classification;
+	auto p = make_pair(C->getID(), classification);
+	_classifications[*cursor] = p;
 	(*cursor)++;
 
 	if (!_parallel) {
@@ -133,7 +134,9 @@ CoverMap Ensemble::classify() {
 			Counter<int> counter;
 
 			for (auto op: _classifications) {
-				int theClass = (int) segmentation::getSegmentLabel(op, mask);
+				int theClass = (int) segmentation::getSegmentLabel(op.second, 
+					mask);
+
 				counter.inc(theClass);
 			}
 
@@ -147,7 +150,7 @@ CoverMap Ensemble::classify() {
 	return CoverMap(consensus);
 }
 
-vector<Mat> Ensemble::individualClassifications() {
+vector<pair<string, Mat> > Ensemble::individualClassifications() {
 	return _classifications;
 }
 

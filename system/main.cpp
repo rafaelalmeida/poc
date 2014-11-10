@@ -120,15 +120,13 @@ int main(int argc, char **argv) {
 	log("classifying image... done     ");
 
 	if (logger) {
-		vector<Mat> allClassifications = ensemble.individualClassifications();
+		vector<pair<string, Mat> > allClassifications = ensemble.individualClassifications();
 
-		int i = 0;
 		for (auto c : allClassifications) {
 			char path[16];
-			sprintf(path, "classifier_%d", i);
+			sprintf(path, "classifier_%s", c.first.c_str());
 
-			logger->saveImage(path, blend(vis, CoverMap(c).coloredMap()));
-			i++;
+			logger->saveImage(path, blend(vis, CoverMap(c.second).coloredMap()));
 		}
 
 		Mat coloredMap = classification.coloredMap();
