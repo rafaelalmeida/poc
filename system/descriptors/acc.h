@@ -5,5 +5,6 @@
 #include "histogram.h"
 
 Histogram *ACC(CImage *cimg, Image *mask);
+int ACCDimensions();
 
 #endif

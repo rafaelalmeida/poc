@@ -5,5 +5,6 @@
 #include "histogram.h"
 
 Histogram *GCH(CImage *cimg, Image *mask);
+int GCHDimensions();
 
 #endif

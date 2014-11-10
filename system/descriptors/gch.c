@@ -238,3 +238,6 @@ Histogram *GCH(CImage *cimg, Image *mask)
   return(histogram);
 }
 
+int GCHDimensions() {
+  return SIZE;
+}

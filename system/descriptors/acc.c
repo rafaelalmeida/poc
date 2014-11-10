@@ -316,3 +316,6 @@ Histogram *ACC(CImage *cimg, Image *mask)
   return(h);
 }
 
+int ACCDimensions() {
+  return SIZE;
+}

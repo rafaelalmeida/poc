@@ -26,6 +26,11 @@ extern "C" {
 	#include "descriptors/unser.h"
 }
 
+// Base descriptor class - subclass this and implement the describe() method
+// for the VIS or the LWIR image, depending on the type of descritor. The 
+// classifier will know which method to call. Implement only the method which
+// receives a list of masks, the one that receives a single mask will
+// automatically use the other implementation.
 class Descriptor {
 	public:
 		virtual cv::Mat describe(cv::Mat image, cv::Mat mask);
@@ -45,6 +50,7 @@ class Descriptor {
 // Spytec
 // Steerable Pyramid
 
+// Descriptor wrappers
 class GCHDescriptor : public Descriptor {
 	public:
 		virtual cv::Mat describe(cv::Mat image, std::list<cv::Mat> masks) override;
@@ -79,5 +85,9 @@ class ENERGYDescriptor : public Descriptor {
 	public:
 		virtual cv::Mat describe(LWIRImage image, std::list<cv::Mat> masks) override;
 };
+
+// Util functions
+cv::Mat convertHistogramColor(cv::Mat image, std::list<cv::Mat> masks, 
+	int dimensions, Histogram *(*descriptor)(CImage*, Image*));
 
 #endif

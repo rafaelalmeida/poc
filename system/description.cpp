@@ -23,63 +23,7 @@ cv::Mat Descriptor::describe(LWIRImage image, std::list<cv::Mat> masks) {
 	return Mat();
 }
 
-cv::Mat GCHDescriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
-	const int HIST_BINS = 64;
-
-	CImage *cimg = matToRawColor(image);
-
-	Mat samples(masks.size(), HIST_BINS, CV_32FC1);
-
-	int currentMask = 0;
-	for (auto mask : masks) {
-		Image *cMask = matToRawGray(mask);
-
-		Histogram *hist = GCH(cimg, cMask);
-		assert(hist->n == HIST_BINS);
-
-		for (int i = 0; i < hist->n; i++) {
-			samples.at<float>(currentMask, i) = (float) hist->v[i];
-		}
-
-		DestroyHistogram(&hist);
-		DestroyImage(&cMask);
-
-		currentMask++;
-	}
-
-	DestroyCImage(&cimg);
-
-	return samples;
-}
-
-cv::Mat ACCDescriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
-	const int HIST_BINS = 4 * 4 * 4 * 4;
-	
-	CImage *cimg = matToRawColor(image);
-
-	Mat samples(masks.size(), HIST_BINS, CV_32FC1);
-
-	int currentMask = 0;
-	for (auto mask : masks) {
-		Image *cMask = matToRawGray(mask);
-
-		Histogram *hist = ACC(cimg, cMask);
-		assert(hist->n == HIST_BINS);
-
-		for (int i = 0; i < hist->n; i++) {
-			samples.at<float>(currentMask, i) = (float) hist->v[i];
-		}
-
-		DestroyHistogram(&hist);
-		DestroyImage(&cMask);
-
-		currentMask++;
-	}
-
-	DestroyCImage(&cimg);
-
-	return samples;
-}
+// LWIR Descriptors implementation
 
 cv::Mat SIGDescriptor::describe(LWIRImage image, std::list<cv::Mat> masks) {
 	Mat samples(masks.size(), image.numBands(), CV_32FC1);
@@ -113,65 +57,27 @@ cv::Mat ENERGYDescriptor::describe(LWIRImage image, std::list<cv::Mat> masks) {
 	return samples;
 }
 
+// VIS descriptor wrappers
+
+cv::Mat GCHDescriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
+	return convertHistogramColor(image, masks, GCHDimensions(), &GCH);
+}
+
+cv::Mat ACCDescriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
+	return convertHistogramColor(image, masks, ACCDimensions(), &ACC);
+}
+
 cv::Mat BICDescriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
-	int dimensions = BICDimensions();
-	
-	CImage *cimg = matToRawColor(image);
-
-	Mat samples(masks.size(), dimensions, CV_32FC1);
-
-	int currentMask = 0;
-	for (auto mask : masks) {
-		Image *cMask = matToRawGray(mask);
-
-		Histogram *hist = BIC(cimg, cMask);
-		assert(hist->n == dimensions);
-
-		for (int i = 0; i < hist->n; i++) {
-			samples.at<float>(currentMask, i) = (float) hist->v[i];
-		}
-
-		DestroyHistogram(&hist);
-		DestroyImage(&cMask);
-
-		currentMask++;
-	}
-
-	DestroyCImage(&cimg);
-
-	return samples;
+	return convertHistogramColor(image, masks, BICDimensions(), &BIC);
 }
 
 cv::Mat LCHDescriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
-	int dimensions = LCHDimensions();
-	
-	CImage *cimg = matToRawColor(image);
-
-	Mat samples(masks.size(), dimensions, CV_32FC1);
-
-	int currentMask = 0;
-	for (auto mask : masks) {
-		Image *cMask = matToRawGray(mask);
-
-		Histogram *hist = LCH(cimg, cMask);
-		assert(hist->n == dimensions);
-
-		for (int i = 0; i < hist->n; i++) {
-			samples.at<float>(currentMask, i) = (float) hist->v[i];
-		}
-
-		DestroyHistogram(&hist);
-		DestroyImage(&cMask);
-
-		currentMask++;
-	}
-
-	DestroyCImage(&cimg);
-
-	return samples;
+	return convertHistogramColor(image, masks, LCHDimensions(), &LCH);
 }
 
 cv::Mat UnserDescriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
+	// TODO: refactor to leverage convertHistogramColor code
+
 	int dimensions = UnserDimensions();
 	
 	// Convert to grayscale
@@ -200,6 +106,35 @@ cv::Mat UnserDescriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
 	}
 
 	DestroyImage(&img);
+
+	return samples;
+}
+
+cv::Mat convertHistogramColor(cv::Mat image, std::list<cv::Mat> masks, 
+	int dimensions, Histogram *(*descriptor)(CImage*, Image*)) {
+	
+	CImage *cimg = matToRawColor(image);
+
+	Mat samples(masks.size(), dimensions, CV_32FC1);
+
+	int currentMask = 0;
+	for (auto mask : masks) {
+		Image *cMask = matToRawGray(mask);
+
+		Histogram *hist = descriptor(cimg, cMask);
+		assert(hist->n == dimensions);
+
+		for (int i = 0; i < hist->n; i++) {
+			samples.at<float>(currentMask, i) = (float) hist->v[i];
+		}
+
+		DestroyHistogram(&hist);
+		DestroyImage(&cMask);
+
+		currentMask++;
+	}
+
+	DestroyCImage(&cimg);
 
 	return samples;
 }
