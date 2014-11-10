@@ -5,6 +5,7 @@
 #include "featurevector.h"
 
 Ap_FeatureVector1D *CBC(CImage *cimg, Image *mask, int *nfeatures);
+int CBCDimensions();
 
 double CBCRegionDistance(FeatureVector1D *fv1, FeatureVector1D *fv2);
 

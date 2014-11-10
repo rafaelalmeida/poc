@@ -110,6 +110,47 @@ cv::Mat UnserDescriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
 	return samples;
 }
 
+// TODO: fix (dimensions reported differently for training and classification)
+cv::Mat CBCDescriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
+	assert(masks.size() > 0);
+
+	CImage *cimg = matToRawColor(image);
+
+	list<Ap_FeatureVector1D*> fvs;
+
+	// Extract all the feature vectors
+	int nFeatures = 0;
+
+	for (auto mask : masks) {
+		Image *cMask = matToRawGray(mask);
+
+		Ap_FeatureVector1D *fv = CBC(cimg, cMask, &nFeatures);
+		fvs.push_back(fv);
+
+		DestroyImage(&cMask);
+	}
+
+	cerr << "FEATURES = " << nFeatures << endl;
+
+	DestroyCImage(&cimg);
+
+	// Create the samples matrix with the dimensions reported by the descriptor
+	Mat samples(masks.size(), nFeatures, CV_32FC1);
+
+	// Converts the feature vectors to the Mat
+	int currentRow = 0;
+	for (auto fv : fvs) {
+		for (int i = 0; i < (*fv)->n; i++) {
+			samples.at<float>(currentRow, i) = (float) (*fv)->X[i];
+		}
+
+		// TODO: fix segfault
+		//DestroyFeatureVector1D(fv);
+	}
+
+	return samples;
+}
+
 cv::Mat convertHistogramColor(cv::Mat image, std::list<cv::Mat> masks, 
 	int dimensions, Histogram *(*descriptor)(CImage*, Image*)) {
 	

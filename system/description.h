@@ -21,6 +21,7 @@ extern "C" {
 
 	#include "descriptors/acc.h"
 	#include "descriptors/bic.h"
+	#include "descriptors/cbc.h"
 	#include "descriptors/gch.h"
 	#include "descriptors/lch.h"
 	#include "descriptors/unser.h"
@@ -40,15 +41,16 @@ class Descriptor {
 		virtual cv::Mat describe(LWIRImage image, std::list<cv::Mat> masks);
 };
 
-// CBC
-// EMD
-// EOAC
-// Gabor
-// IRM
-// LAS
-// QCCH
-// Spytec
-// Steerable Pyramid
+/* Classifiers left to build wrappers (TODO)
+   - EMD
+   - EOAC
+   - Gabor
+   - IRM
+   - LAS
+   - QCCH
+   - Spytec
+   - Steerable Pyramid
+*/
 
 // Descriptor wrappers
 class GCHDescriptor : public Descriptor {
@@ -72,6 +74,11 @@ class LCHDescriptor : public Descriptor {
 };
 
 class UnserDescriptor : public Descriptor {
+	public:
+		virtual cv::Mat describe(cv::Mat image, std::list<cv::Mat> masks) override;
+};
+
+class CBCDescriptor : public Descriptor {
 	public:
 		virtual cv::Mat describe(cv::Mat image, std::list<cv::Mat> masks) override;
 };

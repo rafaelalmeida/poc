@@ -358,4 +358,3 @@ double CBCRegionDistance(FeatureVector1D *fv1, FeatureVector1D *fv2)
 
   return (ALPHA * (L * L + a * a + b * b) + (1.0 - ALPHA) * (h * h + v * v));
 }
-
