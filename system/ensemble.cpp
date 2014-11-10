@@ -74,58 +74,38 @@ CoverMap Ensemble::classify() {
 	}
 
 	// Runs all classifiers for each segment
-	int c = 1;
+	int i = 0;
 	int n = _segmentation.getSegments().size();
 
-	for (auto mask : _segmentation.getSegments()) {
-		// Show progress
-		cerr << "classifying segment " << c << " of " << n << "     \r" << flush;
-
-		// Gets the opinion of all classifiers for this segment
-		vector<Mat> opinions;
-		opinions.reserve(classifiers.size());
-
-		int i = 0;
-		for (auto c : classifiers) {
+	for (auto& c : classifiers) {
+		for (auto mask : _segmentation.getSegments()) {
 			Mat classification = c->classify(mask);
-			opinions.push_back(classification);
-
-			// Save this segment individually for debugging
 			_classifications[i] += classification;
-
-			i++;
 		}
 
-		// Initializes the consensus matrix for this segment
-		Mat consensus = Mat::zeros(mapSize, CV_8UC1);
+		i++;
+	}
 
-		if (_consensusType == MAJORITY_VOTING) {
+	// Get consensus
+	Mat consensus = Mat::zeros(mapSize, CV_8UC1);
+
+	if (_consensusType == MAJORITY_VOTING) {
+		for (auto mask : _segmentation.getSegments()) {
 			Counter<int> counter;
 
-			for (auto op : opinions) {
+			for (auto op: _classifications) {
 				int theClass = (int) segmentation::getSegmentLabel(op, mask);
 				counter.inc(theClass);
 			}
 
-			consensus = counter.top() * (mask / 255);
+			consensus += counter.top() * (mask / 255);
 		}
-		else {
-			assert(false && "Unknown consensus type");
-		}
-
-		classifiedSegments.push_back(consensus);
-		c++;
+	}
+	else {
+		assert(false && "Unknown consensus type");
 	}
 
-	cerr << "classyfing segments... done   " << endl;
-
-	// Builds the map from the segments
-	Mat theMap = Mat::zeros(mapSize, CV_8UC1);
-	for (auto seg : classifiedSegments) {
-		theMap += seg;
-	}
-
-	return CoverMap(theMap);
+	return CoverMap(consensus);
 }
 
 vector<Mat> Ensemble::individualClassifications() {

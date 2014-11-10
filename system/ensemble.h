@@ -37,6 +37,8 @@ class Ensemble {
 
 	std::vector<cv::Mat> _classifications;
 
+	int numThreads;
+
 	public:
 		// Constructors
 		Ensemble(ConsensusType t, Segmentation& s, CoverMap training);
