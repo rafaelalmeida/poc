@@ -5,5 +5,6 @@
 #include "histogram.h"
 
 Histogram *Unser(Image *img, Image *msk);
+int UnserDimensions();
 
 #endif

@@ -177,3 +177,6 @@ Histogram *Unser(Image *img, Image *msk)
   return(h);
 }
 
+int UnserDimensions() {
+  return 32;
+}

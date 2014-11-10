@@ -23,6 +23,7 @@ extern "C" {
 	#include "descriptors/bic.h"
 	#include "descriptors/gch.h"
 	#include "descriptors/lch.h"
+	#include "descriptors/unser.h"
 }
 
 class Descriptor {
@@ -43,9 +44,6 @@ class Descriptor {
 // QCCH
 // Spytec
 // Steerable Pyramid
-// Unser
-
-// LCH
 
 class GCHDescriptor : public Descriptor {
 	public:
@@ -63,6 +61,11 @@ class BICDescriptor : public Descriptor {
 };
 
 class LCHDescriptor : public Descriptor {
+	public:
+		virtual cv::Mat describe(cv::Mat image, std::list<cv::Mat> masks) override;
+};
+
+class UnserDescriptor : public Descriptor {
 	public:
 		virtual cv::Mat describe(cv::Mat image, std::list<cv::Mat> masks) override;
 };

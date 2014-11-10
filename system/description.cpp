@@ -170,3 +170,36 @@ cv::Mat LCHDescriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
 
 	return samples;
 }
+
+cv::Mat UnserDescriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
+	int dimensions = UnserDimensions();
+	
+	// Convert to grayscale
+	Mat gray;
+	cvtColor(image, gray, CV_BGR2GRAY);
+
+	Image *img = matToRawGray(gray);
+
+	Mat samples(masks.size(), dimensions, CV_32FC1);
+
+	int currentMask = 0;
+	for (auto mask : masks) {
+		Image *cMask = matToRawGray(mask);
+
+		Histogram *hist = Unser(img, cMask);
+		assert(hist->n == dimensions);
+
+		for (int i = 0; i < hist->n; i++) {
+			samples.at<float>(currentMask, i) = (float) hist->v[i];
+		}
+
+		DestroyHistogram(&hist);
+		DestroyImage(&cMask);
+
+		currentMask++;
+	}
+
+	DestroyImage(&img);
+
+	return samples;
+}

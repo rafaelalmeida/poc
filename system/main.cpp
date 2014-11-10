@@ -109,6 +109,9 @@ int main(int argc, char **argv) {
 	ensemble.addClassifier(new Classifier("SVM-LCH", ClassifierEngine::SVM, 
 		vis, new LCHDescriptor()));
 
+	ensemble.addClassifier(new Classifier("SVM-Unser", ClassifierEngine::SVM, 
+		vis, new UnserDescriptor()));
+
 	/*ensemble.addClassifier(new Classifier("SVM-SIG", ClassifierEngine::SVM, 
 		&lwir, new SIGDescriptor()));
 	ensemble.addClassifier(new Classifier("SVM-ENERGY", ClassifierEngine::SVM, 
