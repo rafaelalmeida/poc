@@ -34,7 +34,8 @@ class Ensemble {
 	ConsensusType _consensusType;
 	Segmentation& _segmentation;
 
-	CoverMap _training;
+	CoverMap _trainingVIS;
+	CoverMap _trainingLWIR;
 
 	Logger *_logger = NULL;
 
@@ -46,7 +47,8 @@ class Ensemble {
 
 	public:
 		// Constructors
-		Ensemble(ConsensusType t, Segmentation& s, CoverMap training);
+		Ensemble(ConsensusType t, Segmentation& s, CoverMap trainingVIS, 
+			CoverMap trainingLWIR);
 
 		// Destructors
 		~Ensemble();

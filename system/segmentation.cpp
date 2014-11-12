@@ -106,3 +106,43 @@ cv::Mat Segmentation::representation() {
 cv::Size Segmentation::getMapSize() {
 	return densify(_masks.front()).size();
 }
+
+vector<SparseMat> segmentation::pixelSegmentation(Mat image) {
+	vector<SparseMat> segments;
+	segments.reserve(image.rows * image.cols);
+
+	for (int row = 0; row < image.rows; row++) {
+		for (int col = 0; image.cols; col++) {
+			Mat mask(image.size(), CV_8UC1);
+			mask.at<unsigned char>(row, col) = 255;
+
+			SparseMat sparseMask(mask);
+
+			segments.push_back(sparseMask);
+		}
+	}
+
+	return segments;
+}
+
+Segmentation Segmentation::pixelize() {
+	Mat fullMask = Mat::zeros(this->getMapSize(), CV_8UC1);
+	for (auto m : _masks) {
+		fullMask += densify(m);
+	}
+
+	list<SparseMat> pixelatedSegments;
+
+	for (int row = 0; row < fullMask.rows; row++) {
+		for (int col = 0; col < fullMask.cols; col++) {
+			if (fullMask.at<unsigned char>(row, col) != 0) {
+				Mat mask = Mat::zeros(fullMask.size(), CV_8UC1);
+				mask.at<unsigned char>(row, col) = 255;
+
+				pixelatedSegments.push_back(SparseMat(mask));
+			}
+		}
+	}
+
+	return Segmentation(pixelatedSegments);
+}

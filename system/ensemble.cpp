@@ -2,12 +2,16 @@
 
 using namespace cv;
 
-Ensemble::Ensemble(ConsensusType t, Segmentation& s, CoverMap training) 
+Ensemble::Ensemble(ConsensusType t, Segmentation& s, CoverMap trainingVIS,
+	CoverMap trainingLWIR)
+
     : _consensusType(t),
 	  _segmentation(s),
-	  _training(training) {
+	  _trainingVIS(trainingVIS),
+	  _trainingLWIR(trainingLWIR) {
 
-	assert(training.asMat().type() == CV_8UC1);
+	assert(trainingVIS.asMat().type() == CV_8UC1);
+	assert(trainingLWIR.asMat().type() == CV_8UC1);
 }
 
 Ensemble::~Ensemble() {
@@ -25,26 +29,56 @@ void Ensemble::setLogger(Logger *logger) {
 }
 
 void Ensemble::train() {
-	// Extract regions from training map
-	list<SparseMat> masks = segmentation::getColorBlobs(_training.asMat());
+	// Extract regions from training map, for VIS image
+	list<SparseMat> masksVIS = segmentation::getColorBlobs(
+		_trainingVIS.asMat());
 
-	// Recover region labels
-	list<float> labels;
-	list<SparseMat> validSegments;
-	for (auto mask : masks) {
-		float label = _training.getRegionClass(densify(mask));
+	// Recover region labels - VIS
+	list<float> labelsVIS;
+	list<SparseMat> validSegmentsVIS;
+	for (auto mask : masksVIS) {
+		float label = _trainingVIS.getRegionClass(densify(mask));
 
 		if (label != 0) { // Disconsider unclassified regions
-			labels.push_back(label);
-			validSegments.push_back(mask);
+			labelsVIS.push_back(label);
+			validSegmentsVIS.push_back(mask);
 		}
 	}
 
-	// Create labels training matrix
-	Mat labelsMat(labels.size(), 1, CV_32FC1);
+	// Recover region labels - LWIR
+	list<float> labelsLWIR;
+	list<SparseMat> validSegmentsLWIR;
+	Mat trainingLWIRMat = _trainingLWIR.asMat();
+	Size lwirSize = trainingLWIRMat.size();
+
+	for (int row = 0; row < lwirSize.height; row++) {
+		for (int col = 0; col < lwirSize.width; col++) {
+			float label = (float) trainingLWIRMat.at<unsigned char>(row, col);
+
+			if (label != 0) {
+				labelsLWIR.push_back(label);
+
+				Mat mask = Mat::zeros(lwirSize, CV_8UC1);
+				mask.at<unsigned char>(row, col) = 255;
+
+				validSegmentsLWIR.push_back(SparseMat(mask));
+			}
+		}
+	}
+
+	// Create labels training matrix - VIS
+	Mat labelsMatVIS(labelsVIS.size(), 1, CV_32FC1);
 	int c = 0;
-	for (auto label : labels) {
-		labelsMat.at<float>(c) = label;
+	for (auto label : labelsVIS) {
+		labelsMatVIS.at<float>(c) = label;
+		c++;
+	}
+
+	// Create labels training matrix - LWIR
+	Mat labelsMatLWIR(labelsLWIR.size(), 1, CV_32FC1);
+	c = 0;
+	for (auto label : labelsLWIR) {
+		labelsMatLWIR.at<float>(c) = label;
 		c++;
 	}
 
@@ -54,7 +88,13 @@ void Ensemble::train() {
 	for (auto c : classifiers) {
 		cerr << "training classifier " << i << " of " << n << "     \r" << flush;
 
-		c->train(labelsMat, Segmentation(validSegments));
+		if (c->getType() == VIS) {
+			c->train(labelsMatVIS, Segmentation(validSegmentsVIS));
+		}
+		else {
+			c->train(labelsMatLWIR, Segmentation(validSegmentsLWIR));
+		}
+
 		i++;
 	}
 
@@ -65,6 +105,12 @@ void Ensemble::doClassify(Classifier* C, Segmentation S, int *cursor,
 		int *classifiedSegments, int totalToClassify) {
 
 	Mat classification = Mat::zeros(S.getMapSize(), CV_8UC1);
+
+	// Pixelize segmentation if this is a LWIR classifier, since they 
+	// are classified pixel by pixel
+	if (C->getType() == LWIR) {
+		S = S.pixelize();
+	}
 
 	int i = 1, n = S.getSegments().size();
 	for (auto mask : S.getSegments()) {

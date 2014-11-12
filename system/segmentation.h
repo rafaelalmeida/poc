@@ -13,30 +13,35 @@
 #include "models.h"
 #include "utils.h"
 
+using namespace cv;
+using namespace std;
+
 enum SegmentationMode {
 	GRID
 };
 
 namespace segmentation {
 	class Segmentation {
-		std::list<cv::SparseMat> _masks;
+		list<SparseMat> _masks;
 
 		public:
 			Segmentation() {};
-			Segmentation(std::list<cv::SparseMat> masks);
-			std::list<cv::SparseMat> getSegments();
-			cv::Mat representation();
-			cv::Size getMapSize();
+			Segmentation(list<SparseMat> masks);
+			list<SparseMat> getSegments();
+			Mat representation();
+			Size getMapSize();
+			Segmentation pixelize();
 	};
 
-	Segmentation segmentLWIRMeanShift(cv::Mat M);
-	Segmentation segmentVISMeanShift(cv::Mat M);
-	Segmentation segmentLWIRCanny(cv::Mat M);
-	Segmentation segmentVISCanny(cv::Mat M);
-	Segmentation segmentVISGrid(cv::Mat M, int tileSize=10);
+	Segmentation segmentLWIRMeanShift(Mat M);
+	Segmentation segmentVISMeanShift(Mat M);
+	Segmentation segmentLWIRCanny(Mat M);
+	Segmentation segmentVISCanny(Mat M);
+	Segmentation segmentVISGrid(Mat M, int tileSize=10);
 
-	float getSegmentLabel(cv::Mat classificationMap, cv::Mat mask);
-	std::list<cv::SparseMat> getColorBlobs(cv::Mat posterized);
+	float getSegmentLabel(Mat classificationMap, Mat mask);
+	list<SparseMat> getColorBlobs(Mat posterized);
+	vector<SparseMat> pixelSegmentation(Mat image);
 }
 
 #endif

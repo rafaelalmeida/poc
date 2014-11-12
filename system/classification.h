@@ -62,6 +62,7 @@ namespace classification {
 			void train(cv::Mat labels, Segmentation trainingSegments);
 			cv::Mat classify(cv::SparseMat mask);
 			string getID();
+			ClassifierType getType();
 	};
 }
 

@@ -89,3 +89,7 @@ Mat Classifier::classify(cv::SparseMat mask) {
 string Classifier::getID() {
 	return _id;
 }
+
+ClassifierType Classifier::getType() {
+	return _type;
+}

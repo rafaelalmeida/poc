@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
 
 	// Setup classifier ensemble
 	CoverMap tMap(training);
-	Ensemble ensemble(MAJORITY_VOTING, segmentation, tMap);
+	Ensemble ensemble(MAJORITY_VOTING, segmentation, tMap, tMap);
 	ensemble.setLogger(logger);
 	ensemble.setParallel(conf.parallel);
 
