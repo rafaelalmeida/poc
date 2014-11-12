@@ -130,17 +130,16 @@ CoverMap Ensemble::classify() {
 	Mat consensus = Mat::zeros(mapSize, CV_8UC1);
 
 	if (_consensusType == MAJORITY_VOTING) {
-		for (auto mask : _segmentation.getSegments()) {
-			Counter<int> counter;
+		for (int row = 0; row < mapSize.height; row++) {
+			for (int col = 0; col < mapSize.width; col++) {
+				Counter<unsigned char> counter;
 
-			for (auto op: _classifications) {
-				int theClass = (int) segmentation::getSegmentLabel(op.second, 
-					mask);
+				for (auto op : _classifications) {
+					counter.inc(op.second.at<unsigned char>(row, col));
+				}
 
-				counter.inc(theClass);
+				consensus.at<unsigned char>(row, col) = counter.top();
 			}
-
-			consensus += counter.top() * (mask / 255);
 		}
 	}
 	else {
