@@ -14,6 +14,7 @@
 namespace statistics {
 	std::vector<float> summary(std::vector<float> samples);
 	double kappa(cv::Mat A, cv::Mat B);
+	std::vector<float> moments(std::vector<float> samples, int maxOrder);
 }
 
 #endif

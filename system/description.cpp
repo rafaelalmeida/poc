@@ -40,15 +40,24 @@ cv::Mat SIGDescriptor::describe(LWIRImage image, std::list<cv::Mat> masks) {
 	return samples;
 }
 
-cv::Mat ENERGYDescriptor::describe(LWIRImage image, std::list<cv::Mat> masks) {
-	Mat samples(masks.size(), 1, CV_32FC1);
+cv::Mat MOMENTSDescriptor::describe(LWIRImage image, std::list<cv::Mat> masks) {
+	const int MAX_MOMENT_ORDER = 4;
+
+	Mat samples(masks.size(), MAX_MOMENT_ORDER, CV_32FC1);
 
 	int i = 0;
 	for (auto mask : masks) {
 		Mat sig = image.spectralSignature(mask);
-		float meanEnergy = mean(sig)[0];
 
-		samples.at<float>(i, 0) = meanEnergy;
+		const float *p = sig.ptr<float>(0);
+		vector<float> values(p, p + sig.cols);
+
+		vector<float> moments = statistics::moments(values, MAX_MOMENT_ORDER);
+
+		int j = 0;
+		for (auto m : moments) {
+			samples.at<float>(i, j++) = moments[j];
+		}
 
 		i++;
 	}

@@ -128,3 +128,19 @@ double statistics::kappa(cv::Mat A, cv::Mat B) {
 
 	return kappa;
 }
+
+std::vector<float> statistics::moments(std::vector<float> samples, int maxOrder) {
+	vector<float> moments(maxOrder);
+
+	int n = samples.size();
+	for (int i = 1; i <= maxOrder; i++) {
+		float m = 0;
+		for (auto x : samples) {
+			m += pow(x, (float) i) / n;
+		}
+
+		moments[i-1] = m;
+	}
+
+	return moments;
+}

@@ -14,6 +14,7 @@
 #include "constants.h"
 #include "models.h"
 #include "segmentation.h"
+#include "statistics.h"
 
 extern "C" {
 	#include "descriptors/image.h"
@@ -88,7 +89,7 @@ class SIGDescriptor : public Descriptor {
 		virtual cv::Mat describe(LWIRImage image, std::list<cv::Mat> masks) override;
 };
 
-class ENERGYDescriptor : public Descriptor {
+class MOMENTSDescriptor : public Descriptor {
 	public:
 		virtual cv::Mat describe(LWIRImage image, std::list<cv::Mat> masks) override;
 };

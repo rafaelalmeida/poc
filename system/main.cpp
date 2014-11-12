@@ -114,8 +114,9 @@ int main(int argc, char **argv) {
 
 	ensemble.addClassifier(new Classifier("SVM-SIG", ClassifierEngine::SVM, 
 		&lwir, new SIGDescriptor()));
-	/*ensemble.addClassifier(new Classifier("SVM-ENERGY", ClassifierEngine::SVM, 
-		&lwir, new ENERGYDescriptor()));*/
+
+	ensemble.addClassifier(new Classifier("SVM-MOMENTS", ClassifierEngine::SVM, 
+		&lwir, new MOMENTSDescriptor()));
 
 	log("training ensemble...");
 	ensemble.train();

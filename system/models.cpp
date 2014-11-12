@@ -51,7 +51,6 @@ cv::Mat LWIRImage::spectralSignature(cv::Mat mask) {
 
 cv::Mat LWIRImage::normalizedSpectralSignature(cv::Mat mask) {
 	Mat sig = this->spectralSignature(mask);
-	cerr << sig << endl;
 
 	for (int col = 0; col < sig.cols; col++) {
 		float val = sig.at<float>(0, col);
