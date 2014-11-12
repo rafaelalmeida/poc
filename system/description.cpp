@@ -3,34 +3,34 @@
 using namespace cv;
 using namespace std;
 
-cv::Mat Descriptor::describe(cv::Mat image, cv::Mat mask) {
-	list<Mat> masks = {mask};
+Mat Descriptor::describe(Mat image, SparseMat mask) {
+	list<SparseMat> masks = {mask};
 	return this->describe(image, masks);
 }
 
-cv::Mat Descriptor::describe(LWIRImage image, cv::Mat mask) {
-	list<Mat> masks = {mask};
+Mat Descriptor::describe(LWIRImage image, SparseMat mask) {
+	list<SparseMat> masks = {mask};
 	return this->describe(image, masks);
 }
 
-cv::Mat Descriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
+Mat Descriptor::describe(Mat image, list<SparseMat> masks) {
 	assert(false && "Not impelemented. Maybe this is a LWIR descriptor?");
 	return Mat();
 }
 
-cv::Mat Descriptor::describe(LWIRImage image, std::list<cv::Mat> masks) {
+Mat Descriptor::describe(LWIRImage image, list<SparseMat> masks) {
 	assert(false && "Not impelemented. Maybe this is a VIS descriptor?");
 	return Mat();
 }
 
 // LWIR Descriptors implementation
-Mat getSpectralSignature(LWIRImage image, list<Mat> masks, bool reduced) {
+Mat getSpectralSignature(LWIRImage image, list<SparseMat> masks, bool reduced) {
 	int cols = reduced ? image.numReducedBands() : image.numBands();
 	Mat samples(masks.size(), cols, CV_32FC1);
 
 	int i = 0;
 	for (auto mask : masks) {
-		Mat sig = image.normalizedSpectralSignature(mask, reduced);
+		Mat sig = image.normalizedSpectralSignature(densify(mask), reduced);
 
 		sig.row(0).copyTo(samples.row(i));
 
@@ -40,22 +40,22 @@ Mat getSpectralSignature(LWIRImage image, list<Mat> masks, bool reduced) {
 	return samples;
 }
 
-cv::Mat SIGDescriptor::describe(LWIRImage image, std::list<cv::Mat> masks) {
+Mat SIGDescriptor::describe(LWIRImage image, list<SparseMat> masks) {
 	return getSpectralSignature(image, masks, false);
 }
 
-cv::Mat REDUCEDSIGDescriptor::describe(LWIRImage image, std::list<cv::Mat> masks) {
+Mat REDUCEDSIGDescriptor::describe(LWIRImage image, list<SparseMat> masks) {
 	return getSpectralSignature(image, masks, true);
 }
 
-cv::Mat MOMENTSDescriptor::describe(LWIRImage image, std::list<cv::Mat> masks) {
+Mat MOMENTSDescriptor::describe(LWIRImage image, list<SparseMat> masks) {
 	const int MAX_MOMENT_ORDER = 4;
 
 	Mat samples(masks.size(), MAX_MOMENT_ORDER, CV_32FC1);
 
 	int i = 0;
 	for (auto mask : masks) {
-		Mat sig = image.spectralSignature(mask);
+		Mat sig = image.spectralSignature(densify(mask));
 
 		const float *p = sig.ptr<float>(0);
 		vector<float> values(p, p + sig.cols);
@@ -75,23 +75,23 @@ cv::Mat MOMENTSDescriptor::describe(LWIRImage image, std::list<cv::Mat> masks) {
 
 // VIS descriptor wrappers
 
-cv::Mat GCHDescriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
+Mat GCHDescriptor::describe(Mat image, list<SparseMat> masks) {
 	return convertHistogramColor(image, masks, GCHDimensions(), &GCH);
 }
 
-cv::Mat ACCDescriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
+Mat ACCDescriptor::describe(Mat image, list<SparseMat> masks) {
 	return convertHistogramColor(image, masks, ACCDimensions(), &ACC);
 }
 
-cv::Mat BICDescriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
+Mat BICDescriptor::describe(Mat image, list<SparseMat> masks) {
 	return convertHistogramColor(image, masks, BICDimensions(), &BIC);
 }
 
-cv::Mat LCHDescriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
+Mat LCHDescriptor::describe(Mat image, list<SparseMat> masks) {
 	return convertHistogramColor(image, masks, LCHDimensions(), &LCH);
 }
 
-cv::Mat UnserDescriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
+Mat UnserDescriptor::describe(Mat image, list<SparseMat> masks) {
 	// TODO: refactor to leverage convertHistogramColor code
 
 	int dimensions = UnserDimensions();
@@ -106,7 +106,7 @@ cv::Mat UnserDescriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
 
 	int currentMask = 0;
 	for (auto mask : masks) {
-		Image *cMask = matToRawGray(mask);
+		Image *cMask = matToRawGray(densify(mask));
 
 		Histogram *hist = Unser(img, cMask);
 		assert(hist->n == dimensions);
@@ -127,7 +127,7 @@ cv::Mat UnserDescriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
 }
 
 // TODO: fix (dimensions reported differently for training and classification)
-cv::Mat CBCDescriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
+Mat CBCDescriptor::describe(Mat image, list<SparseMat> masks) {
 	assert(masks.size() > 0);
 
 	CImage *cimg = matToRawColor(image);
@@ -138,7 +138,7 @@ cv::Mat CBCDescriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
 	int nFeatures = 0;
 
 	for (auto mask : masks) {
-		Image *cMask = matToRawGray(mask);
+		Image *cMask = matToRawGray(densify(mask));
 
 		Ap_FeatureVector1D *fv = CBC(cimg, cMask, &nFeatures);
 		fvs.push_back(fv);
@@ -167,7 +167,7 @@ cv::Mat CBCDescriptor::describe(cv::Mat image, std::list<cv::Mat> masks) {
 	return samples;
 }
 
-cv::Mat convertHistogramColor(cv::Mat image, std::list<cv::Mat> masks, 
+Mat convertHistogramColor(Mat image, list<SparseMat> masks, 
 	int dimensions, Histogram *(*descriptor)(CImage*, Image*)) {
 	
 	CImage *cimg = matToRawColor(image);
@@ -176,7 +176,7 @@ cv::Mat convertHistogramColor(cv::Mat image, std::list<cv::Mat> masks,
 
 	int currentMask = 0;
 	for (auto mask : masks) {
-		Image *cMask = matToRawGray(mask);
+		Image *cMask = matToRawGray(densify(mask));
 
 		Histogram *hist = descriptor(cimg, cMask);
 		assert(hist->n == dimensions);

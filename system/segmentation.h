@@ -19,12 +19,12 @@ enum SegmentationMode {
 
 namespace segmentation {
 	class Segmentation {
-		std::list<cv::Mat> _masks;
+		std::list<cv::SparseMat> _masks;
 
 		public:
 			Segmentation() {};
-			Segmentation(std::list<cv::Mat> masks);
-			std::list<cv::Mat> getSegments();
+			Segmentation(std::list<cv::SparseMat> masks);
+			std::list<cv::SparseMat> getSegments();
 			cv::Mat representation();
 			cv::Size getMapSize();
 	};
@@ -36,7 +36,7 @@ namespace segmentation {
 	Segmentation segmentVISGrid(cv::Mat M, int tileSize=10);
 
 	float getSegmentLabel(cv::Mat classificationMap, cv::Mat mask);
-	std::list<cv::Mat> getColorBlobs(cv::Mat posterized);
+	std::list<cv::SparseMat> getColorBlobs(cv::Mat posterized);
 }
 
 #endif

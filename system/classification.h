@@ -22,8 +22,6 @@
 using namespace segmentation;
 
 namespace classification {
-	cv::Mat predict(cv::Mat image, segmentation::Segmentation segmentation, CvSVM *classifier);
-
 	enum ClassifierType {
 		VIS,
 		LWIR
@@ -62,7 +60,7 @@ namespace classification {
 
 			// Methods
 			void train(cv::Mat labels, Segmentation trainingSegments);
-			cv::Mat classify(cv::Mat mask);
+			cv::Mat classify(cv::SparseMat mask);
 			string getID();
 	};
 }

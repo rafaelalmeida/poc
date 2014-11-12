@@ -28,6 +28,10 @@ extern "C" {
 	#include "descriptors/unser.h"
 }
 
+// Import namespaces symbols for readability
+using namespace cv;
+using namespace std;
+
 // Base descriptor class - subclass this and implement the describe() method
 // for the VIS or the LWIR image, depending on the type of descritor. The 
 // classifier will know which method to call. Implement only the method which
@@ -35,11 +39,11 @@ extern "C" {
 // automatically use the other implementation.
 class Descriptor {
 	public:
-		virtual cv::Mat describe(cv::Mat image, cv::Mat mask);
-		virtual cv::Mat describe(cv::Mat image, std::list<cv::Mat> masks);
+		virtual Mat describe(Mat image, SparseMat mask);
+		virtual Mat describe(Mat image, list<SparseMat> masks);
 
-		virtual cv::Mat describe(LWIRImage image, cv::Mat mask);
-		virtual cv::Mat describe(LWIRImage image, std::list<cv::Mat> masks);
+		virtual Mat describe(LWIRImage image, SparseMat mask);
+		virtual Mat describe(LWIRImage image, list<SparseMat> masks);
 };
 
 /* Classifiers left to build wrappers (TODO)
@@ -56,51 +60,51 @@ class Descriptor {
 // Descriptor wrappers
 class GCHDescriptor : public Descriptor {
 	public:
-		virtual cv::Mat describe(cv::Mat image, std::list<cv::Mat> masks) override;
+		virtual Mat describe(Mat image, list<SparseMat> masks) override;
 };
 
 class ACCDescriptor : public Descriptor {
 	public:
-		virtual cv::Mat describe(cv::Mat image, std::list<cv::Mat> masks) override;
+		virtual Mat describe(Mat image, list<SparseMat> masks) override;
 };
 
 class BICDescriptor : public Descriptor {
 	public:
-		virtual cv::Mat describe(cv::Mat image, std::list<cv::Mat> masks) override;
+		virtual Mat describe(Mat image, list<SparseMat> masks) override;
 };
 
 class LCHDescriptor : public Descriptor {
 	public:
-		virtual cv::Mat describe(cv::Mat image, std::list<cv::Mat> masks) override;
+		virtual Mat describe(Mat image, list<SparseMat> masks) override;
 };
 
 class UnserDescriptor : public Descriptor {
 	public:
-		virtual cv::Mat describe(cv::Mat image, std::list<cv::Mat> masks) override;
+		virtual Mat describe(Mat image, list<SparseMat> masks) override;
 };
 
 class CBCDescriptor : public Descriptor {
 	public:
-		virtual cv::Mat describe(cv::Mat image, std::list<cv::Mat> masks) override;
+		virtual Mat describe(Mat image, list<SparseMat> masks) override;
 };
 
 class SIGDescriptor : public Descriptor {
 	public:
-		virtual cv::Mat describe(LWIRImage image, std::list<cv::Mat> masks) override;
+		virtual Mat describe(LWIRImage image, list<SparseMat> masks) override;
 };
 
 class REDUCEDSIGDescriptor : public Descriptor {
 	public:
-		virtual cv::Mat describe(LWIRImage image, std::list<cv::Mat> masks) override;
+		virtual Mat describe(LWIRImage image, list<SparseMat> masks) override;
 };
 
 class MOMENTSDescriptor : public Descriptor {
 	public:
-		virtual cv::Mat describe(LWIRImage image, std::list<cv::Mat> masks) override;
+		virtual Mat describe(LWIRImage image, list<SparseMat> masks) override;
 };
 
 // Util functions
-cv::Mat convertHistogramColor(cv::Mat image, std::list<cv::Mat> masks, 
+Mat convertHistogramColor(Mat image, list<SparseMat> masks, 
 	int dimensions, Histogram *(*descriptor)(CImage*, Image*));
 
 #endif

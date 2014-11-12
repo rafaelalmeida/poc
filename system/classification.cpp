@@ -6,18 +6,6 @@ using namespace std;
 using namespace classification;
 using namespace segmentation;
 
-cv::Mat classification::predict(cv::Mat image, Segmentation segmentation, CvSVM *classifier) {
-	Mat map(image.rows, image.cols, CV_8UC1);
-
-	for (auto&& s : segmentation.getSegments()) {
-		Mat sample = description_vis::GCH(image, s);
-		int theClass = (int) classifier->predict(sample);
-		map = map | theClass * (s / 255);
-	}
-
-	return map;
-}
-
 Classifier::Classifier(string id, ClassifierEngine engine, cv::Mat vis, Descriptor *descriptor)
     : _id(id),
       _engine(engine),
@@ -40,7 +28,7 @@ Classifier::~Classifier() {
 
 void Classifier::train(Mat labels, Segmentation trainingSegments) {
 	// Get valid segments
-	list<Mat> validSegments = trainingSegments.getSegments();
+	list<SparseMat> validSegments = trainingSegments.getSegments();
 
 	// Compute features
 	Mat features;
@@ -68,7 +56,7 @@ void Classifier::train(Mat labels, Segmentation trainingSegments) {
 	}
 }
 
-Mat Classifier::classify(cv::Mat mask) {
+Mat Classifier::classify(cv::SparseMat mask) {
 	// Compute features
 	Mat features;
 	if (_type == VIS) {
@@ -91,8 +79,9 @@ Mat Classifier::classify(cv::Mat mask) {
 	}
 
 	// Fill the matrix
-	Mat classification = Mat::zeros(mask.size(), CV_8UC1);
-	classification += theClass * (mask / 255);
+	Mat denseMask = densify(mask);
+	Mat classification = Mat::zeros(denseMask.size(), CV_8UC1);
+	classification += theClass * (denseMask / 255);
 	
 	return classification;
 }

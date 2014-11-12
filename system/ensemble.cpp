@@ -26,13 +26,14 @@ void Ensemble::setLogger(Logger *logger) {
 
 void Ensemble::train() {
 	// Extract regions from training map
-	list<Mat> masks = segmentation::getColorBlobs(_training.asMat());
+	list<SparseMat> masks = segmentation::getColorBlobs(_training.asMat());
 
 	// Recover region labels
 	list<float> labels;
-	list<Mat> validSegments;
+	list<SparseMat> validSegments;
 	for (auto mask : masks) {
-		float label = _training.getRegionClass(mask);
+		float label = _training.getRegionClass(densify(mask));
+
 		if (label != 0) { // Disconsider unclassified regions
 			labels.push_back(label);
 			validSegments.push_back(mask);

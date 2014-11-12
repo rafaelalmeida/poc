@@ -154,11 +154,14 @@ cv::Mat CoverMap::coloredMap() {
 
 	Mat map(_map.rows, _map.cols, CV_8UC3);
 
-	list<Mat> regions = segmentation::getColorBlobs(_map);
+	list<SparseMat> regions = segmentation::getColorBlobs(_map);
 	for (auto r : regions) {
+		Mat denseRegion = densify(r);
+
 		vector<Mat> contours;
-		findContours(r, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
-		float label = segmentation::getSegmentLabel(_map, r);
+		findContours(denseRegion, contours, CV_RETR_EXTERNAL, 
+			CV_CHAIN_APPROX_SIMPLE);
+		float label = segmentation::getSegmentLabel(_map, denseRegion);
 
 		Scalar color;
 		if (label == 0) { // UNCLASSIFIED
