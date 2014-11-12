@@ -25,12 +25,13 @@ namespace segmentation {
 		list<SparseMat> _masks;
 
 		public:
-			Segmentation() {};
-			Segmentation(list<SparseMat> masks);
+			int segmentCount();
 			list<SparseMat> getSegments();
 			Mat representation();
-			Size getMapSize();
 			Segmentation pixelize();
+			Segmentation() {};
+			Segmentation(list<SparseMat> masks);
+			Size getMapSize();
 	};
 
 	Segmentation segmentLWIRMeanShift(Mat M);

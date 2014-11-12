@@ -145,18 +145,45 @@ CoverMap Ensemble::classify() {
 	_classifications.clear();
 	_classifications.resize(classifiers.size());
 
+	// Initialize counters (will be shared among threads)
 	int currentCursor = 0;
 	int totalClassified = 0;
-	int totalToClassify = _segmentation.getSegments().size() * 
-		classifiers.size();
+
+	// Create VIS and LWIR segmentations
+	Segmentation segmentationVIS = _segmentation;
+	Segmentation segmentationLWIR = _pixelizeLWIR ? segmentationVIS.pixelize() 
+		: segmentationVIS;
+
+	// Determine total segments to classify
+	int segmentsPerVISImage = segmentationVIS.segmentCount();
+	int segmentsPerLWIRImage = segmentationLWIR.segmentCount();
+	int totalToClassify = 0;
+	for (auto& c : classifiers) {
+		if (_pixelizeLWIR && c->getType() == LWIR) {
+			totalToClassify += segmentsPerLWIRImage;
+		}
+		else {
+			totalToClassify += segmentsPerVISImage;
+		}
+	}
 
 	// Runs all classifiers
 	if (_parallel) {
 		// Creates the threads
 		list<thread> threads;
 		for (auto& c : classifiers) {
+			// Determine which segmentation to send to classifier
+			Segmentation S;
+			if (_pixelizeLWIR && c->getType() == LWIR) {
+				S = segmentationLWIR;
+			}
+			else {
+				S = segmentationVIS;
+			}
+
+			// Start the thread
 			threads.push_back(thread(&Ensemble::doClassify, this, c, 
-					_segmentation, &currentCursor, &totalClassified,
+					S, &currentCursor, &totalClassified,
 					totalToClassify));
 		}
 

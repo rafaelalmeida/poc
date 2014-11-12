@@ -146,3 +146,7 @@ Segmentation Segmentation::pixelize() {
 
 	return Segmentation(pixelatedSegments);
 }
+
+int Segmentation::segmentCount() {
+	return _masks.size();
+}
