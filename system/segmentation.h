@@ -34,11 +34,8 @@ namespace segmentation {
 			Size getMapSize();
 	};
 
-	Segmentation segmentLWIRMeanShift(Mat M);
-	Segmentation segmentVISMeanShift(Mat M);
-	Segmentation segmentLWIRCanny(Mat M);
-	Segmentation segmentVISCanny(Mat M);
 	Segmentation segmentVISGrid(Mat M, int tileSize=10);
+	Segmentation segmentVISWatershed(Mat M, int tileSize=100);
 
 	float getSegmentLabel(Mat classificationMap, Mat mask);
 	list<SparseMat> getColorBlobs(Mat posterized);

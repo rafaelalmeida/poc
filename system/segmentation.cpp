@@ -34,6 +34,51 @@ Segmentation segmentation::segmentVISGrid(cv::Mat M, int tileSize) {
 	return Segmentation(segments);
 }
 
+Segmentation segmentation::segmentVISWatershed(Mat M, int tileSize) {
+	// Build some rough markers using the grid tile centers as seed points
+	int regionsPerLine = (M.cols / tileSize);
+	int regionsPerColumn = (M.rows / tileSize);
+
+	Mat markers(M.size(), CV_32S);
+	int currentLabel = 1;
+
+	for (int i = 0; i < regionsPerLine; i++) {
+		for (int j = 0; j < regionsPerColumn; j++) {
+			Point P(i*tileSize + tileSize/2, j*tileSize + tileSize/2);
+			markers.at<int>(i, j) = currentLabel++;
+		}
+	}
+
+	// Notes the total number of regions
+	int totalRegions = currentLabel - 1;
+
+	cerr << regionsPerColumn << endl;
+	cerr << regionsPerLine << endl;
+
+	// Run the watershed
+	watershed(M, markers);
+
+	// Creates a list of region masks
+	list<SparseMat> regionMasks;
+	for (int i = 1; i <= totalRegions; i++) {
+		float progress = (float) 100 * i / totalRegions;
+		cerr << progress << "%          \r" << flush;
+
+		Mat thisMask(markers.size(), CV_8UC1);
+		for (int row = 0; row < markers.rows; row++) {
+			for (int col = 0; col < markers.cols; col++) {
+				if (markers.at<int>(row, col) == i) {
+					thisMask.at<unsigned char>(row, col) = 255;
+				}
+			}
+		}
+
+		regionMasks.push_back(SparseMat(thisMask));
+	}
+
+	return Segmentation(regionMasks);
+}
+
 float segmentation::getSegmentLabel(Mat classificationMap, Mat mask) {
 	assert(classificationMap.type() == CV_8UC1);
 	assert(mask.type() == CV_8UC1);
