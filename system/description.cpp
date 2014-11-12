@@ -30,10 +30,9 @@ cv::Mat SIGDescriptor::describe(LWIRImage image, std::list<cv::Mat> masks) {
 
 	int i = 0;
 	for (auto mask : masks) {
-		Mat sig = image.spectralSignature(mask);
+		Mat sig = image.normalizedSpectralSignature(mask);
 
-		Mat thisFeatureVector = sig.t();
-		thisFeatureVector.row(0).copyTo(samples.row(i));
+		sig.row(0).copyTo(samples.row(i));
 
 		i++;
 	}

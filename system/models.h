@@ -21,6 +21,9 @@ class LWIRImage {
 		std::vector<cv::Mat> bands;
 		cv::Rect roi;
 
+		float minVal;
+		float maxVal;
+
 		// Constructors
 		LWIRImage();
 		LWIRImage(std::vector<cv::Mat> bands);
@@ -29,6 +32,8 @@ class LWIRImage {
 		cv::Mat average();
 		cv::Mat equalized();
 		cv::Mat spectralSignature(cv::Mat mask);
+		cv::Mat normalizedSpectralSignature(cv::Mat mask);
+		cv::Mat normalizedSpectralSignature(cv::Point point);
 		cv::Size size();
 		int numBands();
 		void setRoi(cv::Rect roi);

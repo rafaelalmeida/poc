@@ -4,11 +4,29 @@ using namespace cv;
 
 LWIRImage::LWIRImage(std::vector<cv::Mat> bands) {
 	this->bands = bands;
+
+	// Finds the extremes for normalization
+	Mat extremes(1, bands.size() * 2, CV_32FC1);
+	int i = 0;
+	for (auto band : bands) {
+		double minValL, maxValL;
+		minMaxIdx(band, &minValL, &maxValL);
+
+		extremes.at<float>(0, i) = (float) minValL;
+		extremes.at<float>(0, i+1) = (float) maxValL;
+		i += 2;
+	}
+
+	// Saves the extreme values
+	double minValGlobal, maxValGlobal;
+	minMaxIdx(extremes, &minValGlobal, &maxValGlobal);
+	this->minVal = (float) minValGlobal;
+	this->maxVal = (float) maxValGlobal;
 }
 
 cv::Mat LWIRImage::spectralSignature(cv::Mat mask) {
 	int bands = this->bands.size();
-	Mat sig(bands, 1, CV_32FC1);
+	Mat sig(1, bands, CV_32FC1);
 
 	int c = 0;
 	for (auto band : this->bands) {
@@ -20,20 +38,36 @@ cv::Mat LWIRImage::spectralSignature(cv::Mat mask) {
 			cropped = band;
 		}
 		
-		assert((cropped.size() == mask.size()) && "Mask is not the correct size");
+		assert((cropped.size() == mask.size()) && 
+			"Mask is not the correct size");
 
-		Mat floatMask;
-		mask.convertTo(floatMask, CV_32FC1);
-		Mat normalizedFloatMask = floatMask / 255;
-
-		Mat theRoi = cropped & normalizedFloatMask;
-
-		sig.at<float>(c, 0) = mean(theRoi)[0];
+		sig.at<float>(0, c) = mean(cropped, mask)[0];
 
 		c++;
 	}
 
 	return sig;
+}
+
+cv::Mat LWIRImage::normalizedSpectralSignature(cv::Mat mask) {
+	Mat sig = this->spectralSignature(mask);
+	cerr << sig << endl;
+
+	for (int col = 0; col < sig.cols; col++) {
+		float val = sig.at<float>(0, col);
+		float nVal = (val - minVal) / (maxVal - minVal);
+
+		sig.at<float>(0, col) = nVal;
+	}
+
+	return sig;
+}
+
+cv::Mat LWIRImage::normalizedSpectralSignature(cv::Point point) {
+	Mat mask = Mat::zeros(bands[0].size(), CV_8UC1);
+	mask.at<unsigned char>(point) = 255;
+
+	return this->normalizedSpectralSignature(mask);
 }
 
 void LWIRImage::upscale(cv::Size size) {
