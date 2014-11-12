@@ -125,3 +125,12 @@ cv::Mat densify(cv::SparseMat sm) {
 	
 	return dense;
 }
+
+cv::Rect scaleROI(cv::Size original, cv::Size dst, cv::Rect roi) {
+	double fx = (float) dst.width / original.width;
+	double fy = (float) dst.height / original.height;
+
+	Rect newRoi(fx * roi.x, fy * roi.y, fx * roi.width, fy * roi.height);
+
+	return newRoi;
+}

@@ -82,12 +82,23 @@ void LWIRImage::upscale(cv::Size size) {
 }
 
 cv::Mat LWIRImage::average() {
-	Mat full = *(this->bands.begin());
-	Mat M = full(roi);
+	Mat full = this->bands.front();
+
+	// Apply ROI, if there is one
+	Mat M = full;
+	if (roi.area() > 0) {
+		M = full(roi);
+	}
+	
 	Mat avg(M.rows, M.cols, M.type());
 
-	for (auto&& band : this->bands) {
-		avg += band(roi);
+	for (auto band : this->bands) {
+		if (roi.area() > 0) {
+			avg += band(roi);
+		}
+		else {
+			avg += band;
+		}
 	}
 
 	avg /= this->bands.size();
@@ -97,6 +108,7 @@ cv::Mat LWIRImage::average() {
 
 cv::Mat LWIRImage::equalized() {
 	Mat src = floatImageTo8UC3Image(this->average());
+
 	Mat channels[3];
 	cv::split(src, channels);
 	src = channels[0];

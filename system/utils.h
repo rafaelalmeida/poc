@@ -30,6 +30,7 @@ cv::Mat onesLike(cv::Mat M);
 void colorReduce(cv::Mat& image, int div=64);
 void showImage(cv::Mat img, float scale=1.0, const char *winname=NULL, int delay=0);
 cv::Mat densify(cv::SparseMat sm);
+cv::Rect scaleROI(cv::Size original, cv::Size dst, cv::Rect roi);
 
 cv::Mat mergeVISandLWIR(cv::Mat vis, cv::Mat lwirAvg);
 
