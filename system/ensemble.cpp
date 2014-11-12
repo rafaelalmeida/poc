@@ -108,7 +108,7 @@ void Ensemble::doClassify(Classifier* C, Segmentation S, int *cursor,
 
 	// Pixelize segmentation if this is a LWIR classifier, since they 
 	// are classified pixel by pixel
-	if (C->getType() == LWIR) {
+	if (_pixelizeLWIR && C->getType() == LWIR) {
 		S = S.pixelize();
 	}
 
@@ -206,4 +206,8 @@ void Ensemble::setThreads(int n) {
 
 void Ensemble::setParallel(bool p) {
 	_parallel = p;
+}
+
+void Ensemble::setLWIRPixelize(bool p) {
+	_pixelizeLWIR = p;
 }

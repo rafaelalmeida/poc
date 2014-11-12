@@ -34,6 +34,10 @@ class Ensemble {
 	ConsensusType _consensusType;
 	Segmentation& _segmentation;
 
+	// Flag to see if segmentation is ignored for LWIR images, and the image
+	// is classified pixel-by-pixel instead
+	bool _pixelizeLWIR = true;
+
 	CoverMap _trainingVIS;
 	CoverMap _trainingLWIR;
 
@@ -62,6 +66,7 @@ class Ensemble {
 		void setLogger(Logger *logger);
 		void setThreads(int n);
 		void train();
+		void setLWIRPixelize(bool p);
 		void setParallel(bool p);
 };
 
