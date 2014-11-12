@@ -15,14 +15,21 @@
 
 #include "utils.h"
 
+#define PCA_COMPONENTS 5
+
 class LWIRImage {
 	public:
 		// Members
 		std::vector<cv::Mat> bands;
+		std::vector<cv::Mat> reducedBands;
 		cv::Rect roi;
 
+		// Extreme values, for normalization purposes
 		float minVal;
 		float maxVal;
+
+		float minValReduced;
+		float maxValReduced;
 
 		// Constructors
 		LWIRImage();
@@ -31,11 +38,16 @@ class LWIRImage {
 		// Methods
 		cv::Mat average();
 		cv::Mat equalized();
-		cv::Mat spectralSignature(cv::Mat mask);
-		cv::Mat normalizedSpectralSignature(cv::Mat mask);
-		cv::Mat normalizedSpectralSignature(cv::Point point);
+		void minMaxAcrossBands(std::vector<cv::Mat> bands, float *minVal, 
+			float *maxVal);
+		cv::Mat normalizedSpectralSignature(cv::Mat mask, bool reduced=false);
+		cv::Mat normalizedSpectralSignature(cv::Point point, 
+			bool reduced=false);
+		cv::Mat spectralSignature(cv::Mat mask, bool reduced=false);
 		cv::Size size();
 		int numBands();
+		int numReducedBands();
+		void reduceDimensionality(int keep);
 		void setRoi(cv::Rect roi);
 		void upscale(cv::Size size);
 };

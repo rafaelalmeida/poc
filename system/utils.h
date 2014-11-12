@@ -22,12 +22,13 @@ using namespace std;
 
 extern bool verbose;
 
-void showImage(cv::Mat img, float scale=1.0, const char *winname=NULL, int delay=0);
-cv::Mat makeLandCoverMap(cv::Mat labels);
-cv::Mat floatImageTo8UC3Image(cv::Mat floatImage);
-cv::Mat onesLike(cv::Mat M);
 cv::Mat blend(cv::Mat M1, cv::Mat M2);
+cv::Mat floatImageTo8UC3Image(cv::Mat floatImage);
+cv::Mat formatImagesForPCA(const std::vector<cv::Mat> &data);
+cv::Mat makeLandCoverMap(cv::Mat labels);
+cv::Mat onesLike(cv::Mat M);
 void colorReduce(cv::Mat& image, int div=64);
+void showImage(cv::Mat img, float scale=1.0, const char *winname=NULL, int delay=0);
 
 cv::Mat mergeVISandLWIR(cv::Mat vis, cv::Mat lwirAvg);
 

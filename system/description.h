@@ -89,6 +89,11 @@ class SIGDescriptor : public Descriptor {
 		virtual cv::Mat describe(LWIRImage image, std::list<cv::Mat> masks) override;
 };
 
+class REDUCEDSIGDescriptor : public Descriptor {
+	public:
+		virtual cv::Mat describe(LWIRImage image, std::list<cv::Mat> masks) override;
+};
+
 class MOMENTSDescriptor : public Descriptor {
 	public:
 		virtual cv::Mat describe(LWIRImage image, std::list<cv::Mat> masks) override;

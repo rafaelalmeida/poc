@@ -3,33 +3,24 @@
 using namespace cv;
 
 LWIRImage::LWIRImage(std::vector<cv::Mat> bands) {
+	// Saves the bands
 	this->bands = bands;
 
 	// Finds the extremes for normalization
-	Mat extremes(1, bands.size() * 2, CV_32FC1);
-	int i = 0;
-	for (auto band : bands) {
-		double minValL, maxValL;
-		minMaxIdx(band, &minValL, &maxValL);
+	this->minMaxAcrossBands(bands, &(this->minVal), &(this->maxVal));
 
-		extremes.at<float>(0, i) = (float) minValL;
-		extremes.at<float>(0, i+1) = (float) maxValL;
-		i += 2;
-	}
-
-	// Saves the extreme values
-	double minValGlobal, maxValGlobal;
-	minMaxIdx(extremes, &minValGlobal, &maxValGlobal);
-	this->minVal = (float) minValGlobal;
-	this->maxVal = (float) maxValGlobal;
+	// Reduce dimensionality via PCA
+	reduceDimensionality(PCA_COMPONENTS);
 }
 
-cv::Mat LWIRImage::spectralSignature(cv::Mat mask) {
-	int bands = this->bands.size();
-	Mat sig(1, bands, CV_32FC1);
+cv::Mat LWIRImage::spectralSignature(cv::Mat mask, bool reduced) {
+	vector<Mat> &myBands = reduced ? this->reducedBands : this->bands;
+
+	int numBands = myBands.size();
+	Mat sig(1, numBands, CV_32FC1);
 
 	int c = 0;
-	for (auto band : this->bands) {
+	for (auto band : myBands) {
 		Mat cropped;
 		if (this->roi.area() > 0) {
 			cropped = band(this->roi);
@@ -49,9 +40,21 @@ cv::Mat LWIRImage::spectralSignature(cv::Mat mask) {
 	return sig;
 }
 
-cv::Mat LWIRImage::normalizedSpectralSignature(cv::Mat mask) {
-	Mat sig = this->spectralSignature(mask);
+cv::Mat LWIRImage::normalizedSpectralSignature(cv::Mat mask, bool reduced) {
+	Mat sig = this->spectralSignature(mask, reduced);
 
+	// Determines the correct extreme values for normalization
+	float minVal, maxVal;
+	if (reduced) {
+		minVal = this->minValReduced;
+		maxVal = this->maxValReduced;
+	}
+	else {
+		minVal = this->minVal;
+		maxVal = this->maxVal;
+	}
+
+	// Normalizes the values
 	for (int col = 0; col < sig.cols; col++) {
 		float val = sig.at<float>(0, col);
 		float nVal = (val - minVal) / (maxVal - minVal);
@@ -62,11 +65,11 @@ cv::Mat LWIRImage::normalizedSpectralSignature(cv::Mat mask) {
 	return sig;
 }
 
-cv::Mat LWIRImage::normalizedSpectralSignature(cv::Point point) {
-	Mat mask = Mat::zeros(bands[0].size(), CV_8UC1);
+cv::Mat LWIRImage::normalizedSpectralSignature(cv::Point point, bool reduced) {
+	Mat mask = Mat::zeros(this->size(), CV_8UC1);
 	mask.at<unsigned char>(point) = 255;
 
-	return this->normalizedSpectralSignature(mask);
+	return this->normalizedSpectralSignature(mask, reduced);
 }
 
 void LWIRImage::upscale(cv::Size size) {
@@ -107,6 +110,10 @@ cv::Mat LWIRImage::equalized() {
 
 int LWIRImage::numBands() {
 	return this->bands.size();
+}
+
+int LWIRImage::numReducedBands() {
+	return this->reducedBands.size();
 }
 
 void LWIRImage::setRoi(cv::Rect roi) {
@@ -199,4 +206,43 @@ std::map<unsigned char, int> CoverMap::getClassesCounts() {
 
 cv::Size LWIRImage::size() {
 	return bands[0].size();
+}
+
+void LWIRImage::reduceDimensionality(int keep) {
+	Mat data = formatImagesForPCA(bands);
+	PCA pca(data, Mat(), CV_PCA_DATA_AS_ROW, keep);
+
+	// Converts the eigenvectors back into images
+	Size bandSize = this->size();
+	reducedBands.resize(keep);
+
+	for (int i = 0; i < keep; i++) {
+		reducedBands[i] = pca.eigenvectors.row(i).reshape(1, bandSize.height);
+	}
+
+	// Finds extremes for normalization
+	this->minMaxAcrossBands(reducedBands, &(this->minValReduced), 
+		&(this->maxValReduced));
+}
+
+void LWIRImage::minMaxAcrossBands(std::vector<cv::Mat> bands, float *minVal, 
+	float *maxVal) {
+
+	// Find the extreme of each band
+	Mat extremes(1, bands.size() * 2, CV_32FC1);
+	int i = 0;
+	for (auto band : bands) {
+		double minValL, maxValL;
+		minMaxIdx(band, &minValL, &maxValL);
+
+		extremes.at<float>(0, i) = (float) minValL;
+		extremes.at<float>(0, i+1) = (float) maxValL;
+		i += 2;
+	}
+
+	// Find the global extremes
+	double minValD, maxValD;
+	minMaxIdx(extremes, &minValD, &maxValD);
+	*minVal = (float) minValD;
+	*maxVal = (float) maxValD;
 }

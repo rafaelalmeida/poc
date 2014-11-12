@@ -24,13 +24,13 @@ cv::Mat Descriptor::describe(LWIRImage image, std::list<cv::Mat> masks) {
 }
 
 // LWIR Descriptors implementation
-
-cv::Mat SIGDescriptor::describe(LWIRImage image, std::list<cv::Mat> masks) {
-	Mat samples(masks.size(), image.numBands(), CV_32FC1);
+Mat getSpectralSignature(LWIRImage image, list<Mat> masks, bool reduced) {
+	int cols = reduced ? image.numReducedBands() : image.numBands();
+	Mat samples(masks.size(), cols, CV_32FC1);
 
 	int i = 0;
 	for (auto mask : masks) {
-		Mat sig = image.normalizedSpectralSignature(mask);
+		Mat sig = image.normalizedSpectralSignature(mask, reduced);
 
 		sig.row(0).copyTo(samples.row(i));
 
@@ -38,6 +38,14 @@ cv::Mat SIGDescriptor::describe(LWIRImage image, std::list<cv::Mat> masks) {
 	}
 
 	return samples;
+}
+
+cv::Mat SIGDescriptor::describe(LWIRImage image, std::list<cv::Mat> masks) {
+	return getSpectralSignature(image, masks, false);
+}
+
+cv::Mat REDUCEDSIGDescriptor::describe(LWIRImage image, std::list<cv::Mat> masks) {
+	return getSpectralSignature(image, masks, true);
 }
 
 cv::Mat MOMENTSDescriptor::describe(LWIRImage image, std::list<cv::Mat> masks) {

@@ -112,11 +112,14 @@ int main(int argc, char **argv) {
 	ensemble.addClassifier(new Classifier("SVM-Unser", ClassifierEngine::SVM, 
 		vis, new UnserDescriptor()));*/
 
-	ensemble.addClassifier(new Classifier("SVM-SIG", ClassifierEngine::SVM, 
-		&lwir, new SIGDescriptor()));
+	/*ensemble.addClassifier(new Classifier("SVM-SIG", ClassifierEngine::SVM, 
+		&lwir, new SIGDescriptor()));*/
 
-	ensemble.addClassifier(new Classifier("SVM-MOMENTS", ClassifierEngine::SVM, 
-		&lwir, new MOMENTSDescriptor()));
+	/*ensemble.addClassifier(new Classifier("SVM-SIG", ClassifierEngine::SVM, 
+		&lwir, new REDUCEDSIGDescriptor()));*/
+
+	/*ensemble.addClassifier(new Classifier("SVM-MOMENTS", ClassifierEngine::SVM, 
+		&lwir, new MOMENTSDescriptor()));*/
 
 	log("training ensemble...");
 	ensemble.train();
