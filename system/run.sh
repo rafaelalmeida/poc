@@ -10,7 +10,7 @@
 	--scale-vis 0.1 \
 	--scale-lwir 0.25 \
 	--segmentation-mode SLIC \
-	--resampling-method LINEAR \
+	--resampling-method NEAREST \
 	--log-path "scratch/logs" \
 	--parallel \
 

@@ -39,9 +39,8 @@ int main(int argc, char **argv) {
 	verbose = conf.verbose;
 
 	// Setup logger
-	if (conf.logEnabled) {
-		logger = new Logger(conf.logPath);
-	}
+	logger = new Logger(conf.logPath);
+	logger->saveArguments(argc, argv);
 
 	// Load images
 	log("loading VIS image...");
@@ -69,10 +68,7 @@ int main(int argc, char **argv) {
 	ThematicMap trainingMapLWIR(trainingLWIR);
 
 	// Save training map for debugging
-	if (logger) {
-		logger->saveImage("training", 
-			blend(vis, trainingMapVIS.coloredMap()));
-	}
+	logger->saveImage("training", blend(vis, trainingMapVIS.coloredMap()));
 
 	// Set ROI if there is one
 	Rect roi;
@@ -101,9 +97,7 @@ int main(int argc, char **argv) {
 		lwir, vis);
 
 	// Save segmentation representation
-	if (logger) {
-		logger->saveImage("segmentation", segmentationVIS.representation());
-	}
+	logger->saveImage("segmentation", segmentationVIS.representation());
 
 	// Setup classifier ensemble
 	Ensemble ensemble(MAJORITY_VOTING, segmentationVIS, segmentationLWIR,
@@ -146,36 +140,33 @@ int main(int argc, char **argv) {
 	log("classifying image... done     ");
 
 	// Log classification results
-	if (logger) {
-		vector<pair<string, Mat> > allClassifications = 
-			ensemble.individualClassifications();
+	vector<pair<string, Mat> > allClassifications = 
+		ensemble.individualClassifications();
 
-		for (auto c : allClassifications) {
-			char path[16];
-			sprintf(path, "classifier_%s", c.first.c_str());
+	for (auto c : allClassifications) {
+		char path[16];
+		sprintf(path, "classifier_%s", c.first.c_str());
 
-			logger->saveImage(path, blend(vis, 
-				ThematicMap(c.second).coloredMap()));
-		}
-
-		Mat coloredMap = classification.coloredMap();
-		logger->saveImage("consensus", blend(vis, coloredMap));
-	}
-	else {
-		Mat coloredMap = classification.coloredMap();
-		showImage(blend(vis, coloredMap));	
+		logger->saveImage(path, blend(vis, 
+			ThematicMap(c.second).coloredMap()));
 	}
 
-	// Calculate statistics
+	Mat coloredMap = classification.coloredMap();
+	logger->saveImage("consensus", blend(vis, coloredMap));
+
+	// Calculate consensus kappa
 	log("calculating kappa...");
 	float k = statistics::kappa(trainingMapVIS.asMat(), 
 		classification.asMat());
-	cout << k << endl;
+	cerr << k << endl;
+
+	// Write results
+	ofstream handle = logger->makeFile("results.txt");
+	handle << "kappa consensus " << k << endl;
+	handle.close();
 	
 	// Destroy logger
-	if (logger) {
-		delete logger;
-	}
+	delete logger;
 
 	return 0;
 }

@@ -20,6 +20,8 @@ class Logger {
 	public:
 		Logger(const char *basePath);
 		void saveImage(const char *name, cv::Mat img);
+		std::ofstream makeFile(const char *name);
+		void saveArguments(int argc, char **argv);
 };
 
 #endif
