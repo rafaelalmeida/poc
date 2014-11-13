@@ -14,9 +14,12 @@
 #define MAX_CATEGORIES 256;
 
 namespace statistics {
-	std::vector<float> summary(std::vector<float> samples);
+	double agreement(cv::Mat A, cv::Mat B);
 	double kappa(cv::Mat A, cv::Mat B);
+	
 	std::vector<float> moments(std::vector<float> samples, int maxOrder);
+	
+	std::vector<float> summary(std::vector<float> samples);
 }
 
 #endif

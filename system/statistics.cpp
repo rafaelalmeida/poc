@@ -57,17 +57,46 @@ std::vector<float> statistics::summary(std::vector<float> samples) {
 	return stats;
 }
 
+double statistics::agreement(cv::Mat A, cv::Mat B) {
+	assert(A.rows == B.rows && A.cols == B.cols && A.type() == B.type());
+
+	int agreementCount = 0;
+	int pixelsConsidered = 0;
+
+	// Loop through the image to count agreements
+	for (int row = 0; row < A.rows; row++) {
+		for (int col = 0; col < A.cols; col++) {
+			unsigned char labelA = A.at<unsigned char>(col, row);
+			unsigned char labelB = B.at<unsigned char>(col, row);
+
+			// Disconsider pixels marked as "not classified" (category id 0)
+			if (labelA != 0 && labelB != 0) {
+				// Update agreement count
+				if (labelA == labelB) {
+					agreementCount++;
+				}
+
+				// Update pixels considered
+				pixelsConsidered++;
+			}
+		}
+	}
+
+	// Calculates Pr(a), the relative agreement observed
+	double pr_a = 1.0 * agreementCount / pixelsConsidered;
+
+	return pr_a;
+}
+
 double statistics::kappa(cv::Mat A, cv::Mat B) {
 	assert(A.rows == B.rows && A.cols == B.cols && A.type() == B.type());
 
 	Counter<unsigned char> labelsA;
 	Counter<unsigned char> labelsB;
 
-	int agreementCount = 0;
 	int pixelsConsidered = 0;
 
 	// Loop through the image to count the occurence of each category
-	// and the agreements
 	for (int row = 0; row < A.rows; row++) {
 		for (int col = 0; col < A.cols; col++) {
 			unsigned char labelA = A.at<unsigned char>(col, row);
@@ -77,11 +106,6 @@ double statistics::kappa(cv::Mat A, cv::Mat B) {
 			if (labelA != 0 && labelB != 0) {
 				labelsA.inc(labelA);
 				labelsB.inc(labelB);
-
-				// Update agreement count
-				if (labelA == labelB) {
-					agreementCount++;
-				}
 
 				// Update pixels considered
 				pixelsConsidered++;
@@ -102,7 +126,7 @@ double statistics::kappa(cv::Mat A, cv::Mat B) {
 	}
 
 	// Calculates Pr(a), the relative agreement observed
-	double pr_a = 1.0 * agreementCount / pixelsConsidered;
+	double pr_a = statistics::agreement(A, B);
 
 	// Calculates the Cohen's Kappa
 	double kappa = (pr_a - pr_e) / (1 - pr_e);
