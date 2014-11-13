@@ -9,6 +9,9 @@ LWIRImage::LWIRImage(std::vector<cv::Mat> bands) {
 	// Finds the extremes for normalization
 	this->minMaxAcrossBands(bands, &(this->minVal), &(this->maxVal));
 
+	// Init the ROI as blank
+	this->roi = Rect(0, 0, 0, 0);
+
 	// Reduce dimensionality via PCA
 	reduceDimensionality(PCA_COMPONENTS);
 }
@@ -21,18 +24,12 @@ cv::Mat LWIRImage::spectralSignature(cv::Mat mask, bool reduced) {
 
 	int c = 0;
 	for (auto band : myBands) {
-		Mat cropped;
-		if (this->roi.area() > 0) {
-			cropped = band(this->roi);
-		}
-		else {
-			cropped = band;
-		}
+		Mat B = (this->roi.area() > 0) ? band(this->roi) : band;
 		
-		assert((cropped.size() == mask.size()) && 
+		assert((B.size() == mask.size()) && 
 			"Mask is not the correct size");
 
-		sig.at<float>(0, c) = mean(cropped, mask)[0];
+		sig.at<float>(0, c) = mean(B, mask)[0];
 
 		c++;
 	}

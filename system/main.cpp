@@ -181,7 +181,7 @@ void rescale(Mat& vis, LWIRImage& lwir, Mat trainingOriginal, Mat& trainingVIS,
 		lwir.rescale(scaleLWIR, resamplingMethod);
 
 		// Rescale LWIR training map
-		resize(trainingOriginal, trainingLWIR, Size(), scaleLWIR, scaleLWIR,
+		resize(trainingOriginal, trainingLWIR, lwir.size(), 0, 0,
 			TRAINING_INTERPOLATION_MODE);
 	}
 	else {
