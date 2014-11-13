@@ -139,10 +139,13 @@ int main(int argc, char **argv) {
 	ThematicMap classification = ensemble.classify();
 	log("classifying image... done     ");
 
-	// Log classification results
-	vector<pair<string, Mat> > allClassifications = 
-		ensemble.individualClassifications();
+	// Grab individual classifications
+	auto allClassifications = ensemble.individualClassifications();
 
+	// Open result file
+	ofstream results = logger->makeFile("results.txt");
+
+	// Log classification maps
 	for (auto c : allClassifications) {
 		char path[16];
 		sprintf(path, "classifier_%s", c.first.c_str());
@@ -154,16 +157,23 @@ int main(int argc, char **argv) {
 	Mat coloredMap = classification.coloredMap();
 	logger->saveImage("consensus", blend(vis, coloredMap));
 
+	// Calculate kappa for all classifications
+	log("calculating individual kappas...");
+	for (auto c : allClassifications) {
+		Mat map = c.second;
+		float kappa = statistics::kappa(trainingMapVIS.asMat(), map);
+		results << "kappa " << c.first << " " << kappa << endl;
+	}
+
 	// Calculate consensus kappa
-	log("calculating kappa...");
+	log("calculating consensus kappa...");
 	float k = statistics::kappa(trainingMapVIS.asMat(), 
 		classification.asMat());
 	cerr << k << endl;
+	results << "kappa consensus " << k << endl;
 
-	// Write results
-	ofstream handle = logger->makeFile("results.txt");
-	handle << "kappa consensus " << k << endl;
-	handle.close();
+	// Close result file
+	results.close();
 	
 	// Destroy logger
 	delete logger;
