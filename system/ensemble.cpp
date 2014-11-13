@@ -67,12 +67,14 @@ void Ensemble::train() {
 			float label = (float) trainingLWIRMat.at<unsigned char>(row, col);
 
 			if (label != 0) {
+				// Save label
 				labelsLWIR.push_back(label);
 
-				Mat mask = Mat::zeros(lwirSize, CV_8UC1);
-				mask.at<unsigned char>(row, col) = 255;
-
-				validSegmentsLWIR.push_back(SparseMat(mask));
+				// Save segment mask
+				int sizes[2] = {lwirSize.height, lwirSize.width};
+    			SparseMat mask(2, sizes, CV_8UC1);
+    			*(mask.ptr(row, col, true)) = 255;
+				validSegmentsLWIR.push_back(mask);
 			}
 
 			currentPixel++;
