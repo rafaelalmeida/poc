@@ -7,8 +7,8 @@
 	--vis "data/subset/TelopsDatasetCityVisible_20cm_Subset.img" \
 	--lwir "data/subset/TelopsDatasetCityLWIR_Subset.img" \
 	--training "data/subset/TrainingMap_ENVI_RAW_format.raw" \
-	--scale-vis 0.2 \
-	--scale-lwir 0.5 \
+	--scale-vis 0.1 \
+	--scale-lwir 0.25 \
 	--segmentation-mode GRID \
 	--resampling-method NEAREST \
 	--log-path "scratch/logs" \

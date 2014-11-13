@@ -161,15 +161,15 @@ cv::Mat ThematicMap::coloredMap() {
 
 	Mat map(_map.rows, _map.cols, CV_8UC3);
 
-	list<SparseMat> regions = segmentation::getColorBlobs(_map);
-	for (auto r : regions) {
-		Mat denseRegion = densify(r);
-
+	for (auto region : this->enumerateRegions()) {
+		// Determine which region to paint
+		Mat denseRegion = densify(region.first);
 		vector<Mat> contours;
 		findContours(denseRegion, contours, CV_RETR_EXTERNAL, 
 			CV_CHAIN_APPROX_SIMPLE);
-		float label = segmentation::getSegmentLabel(_map, denseRegion);
 
+		// Select the right color to paint
+		int label = region.second;
 		Scalar color;
 		if (label == 0) { // UNCLASSIFIED
 			color = Scalar(0, 0, 0); // BLACK
@@ -196,6 +196,7 @@ cv::Mat ThematicMap::coloredMap() {
 			color = Scalar(0, 255, 255); // YELLOW
 		}
 
+		// Paint the region
 		drawContours(map, contours, -1, color, CV_FILLED);
 	}
 
@@ -259,4 +260,44 @@ void LWIRImage::minMaxAcrossBands(std::vector<cv::Mat> bands, float *minVal,
 
 cv::Size ThematicMap::size() {
 	return this->asMat().size();
+}
+
+std::list<std::pair<cv::SparseMat, int> > ThematicMap::enumerateRegions() {
+	// Use the fact that all non-undefined labels are positive to threshold
+	// the image and enumerate the regions using contour finding
+	Mat bin(_map.size(), CV_8UC1);
+	threshold(_map, bin, 1, 255, THRESH_BINARY);
+	vector<vector<Point> > contours;
+	findContours(bin, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+
+	// Iterate over the found contours and build the region masks
+	list<pair<SparseMat, int> > regions;
+	for (int idx = 0; idx < contours.size(); idx++) {
+		// Build the mask
+		Mat mask = Mat::zeros(_map.size(), CV_8UC1);
+		drawContours(mask, contours, idx, Scalar(255), CV_FILLED);
+
+		// Get the region label. We assume, by construction, that all pixels
+		// inside a region have the same label. So, for efficiency, we take
+		// the first one we find and look at its label.
+		int label = 0;
+		bool keepLooking = true;
+
+		for (int row = 0; keepLooking && (row < _map.rows); row++) {
+			for (int col = 0; keepLooking && (col < _map.cols); col++) {
+				if (mask.at<unsigned char>(row, col) == 255) {
+					label = (int) _map.at<unsigned char>(row, col);
+					keepLooking = false;
+				}
+			}
+		}
+
+		// By construction, we only look at regions whose label is positive,
+		// so if label is still the sentinel value, something wrong happened.
+		assert(label > 0);
+
+		regions.push_back(make_pair(SparseMat(mask), label));
+	}
+
+	return regions;
 }

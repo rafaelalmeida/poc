@@ -59,9 +59,10 @@ class ThematicMap {
 
 		cv::Mat asMat();
 		cv::Mat coloredMap();
+		cv::Size size();
 		float getRegionClass(cv::Mat mask);
 		std::map<unsigned char, int> getClassesCounts();
-		cv::Size size();
+		std::list<std::pair<cv::SparseMat, int> > enumerateRegions();
 };
 
 #endif

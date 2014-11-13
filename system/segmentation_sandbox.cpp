@@ -197,8 +197,6 @@ int main3(int argc, char **argv) {
 		Mat dst(vis.size(), vis.type());
 		pyrMeanShiftFiltering(vis, dst, spatial, color);
 
-		//Segmentation seg(getColorBlobs(dst));
-
 		imshow("win", dst);
 
 		// Wait for enter

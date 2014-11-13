@@ -33,21 +33,13 @@ void Ensemble::setLogger(Logger *logger) {
 
 void Ensemble::train() {
 	// Extract regions from training map, for VIS image
-	cerr << "extracting region masks from VIS training map..." << endl;
-	list<SparseMat> masksVIS = segmentation::getColorBlobs(
-		_trainingVIS.asMat());
-
-	// Recover region labels - VIS
-	cerr << "recovering region labels from VIS training map..." << endl;
-	list<float> labelsVIS;
+	cerr << "enumerating regions from VIS training map..." << endl;
+	list<pair<SparseMat, int> > trainingRegionsVIS = 
+		_trainingVIS.enumerateRegions();
+	
 	list<SparseMat> validSegmentsVIS;
-	for (auto mask : masksVIS) {
-		float label = _trainingVIS.getRegionClass(densify(mask));
-
-		if (label != 0) { // Disconsider unclassified regions
-			labelsVIS.push_back(label);
-			validSegmentsVIS.push_back(mask);
-		}
+	for (auto p : trainingRegionsVIS) {
+		validSegmentsVIS.push_back(p.first);
 	}
 
 	// Recover region labels - LWIR
@@ -87,10 +79,10 @@ void Ensemble::train() {
 
 	// Create labels training matrix - VIS
 	cerr << "creating VIS training matrix..." << endl;
-	Mat labelsMatVIS(labelsVIS.size(), 1, CV_32FC1);
+	Mat labelsMatVIS(trainingRegionsVIS.size(), 1, CV_32FC1);
 	int c = 0;
-	for (auto label : labelsVIS) {
-		labelsMatVIS.at<float>(c) = label;
+	for (auto region : trainingRegionsVIS) {
+		labelsMatVIS.at<float>(c) = (float) region.second;
 		c++;
 	}
 
