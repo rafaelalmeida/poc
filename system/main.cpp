@@ -144,6 +144,7 @@ int main(int argc, char **argv) {
 
 	// Open result file
 	ofstream results = logger->makeFile("results.txt");
+	results << "MAP AGREEMENT KAPPA" << endl;
 
 	// Log classification maps
 	for (auto c : allClassifications) {
@@ -158,19 +159,27 @@ int main(int argc, char **argv) {
 	logger->saveImage("consensus", blend(vis, coloredMap));
 
 	// Calculate kappa for all classifications
-	log("calculating individual kappas...");
+	log("calculating individual statistics...");
+	Mat G = trainingMapVIS.asMat();
 	for (auto c : allClassifications) {
-		Mat map = c.second;
-		float kappa = statistics::kappa(trainingMapVIS.asMat(), map);
-		results << "kappa " << c.first << " " << kappa << endl;
+		Mat X = c.second;
+
+		float agreement = statistics::agreement(G, X);
+		float kappa = statistics::kappa(G, X);
+
+		results << c.first << " " << agreement << " " << kappa 
+			<< endl;
 	}
 
 	// Calculate consensus kappa
-	log("calculating consensus kappa...");
-	float k = statistics::kappa(trainingMapVIS.asMat(), 
-		classification.asMat());
-	cerr << k << endl;
-	results << "kappa consensus " << k << endl;
+	log("calculating consensus statistics...");
+
+	Mat C = classification.asMat();
+	float agreement = statistics::agreement(G, C);
+	float kappa = statistics::kappa(G, C);
+
+	cerr << agreement << " " << kappa << endl;
+	results << "MAJORITY " << agreement << " " << kappa << endl;
 
 	// Close result file
 	results.close();
