@@ -115,7 +115,7 @@ void Ensemble::train() {
 }
 
 void Ensemble::doClassify(Classifier* C, Size mapSize, Segmentation S, 
-	int *cursor, int *classifiedSegments, int totalToClassify) {
+	int *cursor, int *classifiedSegments, int totalToClassify, int idx) {
 
 	Mat classification = Mat::zeros(S.getMapSize(), CV_8UC1);
 
@@ -128,6 +128,7 @@ void Ensemble::doClassify(Classifier* C, Size mapSize, Segmentation S,
 
 		classification += C->classify(mask);
 		i++;
+		_worklog[idx]++;
 		(*classifiedSegments)++;
 	}
 
@@ -179,6 +180,12 @@ ThematicMap Ensemble::classify() {
 	if (_parallel) {
 		// Creates the threads
 		list<thread> threads;
+
+		// Initialize work count per thread
+		int threadID = 0;
+		_worklog.resize(classifiers.size());
+		fill(_worklog.begin(), _worklog.end(), 0);
+
 		for (auto& c : classifiers) {
 			// Determine which segmentation to send to classifier
 			Segmentation S;
@@ -192,13 +199,15 @@ ThematicMap Ensemble::classify() {
 			// Start the thread
 			threads.push_back(thread(&Ensemble::doClassify, this, c, mapSize,
 					S, &currentCursor, &totalClassified,
-					totalToClassify));
+					totalToClassify, threadID));
+
+			threadID++;
 		}
 
 		// Wait for all threads to finish
 		for (auto& t : threads) {
 			t.join();
-		}	
+		}
 	}
 	else {
 		// Run serially
@@ -213,10 +222,20 @@ ThematicMap Ensemble::classify() {
 			}
 
 			// Run classifier
+			_worklog.resize(1);
+			_worklog[0] = 0;
+
 			this->doClassify(c, mapSize, S, &currentCursor, 
-				&totalClassified, totalToClassify);
+				&totalClassified, totalToClassify, 0);
 		}
 	}
+
+	// Report work done by each thread
+	cerr << endl << "thread jobs done: ";
+	for (auto l : _worklog) {
+		cerr << l << " ";
+	}
+	cerr << endl;
 
 	// Get consensus
 	Mat consensus = Mat::zeros(mapSize, CV_8UC1);

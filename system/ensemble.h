@@ -50,6 +50,7 @@ class Ensemble {
 	bool _parallel = false;
 	int numThreads;
 	mutex _mutex;
+	vector<int> _worklog;
 
 	public:
 		// Constructors
@@ -65,7 +66,8 @@ class Ensemble {
 		std::vector<std::pair<std::string, cv::Mat> > individualClassifications();
 		void addClassifier(Classifier* c);
 		void doClassify(Classifier* C, cv::Size mapSize, Segmentation S, 
-			int *cursor, int *classifiedSegments, int totalToClassify);
+			int *cursor, int *classifiedSegments, int totalToClassify, 
+			int threadID);
 		void setLogger(Logger *logger);
 		void setThreads(int n);
 		void train();
