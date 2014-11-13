@@ -167,9 +167,10 @@ int main(int argc, char **argv) {
 	}
 
 	// Calculate statistics
-	/*log("calculating kappa...");
-	float k = statistics::kappa(training, classification.asMat());
-	cout << k << endl;*/
+	log("calculating kappa...");
+	float k = statistics::kappa(trainingMapVIS.asMat(), 
+		classification.asMat());
+	cout << k << endl;
 	
 	// Destroy logger
 	if (logger) {

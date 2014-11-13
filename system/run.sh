@@ -9,8 +9,8 @@
 	--training "data/subset/TrainingMap_ENVI_RAW_format.raw" \
 	--scale-vis 0.1 \
 	--scale-lwir 0.25 \
-	--segmentation-mode GRID \
-	--resampling-method NEAREST \
+	--segmentation-mode SLIC \
+	--resampling-method LINEAR \
 	--log-path "scratch/logs" \
 	--parallel \
 

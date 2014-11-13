@@ -20,4 +20,9 @@ enum SegmentationMode {
 // Hardcoded (sorry) number of bands to keep on dimensionality reduction.
 #define LWIR_BANDS_TO_KEEP_ON_PCA 5
 
+// Empirically determined and hardcoded (sorry) SLIC parameters
+#define SLIC_REGION_SIZE 30
+#define SLIC_REGULARIZATION 1000.
+#define SLIC_MIN_REGION_SIZE 10
+
 #endif // COMMON_H

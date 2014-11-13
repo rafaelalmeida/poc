@@ -40,9 +40,9 @@ Segmentation segmentation::segmentVIS_SLIC(Mat M) {
 	// The region size defines the number of superpixels obtained.
 	// Regularization describes a trade-off between the color term and the
 	// spatial term.
-	vl_size region = 100;
-	float regularization = 1000.;
-	vl_size minRegion = 50;
+	vl_size region = SLIC_REGION_SIZE;
+	float regularization = SLIC_REGULARIZATION;
+	vl_size minRegion = SLIC_MIN_REGION_SIZE;
 
 	log("running segmentation...");
 	vl_slic_segment(segmentation, image, width, height, channels, region, 
