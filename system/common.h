@@ -16,4 +16,7 @@ enum SegmentationMode {
 // interpolation types will produce values with wrong semantics.
 #define TRAINING_INTERPOLATION_MODE cv::INTER_NEAREST
 
+// Hardcoded (sorry) number of bands to keep on dimensionality reduction.
+#define LWIR_BANDS_TO_KEEP_ON_PCA 5
+
 #endif // COMMON_H

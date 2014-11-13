@@ -16,8 +16,6 @@
 #include "config.h"
 #include "utils.h"
 
-#define PCA_COMPONENTS 5
-
 class LWIRImage {
 	public:
 		// Members

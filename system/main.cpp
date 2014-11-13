@@ -8,6 +8,7 @@
 #include <opencv2/gpu/gpu.hpp>
 
 #include "classification.h"
+#include "common.h"
 #include "config.h"
 #include "description_lwir.h"
 #include "description_vis.h"
@@ -60,7 +61,8 @@ int main(int argc, char **argv) {
 			conf.scaleVIS, conf.scaleLWIR, conf.resamplingMethod);
 	}
 
-	// TODO: apply PCA here
+	// Reduce dimensionality of LWIR image
+	lwir.reduceDimensionality(LWIR_BANDS_TO_KEEP_ON_PCA);
 
 	// Create training thematic maps
 	ThematicMap trainingMapVIS(trainingVIS);

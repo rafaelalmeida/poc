@@ -11,9 +11,6 @@ LWIRImage::LWIRImage(std::vector<cv::Mat> bands) {
 
 	// Init the ROI as blank
 	this->roi = Rect(0, 0, 0, 0);
-
-	// Reduce dimensionality via PCA
-	reduceDimensionality(PCA_COMPONENTS);
 }
 
 cv::Mat LWIRImage::spectralSignature(cv::Mat mask, bool reduced) {
