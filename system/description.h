@@ -38,68 +38,73 @@ using namespace std;
 // receives a list of masks, the one that receives a single mask will
 // automatically use the other implementation.
 class Descriptor {
+	// Members
+	string _id;
+
 	public:
+		Descriptor(const char *id);
+
 		virtual Mat describe(Mat image, SparseMat mask);
 		virtual Mat describe(Mat image, list<SparseMat> masks);
 
 		virtual Mat describe(LWIRImage image, SparseMat mask);
 		virtual Mat describe(LWIRImage image, list<SparseMat> masks);
-};
 
-/* Classifiers left to build wrappers (TODO)
-   - EMD
-   - EOAC
-   - Gabor
-   - IRM
-   - LAS
-   - QCCH
-   - Spytec
-   - Steerable Pyramid
-*/
+		std::string getID();
+};
 
 // Descriptor wrappers
 class GCHDescriptor : public Descriptor {
 	public:
+		GCHDescriptor(const char* id) : Descriptor(id) {};
 		virtual Mat describe(Mat image, list<SparseMat> masks) override;
 };
 
 class ACCDescriptor : public Descriptor {
 	public:
+		ACCDescriptor(const char* id) : Descriptor(id) {};
 		virtual Mat describe(Mat image, list<SparseMat> masks) override;
 };
 
 class BICDescriptor : public Descriptor {
 	public:
+		BICDescriptor(const char* id) : Descriptor(id) {};
 		virtual Mat describe(Mat image, list<SparseMat> masks) override;
 };
 
 class LCHDescriptor : public Descriptor {
 	public:
+		LCHDescriptor(const char* id) : Descriptor(id) {};
 		virtual Mat describe(Mat image, list<SparseMat> masks) override;
 };
 
 class UnserDescriptor : public Descriptor {
 	public:
+		UnserDescriptor(const char* id) : Descriptor(id) {};
 		virtual Mat describe(Mat image, list<SparseMat> masks) override;
 };
 
 class CBCDescriptor : public Descriptor {
 	public:
+		CBCDescriptor(const char* id) : Descriptor(id) {};
 		virtual Mat describe(Mat image, list<SparseMat> masks) override;
 };
 
 class SIGDescriptor : public Descriptor {
 	public:
+		SIGDescriptor(const char* id) : Descriptor(id) {};
 		virtual Mat describe(LWIRImage image, list<SparseMat> masks) override;
 };
 
 class REDUCEDSIGDescriptor : public Descriptor {
 	public:
+		REDUCEDSIGDescriptor(const char* id) : Descriptor(id) {};
 		virtual Mat describe(LWIRImage image, list<SparseMat> masks) override;
 };
 
 class MOMENTSDescriptor : public Descriptor {
 	public:
+		MOMENTSDescriptor(const char* id) : Descriptor(id) {};
 		virtual Mat describe(LWIRImage image, list<SparseMat> masks) override;
 };
 

@@ -106,29 +106,29 @@ int main(int argc, char **argv) {
 	ensemble.setParallel(conf.parallel);
 
 	// Register ensemble classifiers
-	ensemble.addClassifier(new Classifier("SVM-GCH", ClassifierEngine::SVM, 
-		vis, new GCHDescriptor()));
+	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
+		vis, new GCHDescriptor("GCH")));
 
-	/*ensemble.addClassifier(new Classifier("SVM-ACC", ClassifierEngine::SVM, 
-		vis, new ACCDescriptor()));
+	/*ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
+		vis, new ACCDescriptor("ACC")));
 
-	ensemble.addClassifier(new Classifier("SVM-BIC", ClassifierEngine::SVM, 
-		vis, new BICDescriptor()));
+	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
+		vis, new BICDescriptor("BIC")));
 
-	ensemble.addClassifier(new Classifier("SVM-LCH", ClassifierEngine::SVM, 
-		vis, new LCHDescriptor()));
+	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
+		vis, new LCHDescriptor("LCH")));
 
-	ensemble.addClassifier(new Classifier("SVM-Unser", ClassifierEngine::SVM, 
-		vis, new UnserDescriptor()));*/
+	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
+		vis, new UnserDescriptor("UNS")));*/
 
-	/*ensemble.addClassifier(new Classifier("SVM-SIG", ClassifierEngine::SVM, 
-		&lwir, new SIGDescriptor()));*/
+	/*ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
+		&lwir, new SIGDescriptor("SIG")));*/
 
-	/*ensemble.addClassifier(new Classifier("SVM-SIG", ClassifierEngine::SVM, 
-		&lwir, new REDUCEDSIGDescriptor()));*/
+	/*ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
+		&lwir, new REDUCEDSIGDescriptor("RSIG")));*/
 
-	ensemble.addClassifier(new Classifier("SVM-MOMENTS", ClassifierEngine::SVM, 
-		&lwir, new MOMENTSDescriptor()));
+	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
+		&lwir, new MOMENTSDescriptor("MMT")));
 
 	// Train ensemble
 	log("training ensemble...");

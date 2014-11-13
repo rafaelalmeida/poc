@@ -195,3 +195,9 @@ Mat convertHistogramColor(Mat image, list<SparseMat> masks,
 
 	return samples;
 }
+
+std::string Descriptor::getID() {
+	return _id;
+}
+
+Descriptor::Descriptor(const char *id) : _id(string(id)) {}

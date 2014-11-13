@@ -52,8 +52,10 @@ namespace classification {
 
 		public:
 			// Constructors
-			Classifier(string id, ClassifierEngine engine, cv::Mat vis, Descriptor *descriptor);
-			Classifier(string id, ClassifierEngine engine, LWIRImage *lwir, Descriptor *descriptor);
+			Classifier(ClassifierEngine engine, cv::Mat vis, 
+				Descriptor *descriptor);
+			Classifier(ClassifierEngine engine, LWIRImage *lwir, 
+				Descriptor *descriptor);
 
 			// Destructors
 			~Classifier();

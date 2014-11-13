@@ -6,17 +6,17 @@ using namespace std;
 using namespace classification;
 using namespace segmentation;
 
-Classifier::Classifier(string id, ClassifierEngine engine, cv::Mat vis, Descriptor *descriptor)
-    : _id(id),
-      _engine(engine),
+Classifier::Classifier(ClassifierEngine engine, cv::Mat vis, 
+	Descriptor *descriptor)
+    : _engine(engine),
       _vis(vis),
       _descriptor(descriptor),
       _type(VIS) {
 }
 
-Classifier::Classifier(string id, ClassifierEngine engine, LWIRImage *lwir, Descriptor *descriptor)
-    : _id(id),
-      _engine(engine),
+Classifier::Classifier(ClassifierEngine engine, LWIRImage *lwir, 
+	Descriptor *descriptor)
+    : _engine(engine),
       _lwir(lwir),
       _descriptor(descriptor),
       _type(LWIR) {
@@ -87,7 +87,17 @@ Mat Classifier::classify(cv::SparseMat mask) {
 }
 
 string Classifier::getID() {
-	return _id;
+	string id;
+
+	// Place the classifier identification
+	if (_engine == SVM) {
+		id += "SVM-";
+	}
+
+	// Place the descriptor identification
+	id += _descriptor->getID();
+
+	return id;
 }
 
 ClassifierType Classifier::getType() {
