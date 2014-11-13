@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
 	// Save training map for debugging
 	if (logger) {
 		logger->saveImage("training", 
-			blend(vis, CoverMap(training).coloredMap()));
+			blend(vis, ThematicMap(training).coloredMap()));
 	}
 
 	// Set ROI if exists
@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
 	// Log cropped images
 	if (logger) {
 		logger->saveImage("training-ROI", 
-			blend(vis, CoverMap(training).coloredMap()));
+			blend(vis, ThematicMap(training).coloredMap()));
 		logger->saveImage("vis-ROI", vis);
 	}
 
@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
 	}
 
 	// Setup classifier ensemble
-	CoverMap tMap(training);
+	ThematicMap tMap(training);
 	Ensemble ensemble(MAJORITY_VOTING, segmentation, tMap, tMap);
 	ensemble.setLogger(logger);
 	ensemble.setParallel(conf.parallel);
@@ -132,7 +132,7 @@ int main(int argc, char **argv) {
 	ensemble.train();
 
 	log("classifying image...");
-	CoverMap classification = ensemble.classify();
+	ThematicMap classification = ensemble.classify();
 	log("classifying image... done     ");
 
 	if (logger) {
@@ -142,7 +142,7 @@ int main(int argc, char **argv) {
 			char path[16];
 			sprintf(path, "classifier_%s", c.first.c_str());
 
-			logger->saveImage(path, blend(vis, CoverMap(c.second).coloredMap()));
+			logger->saveImage(path, blend(vis, ThematicMap(c.second).coloredMap()));
 		}
 
 		Mat coloredMap = classification.coloredMap();

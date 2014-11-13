@@ -52,11 +52,11 @@ class LWIRImage {
 		void upscale(cv::Size size);
 };
 
-class CoverMap {
+class ThematicMap {
 	cv::Mat _map;
 
 	public:
-		CoverMap(cv::Mat training);
+		ThematicMap(cv::Mat training);
 
 		cv::Mat asMat();
 		cv::Mat coloredMap();

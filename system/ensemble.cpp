@@ -2,8 +2,8 @@
 
 using namespace cv;
 
-Ensemble::Ensemble(ConsensusType t, Segmentation& s, CoverMap trainingVIS,
-	CoverMap trainingLWIR)
+Ensemble::Ensemble(ConsensusType t, Segmentation& s, ThematicMap trainingVIS,
+	ThematicMap trainingLWIR)
 
     : _consensusType(t),
 	  _segmentation(s),
@@ -137,7 +137,7 @@ void Ensemble::doClassify(Classifier* C, Segmentation S, int *cursor,
 	}
 }
 
-CoverMap Ensemble::classify() {
+ThematicMap Ensemble::classify() {
 	// Some initialization
 	Size mapSize = _segmentation.getMapSize();
 
@@ -220,7 +220,7 @@ CoverMap Ensemble::classify() {
 		assert(false && "Unknown consensus type");
 	}
 
-	return CoverMap(consensus);
+	return ThematicMap(consensus);
 }
 
 vector<pair<string, Mat> > Ensemble::individualClassifications() {

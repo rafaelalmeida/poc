@@ -38,8 +38,8 @@ class Ensemble {
 	// is classified pixel-by-pixel instead
 	bool _pixelizeLWIR = true;
 
-	CoverMap _trainingVIS;
-	CoverMap _trainingLWIR;
+	ThematicMap _trainingVIS;
+	ThematicMap _trainingLWIR;
 
 	Logger *_logger = NULL;
 
@@ -51,14 +51,14 @@ class Ensemble {
 
 	public:
 		// Constructors
-		Ensemble(ConsensusType t, Segmentation& s, CoverMap trainingVIS, 
-			CoverMap trainingLWIR);
+		Ensemble(ConsensusType t, Segmentation& s, ThematicMap trainingVIS, 
+			ThematicMap trainingLWIR);
 
 		// Destructors
 		~Ensemble();
 
 		// Methods
-		CoverMap classify();
+		ThematicMap classify();
 		std::vector<std::pair<std::string, cv::Mat> > individualClassifications();
 		void addClassifier(Classifier* c);
 		void doClassify(Classifier* C, Segmentation S, int *cursor, 

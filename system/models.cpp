@@ -132,15 +132,15 @@ void LWIRImage::setRoi(cv::Rect roi) {
 	this->roi = roi;
 }
 
-CoverMap::CoverMap(Mat training) {
+ThematicMap::ThematicMap(Mat training) {
 	_map = training;
 }
 
-cv::Mat CoverMap::asMat() {
+cv::Mat ThematicMap::asMat() {
 	return _map;
 }
 
-float CoverMap::getRegionClass(cv::Mat mask) {
+float ThematicMap::getRegionClass(cv::Mat mask) {
 	assert(_map.type() == CV_8UC1);
 	assert(mask.type() == CV_8UC1);
 	assert((_map.rows == mask.rows) && (_map.cols = mask.cols));
@@ -161,7 +161,7 @@ float CoverMap::getRegionClass(cv::Mat mask) {
 	return (float) counter.top();
 }
 
-cv::Mat CoverMap::coloredMap() {
+cv::Mat ThematicMap::coloredMap() {
 	assert(_map.type() == CV_8UC1);
 
 	Mat map(_map.rows, _map.cols, CV_8UC3);
@@ -207,7 +207,7 @@ cv::Mat CoverMap::coloredMap() {
 	return map;
 }
 
-std::map<unsigned char, int> CoverMap::getClassesCounts() {
+std::map<unsigned char, int> ThematicMap::getClassesCounts() {
 	Counter<unsigned char> counter;
 
 	for (int row = 0; row < _map.rows; row++) {
