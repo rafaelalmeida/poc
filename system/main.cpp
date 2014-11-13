@@ -29,8 +29,7 @@ using namespace classification;
 bool verbose;
 Logger *logger = NULL;
 
-void rescale(Mat& vis, LWIRImage& lwir, Mat trainingOriginal, Mat& trainingVIS, 
-	Mat& trainingLWIR, float scaleVIS, float scaleLWIR, 
+void rescale(Mat& vis, LWIRImage& lwir, float scaleVIS, float scaleLWIR, 
 	ResamplingMethod resamplingMethod);
 
 int main(int argc, char **argv) {
@@ -44,26 +43,32 @@ int main(int argc, char **argv) {
 
 	// Load images
 	log("loading VIS image...");
-	Mat visFull = gdal_driver::loadVIS(conf.pathVIS);
+	Mat vis = gdal_driver::loadVIS(conf.pathVIS);
 	log("loading LWIR image...");
 	LWIRImage lwir = gdal_driver::loadLWIR(conf.pathLWIR);
 	log("loading training data...");
-	Mat trainingFull = gdal_driver::loadTrainingData(conf.pathTraining);
-
-	// Matrixes with default settings
-	Mat vis = visFull, training = trainingFull, trainingVIS, trainingLWIR;
+	Mat training = gdal_driver::loadTrainingData(conf.pathTraining);
 
 	// Rescale images if necessary
 	if (conf.scaleVIS != 1.0 || conf.scaleLWIR != 1.0) {
 		log("rescaling images...");
-		rescale(vis, lwir, training, trainingVIS, trainingLWIR, 
-			conf.scaleVIS, conf.scaleLWIR, conf.resamplingMethod);
+		rescale(vis, lwir, conf.scaleVIS, conf.scaleLWIR, 
+			conf.resamplingMethod);
 	}
+	
+	// Scale training map to the correct sizes (one for VIS and one for LWIR)
+	Mat trainingVIS, trainingLWIR;
+	resize(training, trainingVIS, vis.size(), 0, 0, 
+		TRAINING_INTERPOLATION_MODE);
+	resize(training, trainingLWIR, lwir.size(), 0, 0, 
+		TRAINING_INTERPOLATION_MODE);
 
 	// Reduce dimensionality of LWIR image
+	log("reducing LWIR dimensionality...");
 	lwir.reduceDimensionality(LWIR_BANDS_TO_KEEP_ON_PCA);
 
 	// Create training thematic maps
+	log("creating training thematic maps...");
 	ThematicMap trainingMapVIS(trainingVIS);
 	ThematicMap trainingMapLWIR(trainingLWIR);
 
@@ -81,7 +86,7 @@ int main(int argc, char **argv) {
 		lwir.setRoi(roi);
 	}
 
-	log("segmenting image...");
+	log("starting image segmentation...");
 	Segmentation segmentationVIS;
 	if (conf.segmentationMode == GRID) {
 		segmentationVIS = segmentation::segmentVISGrid(vis, conf.gridTileSize);
@@ -127,11 +132,11 @@ int main(int argc, char **argv) {
 	/*ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
 		&lwir, new REDUCEDSIGDescriptor("RSIG")));*/
 
-	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
-		&lwir, new MOMENTSDescriptor("MMT")));
+	/*ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
+		&lwir, new MOMENTSDescriptor("MMT")));*/
 
 	// Train ensemble
-	log("training ensemble...");
+	log("starting ensemble training...");
 	ensemble.train();
 
 	// Classify ensemble
@@ -190,36 +195,15 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-void rescale(Mat& vis, LWIRImage& lwir, Mat trainingOriginal, Mat& trainingVIS, 
-	Mat& trainingLWIR, float scaleVIS, float scaleLWIR, 
+void rescale(Mat& vis, LWIRImage& lwir, float scaleVIS, float scaleLWIR, 
 	ResamplingMethod resamplingMethod) {
 
 	// Scale LWIR
-	if (scaleLWIR != 1.0) {
-		// Rescale the LWIR image
-		lwir.rescale(scaleLWIR, resamplingMethod);
-
-		// Rescale LWIR training map
-		resize(trainingOriginal, trainingLWIR, lwir.size(), 0, 0,
-			TRAINING_INTERPOLATION_MODE);
-	}
-	else {
-		trainingLWIR = trainingOriginal;
-	}
+	lwir.rescale(scaleLWIR, resamplingMethod);
 
 	// Scale VIS
-	if (scaleVIS != 1.0) {
-		// Rescale the VIS image
-		Mat visR;
-		resize(vis, visR, Size(), scaleVIS, scaleVIS, 
-			translateInterpolationMode(resamplingMethod));
-		vis = visR;
-
-		// Rescale VIS training map
-		resize(trainingOriginal, trainingVIS, Size(), scaleVIS, scaleVIS,
-			TRAINING_INTERPOLATION_MODE);
-	}
-	else {
-		trainingVIS = trainingOriginal;
-	}
+	Mat visR;
+	resize(vis, visR, Size(), scaleVIS, scaleVIS, 
+		translateInterpolationMode(resamplingMethod));
+	vis = visR;
 }

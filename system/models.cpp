@@ -263,6 +263,9 @@ cv::Size ThematicMap::size() {
 }
 
 std::list<std::pair<cv::SparseMat, int> > ThematicMap::enumerateRegions() {
+	assert(_map.size().area() > 0 && "Error: map seems to be blank");
+	assert(_map.type() == CV_8UC1 && "Error: map seems to be the wrong type.");
+
 	// Use the fact that all non-undefined labels are positive to threshold
 	// the image and enumerate the regions using contour finding
 	Mat bin(_map.size(), CV_8UC1);
