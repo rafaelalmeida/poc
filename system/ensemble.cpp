@@ -2,11 +2,13 @@
 
 using namespace cv;
 
-Ensemble::Ensemble(ConsensusType t, Segmentation& s, ThematicMap trainingVIS,
+Ensemble::Ensemble(ConsensusType t, Segmentation& segmentationVIS, 
+	Segmentation& segmentationLWIR, ThematicMap trainingVIS,
 	ThematicMap trainingLWIR)
 
     : _consensusType(t),
-	  _segmentation(s),
+	  _segmentationVIS(segmentationVIS),
+	  _segmentationLWIR(segmentationLWIR),
 	  _trainingVIS(trainingVIS),
 	  _trainingLWIR(trainingLWIR) {
 
@@ -120,23 +122,16 @@ void Ensemble::train() {
 	cerr << "training classifiers... done     " << endl;
 }
 
-void Ensemble::doClassify(Classifier* C, Segmentation S, int *cursor, 
-		int *classifiedSegments, int totalToClassify) {
+void Ensemble::doClassify(Classifier* C, Size mapSize, Segmentation S, 
+	int *cursor, int *classifiedSegments, int totalToClassify) {
 
 	Mat classification = Mat::zeros(S.getMapSize(), CV_8UC1);
 
-	// Pixelize segmentation if this is a LWIR classifier, since they 
-	// are classified pixel by pixel
-	if (_pixelizeLWIR && C->getType() == LWIR) {
-		S = S.pixelize();
-	}
-
 	// Classify all segments
-	int i = 1, n = S.getSegments().size();
+	int i = 1, n = S.segmentCount();
 	for (auto mask : S.getSegments()) {
 		float progress = 100.0 * (*classifiedSegments) / totalToClassify;
 		cerr << "\rclassification: " << 
-			setprecision(2) << 
 			progress << "%        \r" << flush;
 
 		classification += C->classify(mask);
@@ -145,11 +140,9 @@ void Ensemble::doClassify(Classifier* C, Segmentation S, int *cursor,
 	}
 
 	// Resize classification map if necessary
-	if (classification.size() != _trainingVIS.size()) {
+	if (classification.size() != mapSize) {
 		Mat R;
-		resize(classification, R, _trainingVIS.size(), 0, 0, 
-			TRAINING_INTERPOLATION_MODE);
-
+		resize(classification, R, mapSize, 0, 0, TRAINING_INTERPOLATION_MODE);
 		classification = R;
 	}
 
@@ -165,8 +158,9 @@ void Ensemble::doClassify(Classifier* C, Segmentation S, int *cursor,
 }
 
 ThematicMap Ensemble::classify() {
-	// Some initialization
-	Size mapSize = _segmentation.getMapSize();
+	// We consider the VIS size as the real map size, since the LWIR 
+	// classifications will be resized into the VIS size for correspondence
+	Size mapSize = _segmentationVIS.getMapSize();
 
 	// Initializes individual classifications
 	_classifications.clear();
@@ -176,14 +170,9 @@ ThematicMap Ensemble::classify() {
 	int currentCursor = 0;
 	int totalClassified = 0;
 
-	// Create VIS and LWIR segmentations
-	Segmentation segmentationVIS = _segmentation;
-	Segmentation segmentationLWIR = _pixelizeLWIR ? segmentationVIS.pixelize() 
-		: segmentationVIS;
-
 	// Determine total segments to classify
-	int segmentsPerVISImage = segmentationVIS.segmentCount();
-	int segmentsPerLWIRImage = segmentationLWIR.segmentCount();
+	int segmentsPerVISImage = _segmentationVIS.segmentCount();
+	int segmentsPerLWIRImage = _segmentationLWIR.segmentCount();
 	int totalToClassify = 0;
 	for (auto& c : classifiers) {
 		if (_pixelizeLWIR && c->getType() == LWIR) {
@@ -202,14 +191,14 @@ ThematicMap Ensemble::classify() {
 			// Determine which segmentation to send to classifier
 			Segmentation S;
 			if (_pixelizeLWIR && c->getType() == LWIR) {
-				S = segmentationLWIR;
+				S = _segmentationLWIR;
 			}
 			else {
-				S = segmentationVIS;
+				S = _segmentationVIS;
 			}
 
 			// Start the thread
-			threads.push_back(thread(&Ensemble::doClassify, this, c, 
+			threads.push_back(thread(&Ensemble::doClassify, this, c, mapSize,
 					S, &currentCursor, &totalClassified,
 					totalToClassify));
 		}
@@ -222,7 +211,17 @@ ThematicMap Ensemble::classify() {
 	else {
 		// Run serially
 		for (auto& c : classifiers) {
-			this->doClassify(c, _segmentation, &currentCursor, 
+			// Determine which segmentation to send to classifier
+			Segmentation S;
+			if (_pixelizeLWIR && c->getType() == LWIR) {
+				S = _segmentationLWIR;
+			}
+			else {
+				S = _segmentationVIS;
+			}
+
+			// Run classifier
+			this->doClassify(c, mapSize, S, &currentCursor, 
 				&totalClassified, totalToClassify);
 		}
 	}

@@ -33,7 +33,8 @@ class Ensemble {
 	// Members
 	std::vector<Classifier*> classifiers;
 	ConsensusType _consensusType;
-	Segmentation& _segmentation;
+	Segmentation& _segmentationVIS;
+	Segmentation& _segmentationLWIR;
 
 	// Flag to see if segmentation is ignored for LWIR images, and the image
 	// is classified pixel-by-pixel instead
@@ -52,7 +53,8 @@ class Ensemble {
 
 	public:
 		// Constructors
-		Ensemble(ConsensusType t, Segmentation& s, ThematicMap trainingVIS, 
+		Ensemble(ConsensusType t, Segmentation& segmentationVIS, 
+			Segmentation& segmentationLWIR, ThematicMap trainingVIS, 
 			ThematicMap trainingLWIR);
 
 		// Destructors
@@ -62,8 +64,8 @@ class Ensemble {
 		ThematicMap classify();
 		std::vector<std::pair<std::string, cv::Mat> > individualClassifications();
 		void addClassifier(Classifier* c);
-		void doClassify(Classifier* C, Segmentation S, int *cursor, 
-			int *classifiedSegments, int totalToClassify);
+		void doClassify(Classifier* C, cv::Size mapSize, Segmentation S, 
+			int *cursor, int *classifiedSegments, int totalToClassify);
 		void setLogger(Logger *logger);
 		void setThreads(int n);
 		void train();

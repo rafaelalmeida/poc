@@ -86,22 +86,25 @@ int main(int argc, char **argv) {
 	}
 
 	log("segmenting image...");
-	Segmentation segmentation;
+	Segmentation segmentationVIS;
 	if (conf.segmentationMode == GRID) {
-		segmentation = segmentation::segmentVISGrid(vis, conf.gridTileSize);
+		segmentationVIS = segmentation::segmentVISGrid(vis, conf.gridTileSize);
 	}
 	else {
 		assert(false && "Unsupported segmentation mode");
 	}
 
+	Segmentation segmentationLWIR = segmentation::segmentLWIRPixelated(
+		lwir, vis);
+
 	// Save segmentation representation
 	if (logger) {
-		logger->saveImage("segmentation", segmentation.representation());
+		logger->saveImage("segmentation", segmentationVIS.representation());
 	}
 
 	// Setup classifier ensemble
-	Ensemble ensemble(MAJORITY_VOTING, segmentation, trainingMapVIS, 
-		trainingMapLWIR);
+	Ensemble ensemble(MAJORITY_VOTING, segmentationVIS, segmentationLWIR,
+		trainingMapVIS, trainingMapLWIR);
 	ensemble.setLogger(logger);
 	ensemble.setParallel(conf.parallel);
 
@@ -161,9 +164,9 @@ int main(int argc, char **argv) {
 	}
 
 	// Calculate statistics
-	log("calculating kappa...");
+	/*log("calculating kappa...");
 	float k = statistics::kappa(training, classification.asMat());
-	cout << k << endl;
+	cout << k << endl;*/
 	
 	// Destroy logger
 	if (logger) {

@@ -22,7 +22,7 @@ cv::Mat LWIRImage::spectralSignature(cv::Mat mask, bool reduced) {
 	int c = 0;
 	for (auto band : myBands) {
 		Mat B = (this->roi.area() > 0) ? band(this->roi) : band;
-		
+
 		assert((B.size() == mask.size()) && 
 			"Mask is not the correct size");
 

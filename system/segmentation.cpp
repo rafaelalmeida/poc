@@ -113,13 +113,7 @@ Segmentation segmentation::segmentVISGrid(cv::Mat M, int tileSize) {
 	int regionsPerLine = (M.cols / tileSize) + (M.cols % tileSize);
 	int regionsPerColumn = (M.rows / tileSize) + (M.rows % tileSize);
 
-	Mat gray(M.size(), CV_8UC1);
-	cvtColor(M, gray, CV_BGR2GRAY);
-
-	// Create a binary mask to show where we have missing data and ignore
-	// those pixels later
-	Mat bin(gray.size(), CV_8UC1);
-	threshold(gray, bin, 1, 255, CV_THRESH_BINARY);
+	Mat nonMissing = makeNonMissingDataMask(M);
 
 	for (int i = 0; i < regionsPerLine; i++) {
 		for (int j = 0; j < regionsPerColumn; j++) {
@@ -128,7 +122,7 @@ Segmentation segmentation::segmentVISGrid(cv::Mat M, int tileSize) {
 
 			rectangle(segment, region, Scalar(255), CV_FILLED);
 
-			Mat filteredSegment = segment & bin;
+			Mat filteredSegment = segment & nonMissing;
 			if (countNonZero(filteredSegment) > 0) {
 				segments.push_back(SparseMat(filteredSegment));
 			}
@@ -136,6 +130,42 @@ Segmentation segmentation::segmentVISGrid(cv::Mat M, int tileSize) {
 	}
 
 	return Segmentation(segments);
+}
+
+Segmentation segmentation::segmentLWIRPixelated(LWIRImage& lwir, Mat vis) {
+	Mat nonMissing = makeNonMissingDataMask(vis);
+	Mat M;
+	resize(nonMissing, M, lwir.size(), 0, 0, INTER_NEAREST);
+
+	list<SparseMat> pixels;
+	for (int row = 0; row < M.rows; row++) {
+		for (int col = 0; col < M.cols; col++) {
+			if (M.at<unsigned char>(row, col) == 255) {
+				int sizes[2] = {M.rows, M.cols};
+				SparseMat pixel(2, sizes, CV_8UC1);
+
+				*(pixel.ptr(row, col, true)) = 255;
+				pixels.push_back(pixel);
+			}
+		}
+	}
+
+	return Segmentation(pixels);
+}
+
+// Create a binary mask to show where we have missing data and ignore
+// those pixels later
+Mat segmentation::makeNonMissingDataMask(Mat vis) {
+	Mat gray(vis.size(), CV_8UC1);
+	cvtColor(vis, gray, CV_BGR2GRAY);
+
+	Mat bin(gray.size(), CV_8UC1);
+	threshold(gray, bin, 1, 255, CV_THRESH_BINARY);
+
+	// TODO? fill holes in mask to account for pixels inside non missing region
+	// that have zero value
+
+	return bin;
 }
 
 Segmentation segmentation::segmentVISWatershed(Mat M, int tileSize) {
@@ -155,9 +185,6 @@ Segmentation segmentation::segmentVISWatershed(Mat M, int tileSize) {
 
 	// Notes the total number of regions
 	int totalRegions = currentLabel - 1;
-
-	cerr << regionsPerColumn << endl;
-	cerr << regionsPerLine << endl;
 
 	// Run the watershed
 	watershed(M, markers);
