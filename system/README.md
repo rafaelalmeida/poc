@@ -1,24 +1,27 @@
-SETUP INSTRUCTIONS
+## A Multiclassifier Approach for Different Sensors Image Fusion
 
-Put the 2014 full set contest data inside the /system/data folder.
+This system implements the approach described in my honors project, titled
+above.
 
-DEPENDENCIES
+### Dependencies
+* OpenCV
+* GDAL
+* VLFeat
 
-- GDAL (with Python bindings)
-- OpenCV
+### Setup
 
-INSTALLING GDAL
+After installing the dependencies and cloning the repository, one needs to
+add the IEEE GRSS 2014 Data Fusion Contest subset data into the 
+`/system/data/subset` folder. One way to do this is:
 
-Cygwin
+```
+mkdir data/subset
+cd data/subset
+wget https://www.dropbox.com/s/kkxogu2vjhbzf36/IEEE_GRSS_IADFTC_Contest2014_subset.zip
+unzip IEEE_GRSS_IADFTC_Contest2014_subset.zip
+```
 
-Build from source. Download source, then
+### Building and running
 
-`./configure --with-libtool=no --with-python`
-
-The --with-libtool=no option makes compilation a little faster on 
-Cygwin.
-
-Linux (tested on Ubuntu)
-
-`sudo apt-get install libgdal`
-`sudo apt-get install python-gdal`
+To build, simply `make` from the `/system` directory. To run a sample,
+simply `make run`.
