@@ -13,6 +13,11 @@
 #include "models.h"
 #include "utils.h"
 
+extern "C" {
+	#include "include/vl/generic.h"
+	#include "include/vl/slic.h"
+}
+
 using namespace cv;
 using namespace std;
 
@@ -36,6 +41,7 @@ namespace segmentation {
 
 	Segmentation segmentVISGrid(Mat M, int tileSize=10);
 	Segmentation segmentVISWatershed(Mat M, int tileSize=100);
+	Segmentation segmentVIS_SLIC(Mat M);
 
 	float getSegmentLabel(Mat classificationMap, Mat mask);
 	list<SparseMat> getColorBlobs(Mat posterized);

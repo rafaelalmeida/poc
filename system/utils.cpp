@@ -27,7 +27,7 @@ void showImage(Mat img, float scale, const char *winname, int delay) {
 	Mat display = img;
 	if (scale != 1.0) {
 		Mat aux;
-		resize(display, aux, aux.size(), scale, scale);
+		resize(display, aux, aux.size(), scale, scale, INTER_NEAREST);
 		display = aux;
 	}
 

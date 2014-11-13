@@ -44,6 +44,13 @@ int main(int argc, char **argv) {
 	// Load images
 	log("loading VIS image...");
 	Mat visFull = gdal_driver::loadVIS(conf.pathVIS);
+
+	log("starting SLIC segmentation...");
+	Segmentation S = segmentation::segmentVIS_SLIC(visFull);
+	showImage(S.representation(), 0.15);
+
+	return 0;
+
 	log("loading LWIR image...");
 	LWIRImage lwir = gdal_driver::loadLWIR(conf.pathLWIR);
 	log("loading training data...");
@@ -152,7 +159,7 @@ int main(int argc, char **argv) {
 	
 	// Destroy logger
 	if (logger) {
-		//delete logger;
+		delete logger;
 	}
 
 	return 0;
