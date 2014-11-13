@@ -86,11 +86,14 @@ Segmentation segmentation::segmentVIS_SLIC(Mat M) {
     	masks.push_back(SM);
     }
 
-    // Fill the segment masks
+    // Fill the segment masks where original data is non missing
+    Mat nonMissingPixels = segmentation::makeNonMissingDataMask(M);
     for (int i = 0; i < M.rows; i++) {
     	for (int j = 0; j < M.cols; j++) {
-    		int label = labels[i][j];
-    		*(masks[label].ptr(i, j, true)) = 255;
+    		if (nonMissingPixels.at<unsigned char>(i, j) == 255) {
+    			int label = labels[i][j];
+    			*(masks[label].ptr(i, j, true)) = 255;
+    		}
     	}
     }
 
@@ -100,8 +103,14 @@ Segmentation segmentation::segmentVIS_SLIC(Mat M) {
     }
     delete [] labels;
 
-    // Convert the mask vector into a list
-    list<SparseMat> masksList(masks.begin(), masks.end());
+    // Convert the mask vector into a list, filtering empty segments
+    // (segments that were created by SLIC but on which all pixels are missing)
+    list<SparseMat> masksList;
+    for (auto m : masks) {
+    	if (m.nzcount() > 0) {
+    		masksList.push_back(m);
+    	}
+    }
 
     // Create the segmentation and return it
     return Segmentation(masksList);

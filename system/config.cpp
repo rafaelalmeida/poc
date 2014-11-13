@@ -49,6 +49,13 @@ void config::parse(char **argv, int argc, Configuration &config) {
 			if (streq("GRID", theMode)) {
 				config.segmentationMode = GRID;
 			}
+			else if (streq("SLIC", theMode)) {
+				config.segmentationMode = SLIC;
+			}
+			else {
+				cerr << "Unrecognized segmentation mode: " << theMode << endl;
+				exit(EXIT_FAILURE);
+			}
 		}
 
 		// Segmentation parameters - GRID
@@ -74,7 +81,7 @@ void config::parse(char **argv, int argc, Configuration &config) {
 		else if (streq("--resampling-method", argv[c])) {
 			char theMethod[512];
 			strcpy(theMethod, argv[++c]);
-			if (streq("NEAREST_NEIGHBOR", theMethod)) {
+			if (streq("NEAREST", theMethod)) {
 				config.resamplingMethod = NEAREST_NEIGHBOR;
 			}
 			else if (streq("LINEAR" , theMethod)) {
@@ -82,6 +89,11 @@ void config::parse(char **argv, int argc, Configuration &config) {
 			}
 			else if (streq("CUBIC" , theMethod)) {
 				config.resamplingMethod = CUBIC;
+			}
+			else {
+				cerr << "Unrecognized resampling method: " << theMethod << 
+					endl;
+				exit(EXIT_FAILURE);
 			}
 		}
 

@@ -8,7 +8,8 @@ enum ResamplingMethod {
 };
 
 enum SegmentationMode {
-	GRID
+	GRID,
+	SLIC
 };
 
 // The training matrixes need to be resampled by nearest neighbor 
