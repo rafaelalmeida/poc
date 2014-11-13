@@ -22,7 +22,7 @@ EXE = classify
 
 .PHONY: directories descriptors
 
-build: directories descriptors $(OBJS)
+build: directories descriptors $(OBJS) copylibs
 	g++ $(OBJS) $(DESCRIPTORS_OBJS) $(LFLAGS) -o $(BINDIR)/$(EXE)
 
 $(OBJDIR)/%.o : %.cpp
@@ -38,6 +38,9 @@ $(BINDIR):
 
 descriptors:
 	cd descriptors && $(MAKE)
+
+copylibs:
+	cp -f libs/libvl.dylib bin/
 
 run:
 	./run.sh
