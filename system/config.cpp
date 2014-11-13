@@ -63,6 +63,17 @@ void config::parse(char **argv, int argc, Configuration &config) {
 			config.gridTileSize = atoi(argv[++c]);
 		}
 
+		// Segmentation parameters - SLIC
+		else if (streq("--slic-region-size", argv[c])) {
+			config.slicRegionSize = atoi(argv[++c]);
+		}
+		else if (streq("--slic-min-region-size", argv[c])) {
+			config.slicMinRegionSize = atoi(argv[++c]);
+		}
+		else if (streq("--slic-regularization", argv[c])) {
+			config.slicRegularization = atof(argv[++c]);
+		}
+
 		// Log
 		else if (streq("--log-path", argv[c])) {
 			strcpy(config.logPath, argv[++c]);

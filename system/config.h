@@ -25,6 +25,11 @@ typedef struct {
 	// Segmentation options
 	SegmentationMode segmentationMode;
 
+	// Segmentation parameters - SLIC
+	int slicRegionSize = DEFAULT_SLIC_REGION_SIZE;
+	int slicMinRegionSize = DEFAULT_SLIC_MIN_REGION_SIZE;
+	float slicRegularization = DEFAULT_SLIC_REGULARIZATION;
+
 	// Segmentation paramaters - GRID
 	int gridTileSize = 10;
 

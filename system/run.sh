@@ -7,9 +7,12 @@
 	--vis "data/subset/TelopsDatasetCityVisible_20cm_Subset.img" \
 	--lwir "data/subset/TelopsDatasetCityLWIR_Subset.img" \
 	--training "data/subset/TrainingMap_ENVI_RAW_format.raw" \
-	--scale-vis 0.25 \
-	--scale-lwir 0.25 \
+	--scale-vis 1.0 \
+	--scale-lwir 1.0 \
 	--segmentation-mode SLIC \
+	--slic-region-size 100 \
+	--slic-min-region-size 75 \
+	--slic-regularization 250 \
 	--resampling-method NEAREST \
 	--log-path "scratch/logs" \
 	--parallel \

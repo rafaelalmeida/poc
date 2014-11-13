@@ -41,7 +41,8 @@ namespace segmentation {
 
 	Segmentation segmentVISGrid(Mat M, int tileSize=10);
 	Segmentation segmentVISWatershed(Mat M, int tileSize=100);
-	Segmentation segmentVIS_SLIC(Mat M);
+	Segmentation segmentVIS_SLIC(Mat M, int regionSize, int minRegionSize, 
+		float regularization);
 
 	Segmentation segmentLWIRPixelated(LWIRImage& lwir, Mat vis);
 

@@ -92,7 +92,9 @@ int main(int argc, char **argv) {
 		segmentationVIS = segmentation::segmentVISGrid(vis, conf.gridTileSize);
 	}
 	else if (conf.segmentationMode == SLIC) {
-		segmentationVIS = segmentation::segmentVIS_SLIC(vis);
+		segmentationVIS = segmentation::segmentVIS_SLIC(vis, 
+			conf.slicRegionSize, conf.slicMinRegionSize, 
+			conf.slicRegularization);
 	}
 	else {
 		assert(false && "Unsupported segmentation mode");

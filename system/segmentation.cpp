@@ -5,19 +5,12 @@ using namespace std;
 
 using namespace segmentation;
 
-Segmentation segmentation::segmentVIS_SLIC(Mat M) {
+Segmentation segmentation::segmentVIS_SLIC(Mat M, int regionSize, 
+	int minRegionSize, float regularization) {
 	// Adapted from https://github.com/davidstutz/vlfeat-slic-example/blob/
 	// 79bc823000ec1bc7fb204b0613578e13d3dff1ae/vlfeat_slic_cli/main.cpp
 
 	assert(M.channels() == 3);
-
-	// Create a binary mask to show where we have missing data and ignore
-	// those pixels later
-	Mat gray(M.size(), CV_8UC1);
-	cvtColor(M, gray, CV_BGR2GRAY);
-
-	Mat bin(gray.size(), CV_8UC1);
-	threshold(gray, bin, 1, 255, CV_THRESH_BINARY);
 
 	// Convert image to one-dimensional array.
 	log("converting image format...");
@@ -40,13 +33,13 @@ Segmentation segmentation::segmentVIS_SLIC(Mat M) {
 	// The region size defines the number of superpixels obtained.
 	// Regularization describes a trade-off between the color term and the
 	// spatial term.
-	vl_size region = SLIC_REGION_SIZE;
-	float regularization = SLIC_REGULARIZATION;
-	vl_size minRegion = SLIC_MIN_REGION_SIZE;
+	vl_size region = regionSize;
+	vl_size minRegion = minRegionSize;
+	float _regularization = regularization;
 
 	log("running segmentation...");
 	vl_slic_segment(segmentation, image, width, height, channels, region, 
-		regularization, minRegion);
+		_regularization, minRegion);
             
     // Convert segmentation.
     log("converting segmentation...");
