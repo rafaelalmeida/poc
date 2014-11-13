@@ -9,6 +9,8 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+#include "utils.h"
+
 #define MAX_CATEGORIES 256;
 
 namespace statistics {

@@ -56,6 +56,7 @@ class Counter {
 		void inc(T item);
 		T top();
 		std::map<T, int> getCounts();
+		int getCount(T item);
 };
 
 template <typename T>
@@ -85,6 +86,17 @@ T Counter<T>::top() {
 template <typename T>
 std::map<T, int> Counter<T>::getCounts() {
 	return _map;
+}
+
+template <typename T>
+int Counter<T>::getCount(T item) {
+	auto val = _map.find(item);
+	if (val == _map.end()) {
+		return 0;
+	}
+	else {
+		return val->second;
+	}
 }
 
 #endif

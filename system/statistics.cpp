@@ -60,9 +60,8 @@ std::vector<float> statistics::summary(std::vector<float> samples) {
 double statistics::kappa(cv::Mat A, cv::Mat B) {
 	assert(A.rows == B.rows && A.cols == B.cols && A.type() == B.type());
 
-	typedef map<unsigned char, int> LabelCountMap;
-	LabelCountMap labelsA;
-	LabelCountMap labelsB;
+	Counter<unsigned char> labelsA;
+	Counter<unsigned char> labelsB;
 
 	int agreementCount = 0;
 	int pixelsConsidered = 0;
@@ -75,22 +74,9 @@ double statistics::kappa(cv::Mat A, cv::Mat B) {
 			unsigned char labelB = B.at<unsigned char>(col, row);
 
 			// Disconsider pixels marked as "not classified" (category id 0)
-			if (labelA != (unsigned char)0 && labelB != (unsigned char)0) {
-				// Update A labels count
-				if (labelsA.count(labelA) == 0) {
-					labelsA[labelA] = 1;
-				}
-				else {
-					labelsA[labelA]++;
-				}
-
-				// Update B labels count
-				if (labelsB.count(labelB) == 0) {
-					labelsB[labelB] = 1;
-				}
-				else {
-					labelsB[labelB]++;
-				}
+			if (labelA != 0 && labelB != 0) {
+				labelsA.inc(labelA);
+				labelsB.inc(labelB);
 
 				// Update agreement count
 				if (labelA == labelB) {
@@ -105,17 +91,12 @@ double statistics::kappa(cv::Mat A, cv::Mat B) {
 
 	// Calculates Pr(e), the hypothetical probability of chance agreement
 	double pr_e = 0.0;
-	for (LabelCountMap::iterator it = labelsA.begin(); it != labelsA.end(); ++it) {
-		double probA = 1.0 * it->second / pixelsConsidered;
+	for (auto l : labelsA.getCounts()) {
+		double probA = 1.0 * l.second / pixelsConsidered;
 		double probB;
 
-		LabelCountMap::iterator valB = labelsB.find(it->first);
-		if (valB == labelsB.end()) {
-			probB = 0;
-		}
-		else {
-			probB = 1.0 * valB->second / pixelsConsidered;
-		}
+		int countB = labelsB.getCount(l.first);
+		probB = (float) countB / pixelsConsidered;
 
 		pr_e += probA * probB;
 	}
