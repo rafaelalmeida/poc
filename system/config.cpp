@@ -62,16 +62,12 @@ void config::parse(char **argv, int argc, Configuration &config) {
 			config.logEnabled = true;
 		}
 
-		// Sampling mode
-		else if (streq("--sampling-mode", argv[c])) {
-			char theMode[512];
-			strcpy(theMode, argv[++c]);
-			if (streq("UPSAMPLE_LWIR", theMode)) {
-				config.samplingMode = UPSAMPLE_LWIR;
-			} 
-			else if (streq("DOWNSAMPLE_VIS", theMode)) {
-				config.samplingMode = DOWNSAMPLE_VIS;
-			}
+		// Scaling
+		else if (streq("--scale-vis", argv[c])) {
+			config.scaleVIS = atof(argv[++c]);
+		}
+		else if (streq("--scale-lwir", argv[c])) {
+			config.scaleLWIR = atof(argv[++c]);
 		}
 
 		// Resampling method

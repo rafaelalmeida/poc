@@ -28,8 +28,9 @@ using namespace classification;
 bool verbose;
 Logger *logger = NULL;
 
-void resample(Mat& vis, Mat& training, LWIRImage& lwir, 
-		SamplingMode samplingMode, ResamplingMethod resamplingMethod);
+void rescale(Mat& vis, LWIRImage& lwir, Mat trainingOriginal, Mat& trainingVIS, 
+	Mat& trainingLWIR, float scaleVIS, float scaleLWIR, 
+	ResamplingMethod resamplingMethod);
 
 int main(int argc, char **argv) {
 	Configuration conf;
@@ -44,31 +45,34 @@ int main(int argc, char **argv) {
 	// Load images
 	log("loading VIS image...");
 	Mat visFull = gdal_driver::loadVIS(conf.pathVIS);
-
-	log("starting SLIC segmentation...");
-	Segmentation S = segmentation::segmentVIS_SLIC(visFull);
-	showImage(S.representation(), 0.15);
-
-	return 0;
-
 	log("loading LWIR image...");
 	LWIRImage lwir = gdal_driver::loadLWIR(conf.pathLWIR);
 	log("loading training data...");
 	Mat trainingFull = gdal_driver::loadTrainingData(conf.pathTraining);
 
 	// Matrixes with default settings
-	Mat vis = visFull, training = trainingFull;
+	Mat vis = visFull, training = trainingFull, trainingVIS, trainingLWIR;
 
-	// Set sampling mode
-	resample(vis, training, lwir, conf.samplingMode, conf.resamplingMethod);
+	// Rescale images if necessary
+	if (conf.scaleVIS != 1.0 || conf.scaleLWIR != 1.0) {
+		log("rescaling images...");
+		rescale(vis, lwir, training, trainingVIS, trainingLWIR, 
+			conf.scaleVIS, conf.scaleLWIR, conf.resamplingMethod);
+	}
+
+	// TODO: apply PCA here
+
+	// Create training thematic maps
+	ThematicMap trainingMapVIS(trainingVIS);
+	ThematicMap trainingMapLWIR(trainingLWIR);
 
 	// Save training map for debugging
 	if (logger) {
 		logger->saveImage("training", 
-			blend(vis, ThematicMap(training).coloredMap()));
+			blend(vis, trainingMapVIS.coloredMap()));
 	}
 
-	// Set ROI if exists
+	// Set ROI if there is one
 	Rect roi;
 	if (conf.roiWidth > 0 && conf.roiHeight > 0) {
 		roi = Rect(conf.roiX, conf.roiY, conf.roiWidth, conf.roiHeight);
@@ -79,31 +83,27 @@ int main(int argc, char **argv) {
 		lwir.setRoi(roi);
 	}
 
-	// Log cropped images
-	if (logger) {
-		logger->saveImage("training-ROI", 
-			blend(vis, ThematicMap(training).coloredMap()));
-		logger->saveImage("vis-ROI", vis);
-	}
-
 	log("segmenting image...");
 	Segmentation segmentation;
 	if (conf.segmentationMode == GRID) {
 		segmentation = segmentation::segmentVISGrid(vis, conf.gridTileSize);
-		if (logger) {
-			logger->saveImage("segmentation", segmentation.representation());
-		}
 	}
 	else {
 		assert(false && "Unsupported segmentation mode");
 	}
 
+	// Save segmentation representation
+	if (logger) {
+		logger->saveImage("segmentation", segmentation.representation());
+	}
+
 	// Setup classifier ensemble
-	ThematicMap tMap(training);
-	Ensemble ensemble(MAJORITY_VOTING, segmentation, tMap, tMap);
+	Ensemble ensemble(MAJORITY_VOTING, segmentation, trainingMapVIS, 
+		trainingMapLWIR);
 	ensemble.setLogger(logger);
 	ensemble.setParallel(conf.parallel);
 
+	// Register ensemble classifiers
 	ensemble.addClassifier(new Classifier("SVM-GCH", ClassifierEngine::SVM, 
 		vis, new GCHDescriptor()));
 
@@ -128,21 +128,26 @@ int main(int argc, char **argv) {
 	ensemble.addClassifier(new Classifier("SVM-MOMENTS", ClassifierEngine::SVM, 
 		&lwir, new MOMENTSDescriptor()));
 
+	// Train ensemble
 	log("training ensemble...");
 	ensemble.train();
 
+	// Classify ensemble
 	log("classifying image...");
 	ThematicMap classification = ensemble.classify();
 	log("classifying image... done     ");
 
+	// Log classification results
 	if (logger) {
-		vector<pair<string, Mat> > allClassifications = ensemble.individualClassifications();
+		vector<pair<string, Mat> > allClassifications = 
+			ensemble.individualClassifications();
 
 		for (auto c : allClassifications) {
 			char path[16];
 			sprintf(path, "classifier_%s", c.first.c_str());
 
-			logger->saveImage(path, blend(vis, ThematicMap(c.second).coloredMap()));
+			logger->saveImage(path, blend(vis, 
+				ThematicMap(c.second).coloredMap()));
 		}
 
 		Mat coloredMap = classification.coloredMap();
@@ -153,6 +158,7 @@ int main(int argc, char **argv) {
 		showImage(blend(vis, coloredMap));	
 	}
 
+	// Calculate statistics
 	log("calculating kappa...");
 	float k = statistics::kappa(training, classification.asMat());
 	cout << k << endl;
@@ -165,39 +171,36 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-void resample(Mat& vis, Mat& training, LWIRImage& lwir, 
-		SamplingMode samplingMode, ResamplingMethod resamplingMethod) {
+void rescale(Mat& vis, LWIRImage& lwir, Mat trainingOriginal, Mat& trainingVIS, 
+	Mat& trainingLWIR, float scaleVIS, float scaleLWIR, 
+	ResamplingMethod resamplingMethod) {
 
-	// Set sampling mode
-	if (samplingMode == UPSAMPLE_LWIR) {
-		log("upscaling LWIR...");
-		lwir.upscale(vis.size());
+	// Scale LWIR
+	if (scaleLWIR != 1.0) {
+		// Rescale the LWIR image
+		lwir.rescale(scaleLWIR, resamplingMethod);
+
+		// Rescale LWIR training map
+		resize(trainingOriginal, trainingLWIR, Size(), scaleLWIR, scaleLWIR,
+			TRAINING_INTERPOLATION_MODE);
 	}
 	else {
-		int interpolationMode;
-		if (resamplingMethod == NEAREST_NEIGHBOR) {
-			interpolationMode = INTER_NEAREST;
-		}
-		else if (resamplingMethod == LINEAR) {
-			interpolationMode = INTER_LINEAR;
-		}
-		else if (resamplingMethod == CUBIC) {
-			interpolationMode = INTER_CUBIC;
-		}
+		trainingLWIR = trainingOriginal;
+	}
 
-		log("downsampling VIS...");
-		Mat resizedVis, resizedTraining;
-		resize(vis, resizedVis, lwir.size(), 0, 0, interpolationMode);
+	// Scale VIS
+	if (scaleVIS != 1.0) {
+		// Rescale the VIS image
+		Mat visR;
+		resize(vis, visR, Size(), scaleVIS, scaleVIS, 
+			translateInterpolationMode(resamplingMethod));
+		vis = visR;
 
-		// Training map needs nearest neighbor interpolation to keep the
-		// semantics of the gray values (which represent labels)
-		resize(training, resizedTraining, lwir.size(), 0, 0, INTER_NEAREST);
-
-		vis = resizedVis;
-		training = resizedTraining;
-
-		if (logger) {
-			logger->saveImage("vis", vis);
-		}
+		// Rescale VIS training map
+		resize(trainingOriginal, trainingVIS, Size(), scaleVIS, scaleVIS,
+			TRAINING_INTERPOLATION_MODE);
+	}
+	else {
+		trainingVIS = trainingOriginal;
 	}
 }

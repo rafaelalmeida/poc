@@ -1,21 +1,11 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include "common.h"
 #include "utils.h"
 #include "constants.h"
 
 #define MAX_PATH 256
-
-enum SamplingMode {
-	UPSAMPLE_LWIR,
-	DOWNSAMPLE_VIS
-};
-
-enum ResamplingMethod {
-	NEAREST_NEIGHBOR,
-	LINEAR,
-	CUBIC
-};
 
 typedef struct {
 	// File paths
@@ -43,7 +33,8 @@ typedef struct {
 	char logPath[MAX_PATH];
 
 	// Sampling and resampling
-	SamplingMode samplingMode;
+	float scaleVIS = 1.0;
+	float scaleLWIR = 1.0;
 	ResamplingMethod resamplingMethod = NEAREST_NEIGHBOR;
 
 	// Parallelization

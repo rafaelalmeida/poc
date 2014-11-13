@@ -134,3 +134,20 @@ cv::Rect scaleROI(cv::Size original, cv::Size dst, cv::Rect roi) {
 
 	return newRoi;
 }
+
+int translateInterpolationMode(ResamplingMethod method) {
+	if (method == NEAREST_NEIGHBOR) {
+		return INTER_NEAREST;
+	}
+	else if (method == LINEAR) {
+		return INTER_LINEAR;
+	}
+	else if (method == CUBIC) {
+		return INTER_CUBIC;
+	}
+	else {
+		// Should not get here
+		assert(false && "Invalid interpolation mode.");
+		return -1;
+	}
+}

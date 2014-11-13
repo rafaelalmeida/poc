@@ -7,10 +7,8 @@
 	--vis "data/subset/TelopsDatasetCityVisible_20cm_Subset.img" \
 	--lwir "data/subset/TelopsDatasetCityLWIR_Subset.img" \
 	--training "data/subset/TrainingMap_ENVI_RAW_format.raw" \
-	--roiX 285 \
-	--roiY 384 \
-	--roiW 111 \
-	--roiH 122 \
+	--scale-vis 0.05 \
+	--scale-lwir 0.1 \
 	--segmentation-mode GRID \
 	--sampling-mode DOWNSAMPLE_VIS \
 	--resampling-method NEAREST \

@@ -14,6 +14,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include "classification.h"
+#include "common.h"
 #include "logging.h"
 #include "segmentation.h"
 

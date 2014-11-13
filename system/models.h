@@ -13,6 +13,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
+#include "config.h"
 #include "utils.h"
 
 #define PCA_COMPONENTS 5
@@ -49,7 +50,7 @@ class LWIRImage {
 		int numReducedBands();
 		void reduceDimensionality(int keep);
 		void setRoi(cv::Rect roi);
-		void upscale(cv::Size size);
+		void rescale(float scale, ResamplingMethod mode);
 };
 
 class ThematicMap {
@@ -62,6 +63,7 @@ class ThematicMap {
 		cv::Mat coloredMap();
 		float getRegionClass(cv::Mat mask);
 		std::map<unsigned char, int> getClassesCounts();
+		cv::Size size();
 };
 
 #endif

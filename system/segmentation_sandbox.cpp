@@ -42,21 +42,6 @@ int main0(int argc, char **argv) {
 	// Matrixes with default settings
 	Mat vis = visFull, training = trainingFull;
 
-	// Set sampling mode
-	if (conf.samplingMode == UPSAMPLE_LWIR) {
-		log("upscaling LWIR...");
-		lwir.upscale(visFull.size());
-	}
-	else {
-		log("downsampling VIS...");
-		Mat resizedVis, resizedTraining;
-		resize(visFull, resizedVis, lwir.size());
-		resize(trainingFull, resizedTraining, lwir.size());
-
-		vis = resizedVis;
-		training = resizedTraining;
-	}
-
 	int lowVal;
 	int highVal;
 
@@ -105,21 +90,6 @@ int main5(int argc, char **argv) {
 	// Matrixes with default settings
 	Mat vis = visFull, training = trainingFull;
 
-	// Set sampling mode
-	if (conf.samplingMode == UPSAMPLE_LWIR) {
-		log("upscaling LWIR...");
-		lwir.upscale(visFull.size());
-	}
-	else {
-		log("downsampling VIS...");
-		Mat resizedVis, resizedTraining;
-		resize(visFull, resizedVis, lwir.size());
-		resize(trainingFull, resizedTraining, lwir.size());
-
-		vis = resizedVis;
-		training = resizedTraining;
-	}
-
 	int lowVal;
 	int highVal;
 
@@ -159,21 +129,6 @@ int main4(int argc, char **argv) {
 
 	// Matrixes with default settings
 	Mat vis = visFull, training = trainingFull;
-
-	// Set sampling mode
-	if (conf.samplingMode == UPSAMPLE_LWIR) {
-		log("upscaling LWIR...");
-		lwir.upscale(visFull.size());
-	}
-	else {
-		log("downsampling VIS...");
-		Mat resizedVis, resizedTraining;
-		resize(visFull, resizedVis, lwir.size());
-		resize(trainingFull, resizedTraining, lwir.size());
-
-		vis = resizedVis;
-		training = resizedTraining;
-	}
 
 	int lowVal;
 	int highVal;
@@ -222,21 +177,6 @@ int main3(int argc, char **argv) {
 
 	// Matrixes with default settings
 	Mat vis = visFull, training = trainingFull;
-
-	// Set sampling mode
-	if (conf.samplingMode == UPSAMPLE_LWIR) {
-		log("upscaling LWIR...");
-		lwir.upscale(visFull.size());
-	}
-	else {
-		log("downsampling VIS...");
-		Mat resizedVis, resizedTraining;
-		resize(visFull, resizedVis, lwir.size());
-		resize(trainingFull, resizedTraining, lwir.size());
-
-		vis = resizedVis;
-		training = resizedTraining;
-	}
 
 	int spVal;
 	int srVal;

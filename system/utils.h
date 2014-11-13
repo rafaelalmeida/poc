@@ -11,6 +11,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+#include "common.h"
 #include "segmentation.h"
 
 extern "C" {
@@ -31,6 +32,7 @@ void colorReduce(cv::Mat& image, int div=64);
 void showImage(cv::Mat img, float scale=1.0, const char *winname=NULL, int delay=0);
 cv::Mat densify(cv::SparseMat sm);
 cv::Rect scaleROI(cv::Size original, cv::Size dst, cv::Rect roi);
+int translateInterpolationMode(ResamplingMethod method);
 
 cv::Mat mergeVISandLWIR(cv::Mat vis, cv::Mat lwirAvg);
 

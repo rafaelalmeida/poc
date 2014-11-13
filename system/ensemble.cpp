@@ -10,6 +10,7 @@ Ensemble::Ensemble(ConsensusType t, Segmentation& s, ThematicMap trainingVIS,
 	  _trainingVIS(trainingVIS),
 	  _trainingLWIR(trainingLWIR) {
 
+	// Verify training matrixes types
 	assert(trainingVIS.asMat().type() == CV_8UC1);
 	assert(trainingLWIR.asMat().type() == CV_8UC1);
 }
@@ -30,10 +31,12 @@ void Ensemble::setLogger(Logger *logger) {
 
 void Ensemble::train() {
 	// Extract regions from training map, for VIS image
+	cerr << "extracting region masks from VIS training map..." << endl;
 	list<SparseMat> masksVIS = segmentation::getColorBlobs(
 		_trainingVIS.asMat());
 
 	// Recover region labels - VIS
+	cerr << "recovering region labels from VIS training map..." << endl;
 	list<float> labelsVIS;
 	list<SparseMat> validSegmentsVIS;
 	for (auto mask : masksVIS) {
@@ -51,8 +54,16 @@ void Ensemble::train() {
 	Mat trainingLWIRMat = _trainingLWIR.asMat();
 	Size lwirSize = trainingLWIRMat.size();
 
+	int currentPixel = 1;
+	int totalPixels = lwirSize.height * lwirSize.width;
+
 	for (int row = 0; row < lwirSize.height; row++) {
 		for (int col = 0; col < lwirSize.width; col++) {
+			// Report progress
+			float progress = 100.0 * currentPixel / totalPixels;
+			cerr << "recovering region labels from LWIR training map... " << 
+				progress << "%      \r";
+
 			float label = (float) trainingLWIRMat.at<unsigned char>(row, col);
 
 			if (label != 0) {
@@ -63,10 +74,15 @@ void Ensemble::train() {
 
 				validSegmentsLWIR.push_back(SparseMat(mask));
 			}
+
+			currentPixel++;
 		}
 	}
 
+	cerr << endl;
+
 	// Create labels training matrix - VIS
+	cerr << "creating VIS training matrix..." << endl;
 	Mat labelsMatVIS(labelsVIS.size(), 1, CV_32FC1);
 	int c = 0;
 	for (auto label : labelsVIS) {
@@ -75,6 +91,7 @@ void Ensemble::train() {
 	}
 
 	// Create labels training matrix - LWIR
+	cerr << "creating LWIR training matrix..." << endl;
 	Mat labelsMatLWIR(labelsLWIR.size(), 1, CV_32FC1);
 	c = 0;
 	for (auto label : labelsLWIR) {
@@ -112,6 +129,7 @@ void Ensemble::doClassify(Classifier* C, Segmentation S, int *cursor,
 		S = S.pixelize();
 	}
 
+	// Classify all segments
 	int i = 1, n = S.getSegments().size();
 	for (auto mask : S.getSegments()) {
 		float progress = 100.0 * (*classifiedSegments) / totalToClassify;
@@ -124,17 +142,24 @@ void Ensemble::doClassify(Classifier* C, Segmentation S, int *cursor,
 		(*classifiedSegments)++;
 	}
 
-	if (!_parallel) {
-		_mutex.lock();
+	// Resize classification map if necessary
+	if (classification.size() != _trainingVIS.size()) {
+		Mat R;
+		resize(classification, R, _trainingVIS.size(), 0, 0, 
+			TRAINING_INTERPOLATION_MODE);
+
+		classification = R;
 	}
+
+	// Will update shared memory, lock it
+	if (!_parallel) _mutex.lock();
 
 	auto p = make_pair(C->getID(), classification);
 	_classifications[*cursor] = p;
 	(*cursor)++;
 
-	if (!_parallel) {
-		_mutex.unlock();
-	}
+	// Finished updating shared memory, unlock it
+	if (!_parallel) _mutex.unlock();
 }
 
 ThematicMap Ensemble::classify() {
@@ -206,12 +231,13 @@ ThematicMap Ensemble::classify() {
 	if (_consensusType == MAJORITY_VOTING) {
 		for (int row = 0; row < mapSize.height; row++) {
 			for (int col = 0; col < mapSize.width; col++) {
+				// Determine winning class
 				Counter<unsigned char> counter;
-
 				for (auto op : _classifications) {
 					counter.inc(op.second.at<unsigned char>(row, col));
 				}
 
+				// Set the winning class on the consensus map
 				consensus.at<unsigned char>(row, col) = counter.top();
 			}
 		}

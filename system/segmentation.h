@@ -21,10 +21,6 @@ extern "C" {
 using namespace cv;
 using namespace std;
 
-enum SegmentationMode {
-	GRID
-};
-
 namespace segmentation {
 	class Segmentation {
 		list<SparseMat> _masks;

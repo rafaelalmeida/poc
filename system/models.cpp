@@ -72,10 +72,11 @@ cv::Mat LWIRImage::normalizedSpectralSignature(cv::Point point, bool reduced) {
 	return this->normalizedSpectralSignature(mask, reduced);
 }
 
-void LWIRImage::upscale(cv::Size size) {
+void LWIRImage::rescale(float scale, ResamplingMethod mode) {
 	for (auto& band : bands) {
 		Mat resized;
-		resize(band, resized, size);
+		resize(band, resized, Size(), scale, scale, 
+			translateInterpolationMode(mode));
 
 		band = resized;
 	}
@@ -260,4 +261,8 @@ void LWIRImage::minMaxAcrossBands(std::vector<cv::Mat> bands, float *minVal,
 	minMaxIdx(extremes, &minValD, &maxValD);
 	*minVal = (float) minValD;
 	*maxVal = (float) maxValD;
+}
+
+cv::Size ThematicMap::size() {
+	return this->asMat().size();
 }
