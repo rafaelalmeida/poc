@@ -23,6 +23,9 @@ enum SegmentationMode {
 // Some (kind of) reasonable defaults for the SLIC segmentation
 #define DEFAULT_SLIC_REGION_SIZE 100
 #define DEFAULT_SLIC_MIN_REGION_SIZE 30
-#define DEFAULT_SLIC_REGULARIZATION 500.
+#define DEFAULT_SLIC_REGULARIZATION 500.0
+
+// Random seed
+#define RANDOM_SEED 13
 
 #endif // COMMON_H

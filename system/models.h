@@ -6,6 +6,7 @@
 #include <iostream>
 #include <list>
 #include <map>
+#include <random>
 #include <stdio.h>
 
 #include <gdal_priv.h>
@@ -63,6 +64,7 @@ class ThematicMap {
 		float getRegionClass(cv::Mat mask);
 		std::map<unsigned char, int> getClassesCounts();
 		std::list<std::pair<cv::SparseMat, int> > enumerateRegions();
+		std::vector<ThematicMap> split(int k);
 };
 
 #endif

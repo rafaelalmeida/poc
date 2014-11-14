@@ -157,9 +157,9 @@ float ThematicMap::getRegionClass(cv::Mat mask) {
 }
 
 cv::Mat ThematicMap::coloredMap() {
-	assert(_map.type() == CV_8UC1);
-
-	Mat map(_map.rows, _map.cols, CV_8UC3);
+	Mat M = _map;
+	assert(M.type() == CV_8UC1);
+	Mat map = Mat::zeros(M.rows, M.cols, CV_8UC3);
 
 	for (auto region : this->enumerateRegions()) {
 		// Determine which region to paint
@@ -303,4 +303,52 @@ std::list<std::pair<cv::SparseMat, int> > ThematicMap::enumerateRegions() {
 	}
 
 	return regions;
+}
+
+std::vector<ThematicMap> ThematicMap::split(int k) {
+	// Grab the list of regions and get it into a vector
+	list<pair<SparseMat, int> > regions = this->enumerateRegions();
+	vector<pair<SparseMat, int> > regionsV(regions.begin(), regions.end());
+
+	// Create a vector of folds
+	vector<int> folds(regions.size());
+
+	// Assign the folds
+	int foldToGo = 0;
+	for (int i = 0; i < folds.size(); i++) {
+		folds[i] = foldToGo++;
+
+		// Circle back to first fold
+		if (foldToGo == k) {
+			foldToGo = 0;
+		}
+	}
+	
+	// Shuffle the assigned folds
+	auto engine = default_random_engine(RANDOM_SEED);
+	shuffle(begin(folds), end(folds), engine);
+
+	// Group the shuffled segments together
+	vector<list<pair<SparseMat, int> > > splitRegionGroups(k);
+	for (int i = 0; i < folds.size(); i++) {
+		splitRegionGroups[folds[i]].push_back(regionsV[i]);
+	}
+
+	// Convert the grouped segments into matrixes with the correct maps
+	vector<ThematicMap> splits;
+	splits.reserve(k);
+
+	for (auto& g : splitRegionGroups) {
+		Mat M = Mat::zeros(_map.size(), _map.type());
+
+		// Paint the regions into the blank map
+		for (auto r : g) {
+			Mat R = densify(r.first);
+			M += r.second * R / 255;
+		}
+
+		splits.push_back(ThematicMap(M));
+	}
+
+	return splits;
 }

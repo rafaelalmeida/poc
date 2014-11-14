@@ -72,6 +72,17 @@ int main(int argc, char **argv) {
 	ThematicMap trainingMapVIS(trainingVIS);
 	ThematicMap trainingMapLWIR(trainingLWIR);
 
+	// DEBUG: test k-fold
+	vector<ThematicMap> splits = trainingMapVIS.split(5);
+	int c = 0;
+	for (auto s : splits) {
+		string n = "training-split-";
+		n += (c + '0');
+
+		logger->saveImage(n.c_str(), s.coloredMap());
+		c++;
+	}
+
 	// Save training map for debugging
 	logger->saveImage("training", blend(vis, trainingMapVIS.coloredMap()));
 
