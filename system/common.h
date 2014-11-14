@@ -28,4 +28,7 @@ enum SegmentationMode {
 // Random seed
 #define RANDOM_SEED 13
 
+// Number of k-fold splits
+#define K_FOLDS 5
+
 #endif // COMMON_H

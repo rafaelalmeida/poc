@@ -128,7 +128,11 @@ void LWIRImage::setRoi(cv::Rect roi) {
 }
 
 ThematicMap::ThematicMap(Mat training) {
-	_map = training;
+	_map = training.clone();
+}
+
+ThematicMap::ThematicMap(cv::Size size) {
+	_map = Mat::zeros(size, CV_8UC1);
 }
 
 cv::Mat ThematicMap::asMat() {
@@ -351,4 +355,14 @@ std::vector<ThematicMap> ThematicMap::split(int k) {
 	}
 
 	return splits;
+}
+
+void ThematicMap::resize(cv::Size newSize) {
+	Mat R;
+	cv::resize(_map, R, newSize, 0, 0, TRAINING_INTERPOLATION_MODE);
+	_map = R;
+}
+
+void ThematicMap::combine(ThematicMap T) {
+	_map += T.asMat();
 }

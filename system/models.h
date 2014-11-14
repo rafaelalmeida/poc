@@ -57,6 +57,7 @@ class ThematicMap {
 
 	public:
 		ThematicMap(cv::Mat training);
+		ThematicMap(cv::Size size);
 
 		cv::Mat asMat();
 		cv::Mat coloredMap();
@@ -65,6 +66,8 @@ class ThematicMap {
 		std::map<unsigned char, int> getClassesCounts();
 		std::list<std::pair<cv::SparseMat, int> > enumerateRegions();
 		std::vector<ThematicMap> split(int k);
+		void resize(cv::Size newSize);
+		void combine(ThematicMap T);
 };
 
 #endif

@@ -1,3 +1,4 @@
+#include <cfloat>
 #include <cstdint>
 #include <cstdio>
 #include <iostream>
@@ -32,6 +33,8 @@ Logger *logger = NULL;
 void rescale(Mat& vis, LWIRImage& lwir, float scaleVIS, float scaleLWIR, 
 	ResamplingMethod resamplingMethod);
 
+void setupClassifiers(Ensemble& e, Mat vis, LWIRImage lwir);
+
 int main(int argc, char **argv) {
 	Configuration conf;
 	config::parse(argv, argc, conf);
@@ -55,25 +58,24 @@ int main(int argc, char **argv) {
 		rescale(vis, lwir, conf.scaleVIS, conf.scaleLWIR, 
 			conf.resamplingMethod);
 	}
-	
-	// Scale training map to the correct sizes (one for VIS and one for LWIR)
-	Mat trainingVIS, trainingLWIR;
-	resize(training, trainingVIS, vis.size(), 0, 0, 
-		TRAINING_INTERPOLATION_MODE);
-	resize(training, trainingLWIR, lwir.size(), 0, 0, 
-		TRAINING_INTERPOLATION_MODE);
+
+	log("creating training thematic maps...");
+
+	// Create training map objects
+	ThematicMap trainingMapVIS(training);
+	ThematicMap trainingMapLWIR(training);
+
+	// Scale the training map
+	trainingMapVIS.resize(vis.size());
+	trainingMapLWIR.resize(lwir.size());
 
 	// Reduce dimensionality of LWIR image
 	log("reducing LWIR dimensionality...");
 	lwir.reduceDimensionality(LWIR_BANDS_TO_KEEP_ON_PCA);
 
-	// Create training thematic maps
-	log("creating training thematic maps...");
-	ThematicMap trainingMapVIS(trainingVIS);
-	ThematicMap trainingMapLWIR(trainingLWIR);
-
-	// DEBUG: test k-fold
-	vector<ThematicMap> splits = trainingMapVIS.split(5);
+	// Create k-fold splits
+	log("creating k-fold splits...");
+	vector<ThematicMap> splits = trainingMapVIS.split(K_FOLDS);
 	int c = 0;
 	for (auto s : splits) {
 		string n = "training-split-";
@@ -125,36 +127,74 @@ int main(int argc, char **argv) {
 	// Save segmentation representation
 	logger->saveImage("segmentation", segmentationVIS.representation());
 
-	// Setup classifier ensemble
+	// Open result file
+	ofstream results = logger->makeFile("results.txt");
+	results << "MAP AGREEMENT KAPPA" << endl;
+
+	// Run k-fold cross validation
+	float bestKappa = FLT_MIN;
+	int bestFold = -1; // Sentinel
+	cerr << "running k-fold cross-validation (k = " << K_FOLDS << ")" << endl;
+	for (int fold = 0; fold < K_FOLDS; fold++) {
+		// Report progress
+		cerr << "running fold " << (fold+1) << " of " << K_FOLDS << endl;
+
+		// Build training map (made by all fold except this one)
+		ThematicMap T(trainingMapVIS.size());
+		for (int i = 0; i < K_FOLDS; i++) {
+			if (i != fold) {
+				T.combine(splits[i]);
+			}
+		}
+
+		// Use the current fold for validation
+		ThematicMap V = splits[fold];
+
+		// Build the ensemble
+		Ensemble E(MAJORITY_VOTING, segmentationVIS, segmentationLWIR,
+		trainingMapVIS, trainingMapLWIR);
+
+		E.setParallel(conf.parallel);
+
+		setupClassifiers(E, vis, lwir);
+
+		// Train the ensemble
+		E.train();
+
+		// Run the classification
+		ThematicMap C = E.classify();
+
+		// Calculate the metric
+		Mat G = trainingMapVIS.asMat(), X = C.asMat();
+		float a = statistics::agreement(G, X);
+		float k = statistics::kappa(G, X);
+
+		// Show statistics
+		cerr << "agreement = " << a << ", kappa = " << k << endl;
+
+		// Log results
+		string imageName("fold_");
+		imageName += (fold+'0');
+		logger->saveImage(imageName.c_str(), blend(vis, C.coloredMap()));
+
+		// See if there is improvement
+		if (k > bestKappa) {
+			bestKappa = k;
+			bestFold = fold;
+		}
+	}
+
+	cerr << "best kappa = " << bestKappa << " on fold " << (bestFold) << 
+		endl;
+
+	/*// Set up classifier ensemble
 	Ensemble ensemble(MAJORITY_VOTING, segmentationVIS, segmentationLWIR,
 		trainingMapVIS, trainingMapLWIR);
 	ensemble.setLogger(logger);
 	ensemble.setParallel(conf.parallel);
 
-	// Register ensemble classifiers
-	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
-		vis, new GCHDescriptor("GCH")));
-
-	/*ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
-		vis, new ACCDescriptor("ACC")));
-
-	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
-		vis, new BICDescriptor("BIC")));
-
-	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
-		vis, new LCHDescriptor("LCH")));
-
-	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
-		vis, new UnserDescriptor("UNS")));*/
-
-	/*ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
-		&lwir, new SIGDescriptor("SIG")));*/
-
-	/*ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
-		&lwir, new REDUCEDSIGDescriptor("RSIG")));*/
-
-	/*ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
-		&lwir, new MOMENTSDescriptor("MMT")));*/
+	// Register classifiers
+	setupClassifiers(ensemble, vis, lwir);
 
 	// Train ensemble
 	log("starting ensemble training...");
@@ -167,10 +207,6 @@ int main(int argc, char **argv) {
 
 	// Grab individual classifications
 	auto allClassifications = ensemble.individualClassifications();
-
-	// Open result file
-	ofstream results = logger->makeFile("results.txt");
-	results << "MAP AGREEMENT KAPPA" << endl;
 
 	// Log classification maps
 	for (auto c : allClassifications) {
@@ -205,7 +241,7 @@ int main(int argc, char **argv) {
 	float kappa = statistics::kappa(G, C);
 
 	cerr << agreement << " " << kappa << endl;
-	results << "MAJORITY " << agreement << " " << kappa << endl;
+	results << "MAJORITY " << agreement << " " << kappa << endl;*/
 
 	// Close result file
 	results.close();
@@ -227,4 +263,31 @@ void rescale(Mat& vis, LWIRImage& lwir, float scaleVIS, float scaleLWIR,
 	resize(vis, visR, Size(), scaleVIS, scaleVIS, 
 		translateInterpolationMode(resamplingMethod));
 	vis = visR;
+}
+
+void setupClassifiers(Ensemble& ensemble, Mat vis, LWIRImage lwir) {
+	// Register ensemble classifiers
+	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
+		vis, new GCHDescriptor("GCH")));
+
+	/*ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
+		vis, new ACCDescriptor("ACC")));
+
+	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
+		vis, new BICDescriptor("BIC")));
+
+	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
+		vis, new LCHDescriptor("LCH")));
+
+	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
+		vis, new UnserDescriptor("UNS")));*/
+
+	/*ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
+		&lwir, new SIGDescriptor("SIG")));*/
+
+	/*ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
+		&lwir, new REDUCEDSIGDescriptor("RSIG")));*/
+
+	/*ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
+		&lwir, new MOMENTSDescriptor("MMT")));*/
 }
