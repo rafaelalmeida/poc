@@ -147,16 +147,20 @@ int main(int argc, char **argv) {
 			}
 		}
 
-		// Use the current fold for validation
-		ThematicMap V = splits[fold];
+		// Resize this fold's training map to the correct sizes
+		ThematicMap T_VIS = T.clone();
+		ThematicMap T_LWIR = T.clone();
+		T_VIS.resize(vis.size());
+		T_LWIR.resize(lwir.size());
 
 		// Build the ensemble
 		Ensemble E(MAJORITY_VOTING, segmentationVIS, segmentationLWIR,
-		trainingMapVIS, trainingMapLWIR);
-
+		T_VIS, T_LWIR);
 		E.setParallel(conf.parallel);
-
 		setupClassifiers(E, vis, lwir);
+
+		// Use the current fold for validation
+		ThematicMap V = splits[fold];
 
 		// Train the ensemble
 		E.train();

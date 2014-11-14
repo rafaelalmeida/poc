@@ -226,15 +226,6 @@ list<SparseMat> segmentation::getColorBlobs(Mat posterized) {
 
 	for (int y = 0; y < clone.rows; y++) {
 		for (int x = 0; x < clone.cols; x++) {
-			// Report progress
-			if ((y*clone.rows + x) % 1000 == 0) {
-				int progress = 100.0 * ((y*clone.cols + x)) / 
-					(clone.rows * clone.cols);
-
-				cerr << "finding blobs... " << progress << 
-					"%...     " << "\r" << flush;
-			}
-
 			// Find connected components
 			if (mask.at<uchar>(y+1, x+1) == 0) {
 				Mat previousMask = mask.clone();

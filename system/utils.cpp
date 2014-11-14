@@ -120,7 +120,7 @@ Mat formatImagesForPCA(const vector<Mat> &data)
 }
 
 cv::Mat densify(cv::SparseMat sm) {
-	Mat dense;
+	Mat dense = Mat::zeros(sm.size(0), sm.size(1), sm.type());
 	sm.convertTo(dense, sm.type());
 	
 	return dense;

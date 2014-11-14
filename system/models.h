@@ -60,6 +60,7 @@ class ThematicMap {
 		ThematicMap(cv::Size size);
 
 		cv::Mat asMat();
+		ThematicMap clone();
 		cv::Mat coloredMap();
 		cv::Size size();
 		float getRegionClass(cv::Mat mask);

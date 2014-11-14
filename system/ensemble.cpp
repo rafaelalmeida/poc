@@ -120,14 +120,16 @@ void Ensemble::doClassify(Classifier* C, Size mapSize, Segmentation S,
 	Mat classification = Mat::zeros(S.getMapSize(), CV_8UC1);
 
 	// Classify all segments
-	int i = 1, n = S.segmentCount();
+	int n = S.segmentCount();
 	for (auto mask : S.getSegments()) {
 		float progress = 100.0 * (*classifiedSegments) / totalToClassify;
 		cerr << "\rclassification: " << 
 			progress << "%        \r" << flush;
 
-		classification += C->classify(mask);
-		i++;
+
+
+		Mat classifiedSegment = C->classify(mask);
+		classification += classifiedSegment;
 		_worklog[idx]++;
 		(*classifiedSegments)++;
 	}

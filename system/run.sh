@@ -16,7 +16,7 @@
 	--slic-auto-scale-parameters \
 	--resampling-method NEAREST \
 	--log-path "scratch/logs" \
-	--parallel \
+	#--parallel \
 
 # TEST ROI - HIGH RES
 # --roiX 940 \

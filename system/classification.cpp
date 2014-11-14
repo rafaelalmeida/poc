@@ -82,7 +82,7 @@ Mat Classifier::classify(cv::SparseMat mask) {
 	Mat denseMask = densify(mask);
 	Mat classification = Mat::zeros(denseMask.size(), CV_8UC1);
 	classification += theClass * (denseMask / 255);
-	
+
 	return classification;
 }
 

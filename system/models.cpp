@@ -161,16 +161,16 @@ float ThematicMap::getRegionClass(cv::Mat mask) {
 }
 
 cv::Mat ThematicMap::coloredMap() {
-	Mat M = _map;
-	assert(M.type() == CV_8UC1);
-	Mat map = Mat::zeros(M.rows, M.cols, CV_8UC3);
+	assert(_map.type() == CV_8UC1);
+	Mat map = Mat::zeros(_map.size(), CV_8UC3);
 
+	vector<vector<Point> > contours;
 	for (auto region : this->enumerateRegions()) {
 		// Determine which region to paint
 		Mat denseRegion = densify(region.first);
-		vector<Mat> contours;
+		contours.clear();
 		findContours(denseRegion, contours, CV_RETR_EXTERNAL, 
-			CV_CHAIN_APPROX_SIMPLE);
+			CV_CHAIN_APPROX_NONE);
 
 		// Select the right color to paint
 		int label = region.second;
@@ -198,6 +198,9 @@ cv::Mat ThematicMap::coloredMap() {
 		}
 		else if (label == 7) { // BARE SOIL
 			color = Scalar(0, 255, 255); // YELLOW
+		}
+		else {
+			assert(false && "Error! Unknown label");
 		}
 
 		// Paint the region
@@ -270,19 +273,19 @@ std::list<std::pair<cv::SparseMat, int> > ThematicMap::enumerateRegions() {
 	assert(_map.size().area() > 0 && "Error: map seems to be blank");
 	assert(_map.type() == CV_8UC1 && "Error: map seems to be the wrong type.");
 
-	// Use the fact that all non-undefined labels are positive to threshold
-	// the image and enumerate the regions using contour finding
-	Mat bin(_map.size(), CV_8UC1);
-	threshold(_map, bin, 1, 255, THRESH_BINARY);
-	vector<vector<Point> > contours;
-	findContours(bin, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+	// Finds the connected color components representing each region
+	list<SparseMat> connectedComponents = segmentation::getColorBlobs(_map);
 
-	// Iterate over the found contours and build the region masks
+	// Fill region list
 	list<pair<SparseMat, int> > regions;
-	for (int idx = 0; idx < contours.size(); idx++) {
+	for (auto cc : connectedComponents) {
 		// Build the mask
-		Mat mask = Mat::zeros(_map.size(), CV_8UC1);
-		drawContours(mask, contours, idx, Scalar(255), CV_FILLED);
+		Mat mask = densify(cc);
+
+		// Skip connected components whose value is zero
+		if (countNonZero(_map & mask) == 0) {
+			continue;
+		}
 
 		// Get the region label. We assume, by construction, that all pixels
 		// inside a region have the same label. So, for efficiency, we take
@@ -303,7 +306,7 @@ std::list<std::pair<cv::SparseMat, int> > ThematicMap::enumerateRegions() {
 		// so if label is still the sentinel value, something wrong happened.
 		assert(label > 0);
 
-		regions.push_back(make_pair(SparseMat(mask), label));
+		regions.push_back(make_pair(cc, label));
 	}
 
 	return regions;
@@ -365,4 +368,8 @@ void ThematicMap::resize(cv::Size newSize) {
 
 void ThematicMap::combine(ThematicMap T) {
 	_map += T.asMat();
+}
+
+ThematicMap ThematicMap::clone() {
+	return ThematicMap(_map);
 }
