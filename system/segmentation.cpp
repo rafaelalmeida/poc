@@ -13,7 +13,6 @@ Segmentation segmentation::segmentVIS_SLIC(Mat M, int regionSize,
 	assert(M.channels() == 3);
 
 	// Convert image to one-dimensional array.
-	log("converting image format...");
 	float* image = new float[M.rows*M.cols*M.channels()];
 	for (int i = 0; i < M.rows; ++i) {
 		for (int j = 0; j < M.cols; ++j) {
@@ -37,12 +36,11 @@ Segmentation segmentation::segmentVIS_SLIC(Mat M, int regionSize,
 	vl_size minRegion = minRegionSize;
 	float _regularization = regularization;
 
-	log("running segmentation...");
+	// Run the actual segmentation procedure
 	vl_slic_segment(segmentation, image, width, height, channels, region, 
 		_regularization, minRegion);
             
     // Convert segmentation.
-    log("converting segmentation...");
     int** labels = new int*[M.rows];
     for (int i = 0; i < M.rows; ++i) {
         labels[i] = new int[M.cols];

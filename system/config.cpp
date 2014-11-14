@@ -73,6 +73,9 @@ void config::parse(char **argv, int argc, Configuration &config) {
 		else if (streq("--slic-regularization", argv[c])) {
 			config.slicRegularization = atof(argv[++c]);
 		}
+		else if (streq("--slic-auto-scale-parameters", argv[c])) {
+			config.slicAutoScaleParameters = true;
+		}
 
 		// Log
 		else if (streq("--log-path", argv[c])) {

@@ -86,12 +86,20 @@ int main(int argc, char **argv) {
 		lwir.setRoi(roi);
 	}
 
-	log("starting image segmentation...");
+	log("segmenting image...");
 	Segmentation segmentationVIS;
 	if (conf.segmentationMode == GRID) {
 		segmentationVIS = segmentation::segmentVISGrid(vis, conf.gridTileSize);
 	}
 	else if (conf.segmentationMode == SLIC) {
+		// Try to guess rescaled parameters for SLIC, if desired
+		if (conf.slicAutoScaleParameters) {
+			float s = conf.scaleVIS;
+
+			conf.slicRegionSize *= s;
+			conf.slicMinRegionSize *= s;
+		}
+
 		segmentationVIS = segmentation::segmentVIS_SLIC(vis, 
 			conf.slicRegionSize, conf.slicMinRegionSize, 
 			conf.slicRegularization);
