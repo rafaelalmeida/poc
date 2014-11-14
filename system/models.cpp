@@ -135,6 +135,10 @@ ThematicMap::ThematicMap(cv::Size size) {
 	_map = Mat::zeros(size, CV_8UC1);
 }
 
+ThematicMap::ThematicMap() {
+	_map = Mat(); // Dummy map, just so we can create the object
+}
+
 cv::Mat ThematicMap::asMat() {
 	return _map;
 }

@@ -134,6 +134,9 @@ int main(int argc, char **argv) {
 	// Run k-fold cross validation
 	float bestKappa = FLT_MIN;
 	int bestFold = -1; // Sentinel
+	vector<pair<string, Mat> > bestClassifications;
+	ThematicMap bestConsensus;
+
 	cerr << "running k-fold cross-validation (k = " << K_FOLDS << ")" << endl;
 	for (int fold = 0; fold < K_FOLDS; fold++) {
 		// Report progress
@@ -185,49 +188,18 @@ int main(int argc, char **argv) {
 		if (k > bestKappa) {
 			bestKappa = k;
 			bestFold = fold;
+			bestClassifications = E.individualClassifications();
+			bestConsensus = C;
 		}
 	}
 
 	cerr << "best kappa = " << bestKappa << " on fold " << (bestFold) << 
 		endl;
 
-	/*// Set up classifier ensemble
-	Ensemble ensemble(MAJORITY_VOTING, segmentationVIS, segmentationLWIR,
-		trainingMapVIS, trainingMapLWIR);
-	ensemble.setLogger(logger);
-	ensemble.setParallel(conf.parallel);
-
-	// Register classifiers
-	setupClassifiers(ensemble, vis, lwir);
-
-	// Train ensemble
-	log("starting ensemble training...");
-	ensemble.train();
-
-	// Classify ensemble
-	log("classifying image...");
-	ThematicMap classification = ensemble.classify();
-	log("classifying image... done     ");
-
-	// Grab individual classifications
-	auto allClassifications = ensemble.individualClassifications();
-
-	// Log classification maps
-	for (auto c : allClassifications) {
-		char path[16];
-		sprintf(path, "classifier_%s", c.first.c_str());
-
-		logger->saveImage(path, blend(vis, 
-			ThematicMap(c.second).coloredMap()));
-	}
-
-	Mat coloredMap = classification.coloredMap();
-	logger->saveImage("consensus", blend(vis, coloredMap));
-
-	// Calculate kappa for all classifications
+	// Process best individual classifications of best performing ensemble
 	log("calculating individual statistics...");
 	Mat G = trainingMapVIS.asMat();
-	for (auto c : allClassifications) {
+	for (auto c : bestClassifications) {
 		Mat X = c.second;
 
 		float agreement = statistics::agreement(G, X);
@@ -240,12 +212,12 @@ int main(int argc, char **argv) {
 	// Calculate consensus kappa
 	log("calculating consensus statistics...");
 
-	Mat C = classification.asMat();
+	Mat C = bestConsensus.asMat();
 	float agreement = statistics::agreement(G, C);
 	float kappa = statistics::kappa(G, C);
 
 	cerr << agreement << " " << kappa << endl;
-	results << "MAJORITY " << agreement << " " << kappa << endl;*/
+	results << "MAJORITY " << agreement << " " << kappa << endl;
 
 	// Close result file
 	results.close();

@@ -56,6 +56,7 @@ class ThematicMap {
 	cv::Mat _map;
 
 	public:
+		ThematicMap();
 		ThematicMap(cv::Mat training);
 		ThematicMap(cv::Size size);
 
