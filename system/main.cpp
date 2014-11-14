@@ -200,6 +200,7 @@ int main(int argc, char **argv) {
 	log("calculating individual statistics...");
 	Mat G = trainingMapVIS.asMat();
 	for (auto c : bestClassifications) {
+		// Save results
 		Mat X = c.second;
 
 		float agreement = statistics::agreement(G, X);
@@ -207,6 +208,12 @@ int main(int argc, char **argv) {
 
 		results << c.first << " " << agreement << " " << kappa 
 			<< endl;
+
+		// Save images
+		string imageName("classifier-");
+		imageName += c.first;
+		logger->saveImage(imageName.c_str(), 
+			blend(vis, ThematicMap(c.second).coloredMap()));
 	}
 
 	// Calculate consensus kappa
