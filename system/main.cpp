@@ -253,7 +253,7 @@ void setupClassifiers(Ensemble& ensemble, Mat vis, LWIRImage lwir) {
 	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
 		vis, new GCHDescriptor("GCH")));
 
-	/*ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
+	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
 		vis, new ACCDescriptor("ACC")));
 
 	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
@@ -262,15 +262,12 @@ void setupClassifiers(Ensemble& ensemble, Mat vis, LWIRImage lwir) {
 	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
 		vis, new LCHDescriptor("LCH")));
 
+	/*ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
+		&lwir, new SIGDescriptor("SIG")));
+
 	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
-		vis, new UnserDescriptor("UNS")));*/
+		&lwir, new REDUCEDSIGDescriptor("RSIG")));
 
-	/*ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
-		&lwir, new SIGDescriptor("SIG")));*/
-
-	/*ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
-		&lwir, new REDUCEDSIGDescriptor("RSIG")));*/
-
-	/*ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
+	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
 		&lwir, new MOMENTSDescriptor("MMT")));*/
 }
