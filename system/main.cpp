@@ -33,7 +33,7 @@ Logger *logger = NULL;
 void rescale(Mat& vis, LWIRImage& lwir, float scaleVIS, float scaleLWIR, 
 	ResamplingMethod resamplingMethod);
 
-void setupClassifiers(Ensemble& e, Mat vis, LWIRImage lwir);
+void setupClassifiers(Ensemble& e, Mat vis, LWIRImage& lwir);
 
 int main(int argc, char **argv) {
 	Configuration conf;
@@ -162,19 +162,19 @@ int main(int argc, char **argv) {
 		E.setParallel(conf.parallel);
 		setupClassifiers(E, vis, lwir);
 
-		// Use the current fold for validation
-		ThematicMap V = splits[fold];
-
 		// Train the ensemble
 		E.train();
 
 		// Run the classification
 		ThematicMap C = E.classify();
 
-		// Calculate the metric
-		Mat G = trainingMapVIS.asMat(), X = C.asMat();
-		float a = statistics::agreement(G, X);
-		float k = statistics::kappa(G, X);
+		// Use the current fold for validation
+		Mat V = splits[fold].asMat();
+
+		// Calculate performance metrics
+		Mat X = C.asMat();
+		float a = statistics::agreement(V, X);
+		float k = statistics::kappa(V, X);
 
 		// Show statistics
 		cerr << "agreement = " << a << ", kappa = " << k << endl;
@@ -248,7 +248,7 @@ void rescale(Mat& vis, LWIRImage& lwir, float scaleVIS, float scaleLWIR,
 	vis = visR;
 }
 
-void setupClassifiers(Ensemble& ensemble, Mat vis, LWIRImage lwir) {
+void setupClassifiers(Ensemble& ensemble, Mat vis, LWIRImage& lwir) {
 	// Register ensemble classifiers
 	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
 		vis, new GCHDescriptor("GCH")));
@@ -262,12 +262,12 @@ void setupClassifiers(Ensemble& ensemble, Mat vis, LWIRImage lwir) {
 	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
 		vis, new LCHDescriptor("LCH")));
 
-	/*ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
+	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
 		&lwir, new SIGDescriptor("SIG")));
 
 	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
 		&lwir, new REDUCEDSIGDescriptor("RSIG")));
 
 	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
-		&lwir, new MOMENTSDescriptor("MMT")));*/
+		&lwir, new MOMENTSDescriptor("MMT")));
 }

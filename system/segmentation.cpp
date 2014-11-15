@@ -242,8 +242,6 @@ list<SparseMat> segmentation::getColorBlobs(Mat posterized) {
 		}
 	}
 
-	cerr << "finding blobs... done" << endl;
-
 	return segments;
 }
 

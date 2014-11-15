@@ -31,10 +31,7 @@ Mat getSpectralSignature(LWIRImage image, list<SparseMat> masks, bool reduced) {
 	int i = 0;
 	for (auto mask : masks) {
 		Mat sig = image.normalizedSpectralSignature(densify(mask), reduced);
-
-		sig.row(0).copyTo(samples.row(i));
-
-		i++;
+		sig.row(0).copyTo(samples.row(i++));
 	}
 
 	return samples;

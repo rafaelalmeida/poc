@@ -67,7 +67,17 @@ cv::Mat LWIRImage::normalizedSpectralSignature(cv::Point point, bool reduced) {
 }
 
 void LWIRImage::rescale(float scale, ResamplingMethod mode) {
+	// Resize normal bands
 	for (auto& band : bands) {
+		Mat resized;
+		resize(band, resized, Size(), scale, scale, 
+			translateInterpolationMode(mode));
+
+		band = resized;
+	}
+
+	// Resize reduced bands
+	for (auto& band : reducedBands) {
 		Mat resized;
 		resize(band, resized, Size(), scale, scale, 
 			translateInterpolationMode(mode));
