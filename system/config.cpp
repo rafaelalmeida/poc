@@ -96,13 +96,13 @@ void config::parse(char **argv, int argc, Configuration &config) {
 			char theMethod[512];
 			strcpy(theMethod, argv[++c]);
 			if (streq("NEAREST", theMethod)) {
-				config.resamplingMethod = NEAREST_NEIGHBOR;
+				config.interpolationMode = NEAREST_NEIGHBOR;
 			}
 			else if (streq("LINEAR" , theMethod)) {
-				config.resamplingMethod = LINEAR;
+				config.interpolationMode = LINEAR;
 			}
 			else if (streq("CUBIC" , theMethod)) {
-				config.resamplingMethod = CUBIC;
+				config.interpolationMode = CUBIC;
 			}
 			else {
 				cerr << "Unrecognized resampling method: " << theMethod << 

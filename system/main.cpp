@@ -31,7 +31,7 @@ bool verbose;
 Logger *logger = NULL;
 
 void rescale(Mat& vis, LWIRImage& lwir, float scaleVIS, float scaleLWIR, 
-	ResamplingMethod resamplingMethod);
+	InterpolationMode interpolationMode);
 
 void setupClassifiers(Ensemble& e, Mat vis, LWIRImage& lwir);
 
@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
 	if (conf.scaleVIS != 1.0 || conf.scaleLWIR != 1.0) {
 		log("rescaling images...");
 		rescale(vis, lwir, conf.scaleVIS, conf.scaleLWIR, 
-			conf.resamplingMethod);
+			conf.interpolationMode);
 	}
 
 	log("creating training thematic maps...");
@@ -236,15 +236,15 @@ int main(int argc, char **argv) {
 }
 
 void rescale(Mat& vis, LWIRImage& lwir, float scaleVIS, float scaleLWIR, 
-	ResamplingMethod resamplingMethod) {
+	InterpolationMode interpolationMode) {
 
 	// Scale LWIR
-	lwir.rescale(scaleLWIR, resamplingMethod);
+	lwir.rescale(scaleLWIR, interpolationMode);
 
 	// Scale VIS
 	Mat visR;
 	resize(vis, visR, Size(), scaleVIS, scaleVIS, 
-		translateInterpolationMode(resamplingMethod));
+		translateInterpolationMode(interpolationMode));
 	vis = visR;
 }
 

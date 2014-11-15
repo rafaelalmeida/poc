@@ -41,7 +41,7 @@ typedef struct {
 	// Sampling and resampling
 	float scaleVIS = 1.0;
 	float scaleLWIR = 1.0;
-	ResamplingMethod resamplingMethod = NEAREST_NEIGHBOR;
+	InterpolationMode interpolationMode = NEAREST_NEIGHBOR;
 
 	// Parallelization
 	bool parallel = false;

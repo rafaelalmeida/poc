@@ -1,7 +1,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-enum ResamplingMethod {
+enum InterpolationMode {
 	NEAREST_NEIGHBOR,
 	LINEAR,
 	CUBIC

@@ -49,7 +49,7 @@ class LWIRImage {
 		int numReducedBands();
 		void reduceDimensionality(int keep);
 		void setRoi(cv::Rect roi);
-		void rescale(float scale, ResamplingMethod mode);
+		void rescale(float scale, InterpolationMode mode);
 };
 
 class ThematicMap {

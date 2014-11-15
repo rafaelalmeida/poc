@@ -135,7 +135,7 @@ cv::Rect scaleROI(cv::Size original, cv::Size dst, cv::Rect roi) {
 	return newRoi;
 }
 
-int translateInterpolationMode(ResamplingMethod method) {
+int translateInterpolationMode(InterpolationMode method) {
 	if (method == NEAREST_NEIGHBOR) {
 		return INTER_NEAREST;
 	}
