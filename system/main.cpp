@@ -135,6 +135,7 @@ int main(int argc, char **argv) {
 	float bestKappa = FLT_MIN;
 	int bestFold = -1; // Sentinel
 	vector<pair<string, Mat> > bestClassifications;
+	vector<ThematicMap> foldValidationMaps;
 	ThematicMap bestConsensus;
 
 	cerr << "running k-fold cross-validation (k = " << K_FOLDS << ")" << endl;
@@ -170,6 +171,7 @@ int main(int argc, char **argv) {
 
 		// Use the current fold for validation
 		Mat V = splits[fold].asMat();
+		foldValidationMaps.push_back(V);
 
 		// Calculate performance metrics
 		Mat X = C.asMat();
@@ -198,7 +200,7 @@ int main(int argc, char **argv) {
 
 	// Process best individual classifications of best performing ensemble
 	log("calculating individual statistics...");
-	Mat G = trainingMapVIS.asMat();
+	Mat G = foldValidationMaps[bestFold].asMat();
 	for (auto c : bestClassifications) {
 		// Save results
 		Mat X = c.second;
