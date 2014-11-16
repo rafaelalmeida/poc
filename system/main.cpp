@@ -277,5 +277,8 @@ void setupClassifiers(Ensemble& ensemble, Mat vis, LWIRImage& lwir) {
 		vis, new GCHDescriptor("GCH")));
 
 	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
-		vis, new GCHDescriptor("GCH")));	
+		vis, new GCHDescriptor("GCH")));
+
+	ensemble.addClassifier(new Classifier(ClassifierEngine::KNN, 
+		vis, new GCHDescriptor("GCH")));
 }

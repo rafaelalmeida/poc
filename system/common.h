@@ -31,4 +31,7 @@ enum SegmentationMode {
 // Number of k-fold splits
 #define K_FOLDS 5
 
+// Number of neighbors to consider in KNN classifier (hardcoded for now)
+#define KNN_K 5
+
 #endif // COMMON_H

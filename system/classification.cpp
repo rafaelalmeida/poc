@@ -54,6 +54,9 @@ void Classifier::train(Mat labels, Segmentation trainingSegments) {
 	else if (_engine == NBC) {
 		_nbc.train(features, labels, Mat(), Mat(), false);
 	}
+	else if (_engine == KNN) {
+		_knn.train(features, labels);
+	}
 	else {
 		assert(false && "Unknown classifier engine");
 	}
@@ -80,6 +83,9 @@ Mat Classifier::classify(cv::SparseMat mask) {
 	else if (_engine == NBC) {
 		theClass = _nbc.predict(features);
 	}
+	else if (_engine == KNN) {
+		theClass = _knn.find_nearest(features, KNN_K);
+	}
 	else {
 		assert(false && "Unknown classifier engine");
 	}
@@ -101,6 +107,9 @@ string Classifier::getID() {
 	}
 	else if (_engine == NBC) {
 		id += "NBC-";
+	}
+	else if (_engine == KNN) {
+		id += "KNN-";
 	}
 
 	// Place the descriptor identification
