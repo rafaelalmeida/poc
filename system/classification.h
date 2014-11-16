@@ -28,7 +28,8 @@ namespace classification {
 	};
 
 	enum ClassifierEngine {
-		SVM
+		SVM,
+		NBC
 	};
 
 	/**
@@ -49,6 +50,7 @@ namespace classification {
 
 		// Classifier object members
 		CvSVM _svm;
+		CvNormalBayesClassifier _nbc;
 
 		public:
 			// Constructors

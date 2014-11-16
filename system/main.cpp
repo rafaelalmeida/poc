@@ -251,8 +251,8 @@ void rescale(Mat& vis, LWIRImage& lwir, float scaleVIS, float scaleLWIR,
 }
 
 void setupClassifiers(Ensemble& ensemble, Mat vis, LWIRImage& lwir) {
-	// Register ensemble classifiers
-	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
+	// Register ensemble classifiers - SVM
+	/*ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
 		vis, new GCHDescriptor("GCH")));
 
 	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
@@ -271,5 +271,11 @@ void setupClassifiers(Ensemble& ensemble, Mat vis, LWIRImage& lwir) {
 		&lwir, new REDUCEDSIGDescriptor("RSIG")));
 
 	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
-		&lwir, new MOMENTSDescriptor("MMT")));
+		&lwir, new MOMENTSDescriptor("MMT")));*/
+
+	ensemble.addClassifier(new Classifier(ClassifierEngine::NBC, 
+		vis, new GCHDescriptor("GCH")));
+
+	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
+		vis, new GCHDescriptor("GCH")));	
 }

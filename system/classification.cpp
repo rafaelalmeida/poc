@@ -51,6 +51,9 @@ void Classifier::train(Mat labels, Segmentation trainingSegments) {
 
 	    _svm.train(features, labels, Mat(), Mat(), params);
 	}
+	else if (_engine == NBC) {
+		_nbc.train(features, labels, Mat(), Mat(), false);
+	}
 	else {
 		assert(false && "Unknown classifier engine");
 	}
@@ -74,6 +77,9 @@ Mat Classifier::classify(cv::SparseMat mask) {
 	if (_engine == SVM) {
 		theClass = _svm.predict(features);
 	}
+	else if (_engine == NBC) {
+		theClass = _nbc.predict(features);
+	}
 	else {
 		assert(false && "Unknown classifier engine");
 	}
@@ -92,6 +98,9 @@ string Classifier::getID() {
 	// Place the classifier identification
 	if (_engine == SVM) {
 		id += "SVM-";
+	}
+	else if (_engine == NBC) {
+		id += "NBC-";
 	}
 
 	// Place the descriptor identification
