@@ -1,10 +1,10 @@
 CFLAGS = -g
 
-CFLAGS += `pkg-config --cflags gdal`
+CFLAGS += `gdal-config --cflags gdal`
 CFLAGS += `pkg-config --cflags opencv`
 
 LFLAGS = -g
-LFLAGS += `pkg-config --libs gdal`
+LFLAGS += `gdal-config --libs gdal`
 LFLAGS += `pkg-config --libs opencv`
 LFLAGS += -L libs -l vl
 
