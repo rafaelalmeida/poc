@@ -69,6 +69,24 @@ void Classifier::train(Mat labels, Segmentation trainingSegments) {
 	else if (_engine == ERTREES) {
 		_ertrees.train(features, CV_ROW_SAMPLE, labels);
 	}
+	else if (_engine == MLP) {
+		Mat layers(3, 1, CV_32S);
+		layers.at<int>(0, 0) = features.cols;
+		layers.at<int>(1, 0) = 16;
+		layers.at<int>(2, 0) = CLASS_COUNT;
+
+		// Since MLPs can't handle categorical data, we encode it as a vector v
+		// of CLASS_COUNT elements. If the class is c, then v(c) = 1 and all
+		// other elements of v are 0.
+		Mat encodedLabels = Mat::zeros(labels.rows, CLASS_COUNT, CV_32F);
+		for (int i = 0; i < labels.rows; i++) {
+			int c = (int) (labels.at<float>(i, 0) - 1); // Classes are 1-index
+			encodedLabels.at<float>(i, c) = 1.0;
+		}
+
+		_mlp.create(layers, CvANN_MLP::SIGMOID_SYM);
+		_mlp.train(features, encodedLabels, Mat());
+	}
 	else {
 		assert(false && "Unknown classifier engine");
 	}
@@ -110,6 +128,19 @@ Mat Classifier::classify(cv::SparseMat mask) {
 	else if (_engine == ERTREES) {
 		theClass = _ertrees.predict(features);
 	}
+	else if (_engine == MLP) {
+		Mat classification;
+		_mlp.predict(features, classification);
+
+		// Find the class with highest weight
+		int maxIndex[2];
+		minMaxIdx(classification, NULL, NULL, NULL, maxIndex);
+
+		// The predicted class is the 1-based (since we don't include the 
+		// 0 (unclassified) class) index of the output layer element with 
+		// maximal value.
+		theClass = (float) (maxIndex[1] + 1);
+	}
 	else {
 		assert(false && "Unknown classifier engine");
 	}
@@ -146,6 +177,9 @@ string Classifier::getID() {
 	}
 	else if (_engine == ERTREES) {
 		id += "ERTREES-";
+	}
+	else if (_engine == MLP) {
+		id += "MLP-";
 	}
 
 	// Place the descriptor identification

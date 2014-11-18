@@ -34,7 +34,8 @@ namespace classification {
 		DTREE,
 		GBT,
 		RTREES,
-		ERTREES
+		ERTREES,
+		MLP
 	};
 
 	/**
@@ -61,6 +62,7 @@ namespace classification {
 		CvGBTrees _gbtrees;
 		CvRTrees _rtrees;
 		CvERTrees _ertrees;
+		CvANN_MLP _mlp;
 
 		public:
 			// Constructors

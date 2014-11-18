@@ -12,6 +12,9 @@ enum SegmentationMode {
 	SLIC
 };
 
+// Number of classes in the thematic map
+#define CLASS_COUNT 7
+
 // The training matrixes need to be resampled by nearest neighbor 
 // interpolation, because it uses gray levels as class labels, so other
 // interpolation types will produce values with wrong semantics.
