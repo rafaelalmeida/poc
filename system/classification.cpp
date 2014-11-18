@@ -58,21 +58,10 @@ void Classifier::train(Mat labels, Segmentation trainingSegments) {
 		_knn.train(features, labels);
 	}
 	else if (_engine == DTREE) {
-		CvDTreeParams params = CvDTreeParams(
-			25, // max depth
-			5, // min sample count
-			0, // regression accuracy: N/A here
-			false, // compute surrogate split, no missing data
-			15, // max number of categories (use sub-optimal algorithm for 
-				// larger numbers)
-			1, // the number of cross-validation folds
-			false, // use 1SE rule => smaller tree
-			false, // throw away the pruned tree branches
-			NULL // the array of priors
-		);
-
-		_dtree.train(features, CV_ROW_SAMPLE, labels, Mat(), Mat(), Mat(), 
-			Mat(), params);
+		_dtree.train(features, CV_ROW_SAMPLE, labels);
+	}
+	else if (_engine == GBT) {
+		_gbTrees.train(features, CV_ROW_SAMPLE, labels);
 	}
 	else {
 		assert(false && "Unknown classifier engine");
@@ -106,6 +95,9 @@ Mat Classifier::classify(cv::SparseMat mask) {
 	else if (_engine == DTREE) {
 		theClass = _dtree.predict(features)->value;
 	}
+	else if (_engine == GBT) {
+		theClass = _gbTrees.predict(features);
+	}
 	else {
 		assert(false && "Unknown classifier engine");
 	}
@@ -133,6 +125,9 @@ string Classifier::getID() {
 	}
 	else if (_engine == DTREE) {
 		id += "DTREE-";
+	}
+	else if (_engine == GBT) {
+		id += "GBT-";
 	}
 
 	// Place the descriptor identification
