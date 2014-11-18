@@ -2,6 +2,8 @@
 
 # run.sh - runs a sample instance for debugging purposes
 
+export LD_LIBRARY_PATH=bin/
+
 ./bin/classify \
 	--verbose \
 	--vis "data/subset/TelopsDatasetCityVisible_20cm_Subset.img" \

@@ -6,9 +6,11 @@ CFLAGS += `pkg-config --cflags opencv`
 LFLAGS = -g
 LFLAGS += `gdal-config --libs gdal`
 LFLAGS += `pkg-config --libs opencv`
-LFLAGS += -L libs -l vl
+LFLAGS += -L libs/ -l vl
 
 CPPFLAGS = -std=c++11
+
+UNAME := $(shell uname -s)
 
 BINDIR = bin
 OBJDIR = obj
@@ -40,7 +42,16 @@ descriptors:
 	cd descriptors && $(MAKE)
 
 copylibs:
+ifeq ($(UNAME),Darwin)
+	echo "Copying libs for OSX"
 	cp -f libs/libvl.dylib bin/
+else
+	echo "Copying libs for Linux"
+	cp -f libs/libvl.so bin/
+endif
+
+info:
+	echo $(UNAME)
 
 run:
 	./run.sh

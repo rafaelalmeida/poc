@@ -7,6 +7,7 @@
 #include <list>
 #include <stdio.h>
 #include <thread>
+#include <mutex>
 
 #include <gdal_priv.h>
 #include <opencv2/core/core.hpp>

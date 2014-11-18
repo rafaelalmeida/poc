@@ -28,16 +28,17 @@ void Logger::saveImage(const char *name, cv::Mat img) {
 	imwrite(s.c_str(), img);
 }
 
-std::ofstream Logger::makeFile(const char *name) {
+std::ofstream* Logger::makeFile(const char *name) {
 	string p = _fullPath + "/" + name;
-	return ofstream(p);
+	return new ofstream(p);
 }
 
 void Logger::saveArguments(int argc, char **argv) {
-	ofstream handle = this->makeFile("arguments.txt");
+	ofstream *handle = this->makeFile("arguments.txt");
 	for (int i = 0; i < argc; i++) {
-		handle << argv[i] << " ";
+		*handle << argv[i] << " ";
 	}
 
-	handle.close();
+	handle->close();
+	delete handle;
 }

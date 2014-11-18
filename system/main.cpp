@@ -128,8 +128,8 @@ int main(int argc, char **argv) {
 	logger->saveImage("segmentation", segmentationVIS.representation());
 
 	// Open result file
-	ofstream results = logger->makeFile("results.txt");
-	results << "MAP AGREEMENT KAPPA" << endl;
+	ofstream *results = logger->makeFile("results.txt");
+	*results << "MAP AGREEMENT KAPPA" << endl;
 
 	// Run k-fold cross validation
 	float bestKappa = FLT_MIN;
@@ -208,7 +208,7 @@ int main(int argc, char **argv) {
 		float agreement = statistics::agreement(G, X);
 		float kappa = statistics::kappa(G, X);
 
-		results << c.first << " " << agreement << " " << kappa 
+		*results << c.first << " " << agreement << " " << kappa 
 			<< endl;
 
 		// Save images
@@ -226,10 +226,11 @@ int main(int argc, char **argv) {
 	float kappa = statistics::kappa(G, C);
 
 	cerr << agreement << " " << kappa << endl;
-	results << "MAJORITY " << agreement << " " << kappa << endl;
+	*results << "MAJORITY " << agreement << " " << kappa << endl;
 
 	// Close result file
-	results.close();
+	results->close();
+	delete results;
 	
 	// Destroy logger
 	delete logger;
