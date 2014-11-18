@@ -32,7 +32,8 @@ namespace classification {
 		NBC,
 		KNN,
 		DTREE,
-		GBT
+		GBT,
+		RTREES
 	};
 
 	/**
@@ -56,7 +57,8 @@ namespace classification {
 		CvNormalBayesClassifier _nbc;
 		CvKNearest _knn;
 		CvDTree _dtree;
-		CvGBTrees _gbTrees;
+		CvGBTrees _gbtrees;
+		CvRTrees _rtrees;
 
 		public:
 			// Constructors

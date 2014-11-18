@@ -61,7 +61,10 @@ void Classifier::train(Mat labels, Segmentation trainingSegments) {
 		_dtree.train(features, CV_ROW_SAMPLE, labels);
 	}
 	else if (_engine == GBT) {
-		_gbTrees.train(features, CV_ROW_SAMPLE, labels);
+		_gbtrees.train(features, CV_ROW_SAMPLE, labels);
+	}
+	else if (_engine == RTREES) {
+		_rtrees.train(features, CV_ROW_SAMPLE, labels);
 	}
 	else {
 		assert(false && "Unknown classifier engine");
@@ -96,7 +99,10 @@ Mat Classifier::classify(cv::SparseMat mask) {
 		theClass = _dtree.predict(features)->value;
 	}
 	else if (_engine == GBT) {
-		theClass = _gbTrees.predict(features);
+		theClass = _gbtrees.predict(features);
+	}
+	else if (_engine == RTREES) {
+		theClass = _rtrees.predict(features);
 	}
 	else {
 		assert(false && "Unknown classifier engine");
@@ -128,6 +134,9 @@ string Classifier::getID() {
 	}
 	else if (_engine == GBT) {
 		id += "GBT-";
+	}
+	else if (_engine == RTREES) {
+		id += "RTREES-";
 	}
 
 	// Place the descriptor identification
