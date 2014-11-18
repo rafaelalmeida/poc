@@ -123,7 +123,7 @@ void Ensemble::doClassify(Classifier* C, Size mapSize, Segmentation S,
 	int n = S.segmentCount();
 	for (auto mask : S.getSegments()) {
 		// Report progress from time to time
-		if (*classifiedSegments % 100 == 0) {
+		if (*classifiedSegments % 10 == 0) {
 
 			_consoleMutex.lock();
 

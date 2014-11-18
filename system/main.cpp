@@ -30,11 +30,15 @@ using namespace classification;
 bool verbose;
 Logger *logger = NULL;
 
+// Signatures
 void rescale(Mat& vis, LWIRImage& lwir, float scaleVIS, float scaleLWIR, 
 	InterpolationMode interpolationMode);
 
 void setupClassifiers(Ensemble& e, Mat vis, LWIRImage& lwir);
 
+void printClassHistogram(ThematicMap& M);
+
+// Main function
 int main(int argc, char **argv) {
 	Configuration conf;
 	config::parse(argv, argc, conf);
@@ -87,6 +91,10 @@ int main(int argc, char **argv) {
 
 	// Save training map for debugging
 	logger->saveImage("training", blend(vis, trainingMapVIS.coloredMap()));
+
+	// Show classes counts in the whole training map
+	cerr << "Amount of pixels per class in the whole map: " << endl;
+	printClassHistogram(trainingMapVIS);
 
 	// Set ROI if there is one
 	Rect roi;
@@ -143,7 +151,7 @@ int main(int argc, char **argv) {
 		// Report progress
 		cerr << "running fold " << (fold+1) << " of " << K_FOLDS << endl;
 
-		// Build training map (made by all fold except this one)
+		// Build training map (made by all folds except this one)
 		ThematicMap T(trainingMapVIS.size());
 		for (int i = 0; i < K_FOLDS; i++) {
 			if (i != fold) {
@@ -156,6 +164,10 @@ int main(int argc, char **argv) {
 		ThematicMap T_LWIR = T.clone();
 		T_VIS.resize(vis.size());
 		T_LWIR.resize(lwir.size());
+
+		// Show classes counts in this fold
+		cerr << "Amount of pixels per class in fold: " << endl;
+		printClassHistogram(T_VIS);
 
 		// Build the ensemble
 		Ensemble E(MAJORITY_VOTING, segmentationVIS, segmentationLWIR,
@@ -273,4 +285,12 @@ void setupClassifiers(Ensemble& ensemble, Mat vis, LWIRImage& lwir) {
 
 	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
 		&lwir, new MOMENTSDescriptor("MMT")));
+}
+
+void printClassHistogram(ThematicMap& M) {
+	auto counts = M.getClassesCounts();
+	for (int i = 0; i < counts.size(); i++) {
+		cerr << counts[(unsigned char) i] << " ";
+	}
+	cerr << endl;
 }
