@@ -122,12 +122,20 @@ void Ensemble::doClassify(Classifier* C, Size mapSize, Segmentation S,
 	// Classify all segments
 	int n = S.segmentCount();
 	for (auto mask : S.getSegments()) {
-		float progress = 100.0 * (*classifiedSegments) / totalToClassify;
-		cerr << "\rclassification: " << 
-			progress << "%        \r" << flush;
+		// Report progress from time to time
+		if (*classifiedSegments % 100 == 0) {
 
+			_consoleMutex.lock();
 
+			float progress = 100.0 * (*classifiedSegments + 1) / 
+				totalToClassify;
+			cerr << "\rclassification: " << 
+				progress << "%        \r" << flush;
 
+			_consoleMutex.unlock();
+		}
+
+		// Execute classification
 		Mat classifiedSegment = C->classify(mask);
 		classification += classifiedSegment;
 		_worklog[idx]++;
@@ -232,8 +240,11 @@ ThematicMap Ensemble::classify() {
 		}
 	}
 
+	// Report classification complete
+	cerr << "classification: done           " << endl;
+
 	// Report work done by each thread
-	cerr << endl << "thread jobs done: ";
+	cerr << "thread jobs done: ";
 	for (auto l : _worklog) {
 		cerr << l << " ";
 	}

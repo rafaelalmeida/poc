@@ -51,6 +51,7 @@ class Ensemble {
 	bool _parallel = false;
 	int numThreads;
 	mutex _mutex;
+	mutex _consoleMutex;
 	vector<int> _worklog;
 
 	public:
