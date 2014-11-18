@@ -30,7 +30,8 @@ namespace classification {
 	enum ClassifierEngine {
 		SVM,
 		NBC,
-		KNN
+		KNN,
+		DTREE
 	};
 
 	/**
@@ -53,6 +54,7 @@ namespace classification {
 		CvSVM _svm;
 		CvNormalBayesClassifier _nbc;
 		CvKNearest _knn;
+		CvDTree _dtree;
 
 		public:
 			// Constructors

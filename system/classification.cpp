@@ -8,18 +8,18 @@ using namespace segmentation;
 
 Classifier::Classifier(ClassifierEngine engine, cv::Mat vis, 
 	Descriptor *descriptor)
-    : _engine(engine),
-      _vis(vis),
-      _descriptor(descriptor),
-      _type(VIS) {
+	: _engine(engine),
+	  _vis(vis),
+	  _descriptor(descriptor),
+	  _type(VIS) {
 }
 
 Classifier::Classifier(ClassifierEngine engine, LWIRImage *lwir, 
 	Descriptor *descriptor)
-    : _engine(engine),
-      _lwir(lwir),
-      _descriptor(descriptor),
-      _type(LWIR) {
+	: _engine(engine),
+	  _lwir(lwir),
+	  _descriptor(descriptor),
+	  _type(LWIR) {
 }
 
 Classifier::~Classifier() {
@@ -45,17 +45,34 @@ void Classifier::train(Mat labels, Segmentation trainingSegments) {
 	// Train the correct classifier
 	if (_engine == SVM) {
 		CvSVMParams params;
-	    params.svm_type    = CvSVM::C_SVC;
-	    params.kernel_type = CvSVM::LINEAR;
-	    params.term_crit   = cvTermCriteria(CV_TERMCRIT_ITER, 100, 1e-6);
+		params.svm_type    = CvSVM::C_SVC;
+		params.kernel_type = CvSVM::LINEAR;
+		params.term_crit   = cvTermCriteria(CV_TERMCRIT_ITER, 100, 1e-6);
 
-	    _svm.train(features, labels, Mat(), Mat(), params);
+		_svm.train(features, labels, Mat(), Mat(), params);
 	}
 	else if (_engine == NBC) {
 		_nbc.train(features, labels, Mat(), Mat(), false);
 	}
 	else if (_engine == KNN) {
 		_knn.train(features, labels);
+	}
+	else if (_engine == DTREE) {
+		CvDTreeParams params = CvDTreeParams(
+			25, // max depth
+			5, // min sample count
+			0, // regression accuracy: N/A here
+			false, // compute surrogate split, no missing data
+			15, // max number of categories (use sub-optimal algorithm for 
+				// larger numbers)
+			1, // the number of cross-validation folds
+			false, // use 1SE rule => smaller tree
+			false, // throw away the pruned tree branches
+			NULL // the array of priors
+		);
+
+		_dtree.train(features, CV_ROW_SAMPLE, labels, Mat(), Mat(), Mat(), 
+			Mat(), params);
 	}
 	else {
 		assert(false && "Unknown classifier engine");
@@ -86,6 +103,9 @@ Mat Classifier::classify(cv::SparseMat mask) {
 	else if (_engine == KNN) {
 		theClass = _knn.find_nearest(features, KNN_K);
 	}
+	else if (_engine == DTREE) {
+		theClass = _dtree.predict(features)->value;
+	}
 	else {
 		assert(false && "Unknown classifier engine");
 	}
@@ -110,6 +130,9 @@ string Classifier::getID() {
 	}
 	else if (_engine == KNN) {
 		id += "KNN-";
+	}
+	else if (_engine == DTREE) {
+		id += "DTREE-";
 	}
 
 	// Place the descriptor identification
