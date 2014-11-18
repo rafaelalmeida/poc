@@ -4,13 +4,25 @@
 
 export LD_LIBRARY_PATH=bin/
 
+if [ -z $1 ]; then
+	SCALE_VIS=0.1
+else
+	SCALE_VIS=$1
+fi
+
+if [ -z $2 ]; then
+	SCALE_LWIR=0.1
+else
+	SCALE_LWIR=$2
+fi
+
 ./bin/classify \
 	--verbose \
 	--vis "data/subset/TelopsDatasetCityVisible_20cm_Subset.img" \
 	--lwir "data/subset/TelopsDatasetCityLWIR_Subset.img" \
 	--training "data/subset/TrainingMap_ENVI_RAW_format.raw" \
-	--scale-vis 0.1 \
-	--scale-lwir 0.1 \
+	--scale-vis $SCALE_VIS \
+	--scale-lwir $SCALE_LWIR \
 	--segmentation-mode SLIC \
 	--slic-region-size 200 \
 	--slic-min-region-size 100 \
@@ -18,16 +30,4 @@ export LD_LIBRARY_PATH=bin/
 	--slic-auto-scale-parameters \
 	--resampling-method NEAREST \
 	--log-path "scratch/logs" \
-	#--parallel \
-
-# TEST ROI - HIGH RES
-# --roiX 940 \
-# --roiY 2619 \
-# --roiW 549 \
-# --roiH 675 \
-
-# TEST ROI - LOW RES
-# --roiX 285 \
-# --roiY 384 \
-# --roiW 111 \
-# --roiH 122 \
+	--parallel
