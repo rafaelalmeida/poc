@@ -66,6 +66,9 @@ void Classifier::train(Mat labels, Segmentation trainingSegments) {
 	else if (_engine == RTREES) {
 		_rtrees.train(features, CV_ROW_SAMPLE, labels);
 	}
+	else if (_engine == ERTREES) {
+		_ertrees.train(features, CV_ROW_SAMPLE, labels);
+	}
 	else {
 		assert(false && "Unknown classifier engine");
 	}
@@ -104,6 +107,9 @@ Mat Classifier::classify(cv::SparseMat mask) {
 	else if (_engine == RTREES) {
 		theClass = _rtrees.predict(features);
 	}
+	else if (_engine == ERTREES) {
+		theClass = _ertrees.predict(features);
+	}
 	else {
 		assert(false && "Unknown classifier engine");
 	}
@@ -137,6 +143,9 @@ string Classifier::getID() {
 	}
 	else if (_engine == RTREES) {
 		id += "RTREES-";
+	}
+	else if (_engine == ERTREES) {
+		id += "ERTREES-";
 	}
 
 	// Place the descriptor identification

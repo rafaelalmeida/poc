@@ -33,7 +33,8 @@ namespace classification {
 		KNN,
 		DTREE,
 		GBT,
-		RTREES
+		RTREES,
+		ERTREES
 	};
 
 	/**
@@ -59,6 +60,7 @@ namespace classification {
 		CvDTree _dtree;
 		CvGBTrees _gbtrees;
 		CvRTrees _rtrees;
+		CvERTrees _ertrees;
 
 		public:
 			// Constructors
