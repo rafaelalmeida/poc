@@ -46,6 +46,9 @@ typedef struct {
 	// Parallelization
 	bool parallel = false;
 
+	// Optimizations
+	bool ignoreUnclassedPixels = false;
+
 } Configuration;
 
 namespace config {

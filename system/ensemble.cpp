@@ -99,7 +99,8 @@ void Ensemble::train() {
 	int n = classifiers.size();
 
 	for (auto c : classifiers) {
-		cerr << "training classifier " << i << " of " << n << "     \r" << flush;
+		cerr << "training classifier " << i << " of " << n << "     \r" << 
+			flush;
 
 		if (c->getType() == VIS) {
 			c->train(labelsMatVIS, Segmentation(validSegmentsVIS));

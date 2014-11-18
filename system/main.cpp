@@ -56,6 +56,15 @@ int main(int argc, char **argv) {
 	log("loading training data...");
 	Mat training = gdal_driver::loadTrainingData(conf.pathTraining);
 
+	// Ignore unclassed pixels to speed up classification, if enabled
+	if (conf.ignoreUnclassedPixels) {
+		Mat trainingMask = training > 0;
+		Mat trainingMask3C;
+		cvtColor(trainingMask, trainingMask3C, CV_GRAY2BGR);
+
+		vis = vis & trainingMask3C;
+	}
+
 	// Rescale images if necessary
 	if (conf.scaleVIS != 1.0 || conf.scaleLWIR != 1.0) {
 		log("rescaling images...");
