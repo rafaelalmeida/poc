@@ -153,6 +153,11 @@ int main(int argc, char **argv) {
 	ofstream *results = logger->makeFile("results.txt");
 	*results << "MAP AGREEMENT KAPPA" << endl;
 
+	// Initialize time loggers
+	double descriptionTime = 0;
+	double trainingTime = 0;
+	double classificationTime = 0;
+
 	// Run k-fold cross validation
 	float bestKappa = FLT_MIN;
 	int bestFold = -1; // Sentinel
@@ -212,14 +217,10 @@ int main(int argc, char **argv) {
 		imageName += (fold+'0');
 		logger->saveImage(imageName.c_str(), blend(vis, C.coloredMap()));
 
-		// Log detailed execution times
-		*results << endl << 
-			"Total description time: " << E.getTotalDescriptionTime() << 
-			endl <<
-			"Total training time: " << E.getTotalTrainingTime() << 
-			endl << 
-			"Total classification time: " << E.getTotalClassificationTime() <<
-			endl;
+		// Register time taken
+		descriptionTime += E.getTotalDescriptionTime();
+		trainingTime += E.getTotalTrainingTime();
+		classificationTime += E.getTotalClassificationTime();
 
 		// See if there is improvement
 		if (k > bestKappa) {
@@ -266,8 +267,13 @@ int main(int argc, char **argv) {
 	// Stop timer and log total execution time
 	swatchMain.stop();
 	double totalTime = swatchMain.read();
-	cerr << "Stopwatch: " << totalTime << endl;
-	*results << "Total CPU time: " << totalTime << endl;
+	*results << endl << "Total wall time: " << totalTime << endl;
+
+	// Log detailed execution times
+	*results << endl << 
+		"Description time: " << descriptionTime << endl <<
+		"Training time: " << trainingTime << endl <<
+		"Classification time: " << classificationTime << endl;
 
 	// Close result file
 	results->close();
@@ -310,8 +316,8 @@ void setupClassifiers(Ensemble& ensemble, Mat vis, LWIRImage& lwir) {
 	// Create the descriptors
 	vector<Descriptor*> descriptors;
 	descriptors.push_back(new GCHDescriptor("GCH"));
-	/*descriptors.push_back(new ACCDescriptor("ACC"));
-	descriptors.push_back(new BICDescriptor("BIC"));
+	descriptors.push_back(new ACCDescriptor("ACC"));
+	/*descriptors.push_back(new BICDescriptor("BIC"));
 	descriptors.push_back(new LCHDescriptor("LCH"));
 	descriptors.push_back(new SIGDescriptor("SIG"));
 	descriptors.push_back(new REDUCEDSIGDescriptor("RSIG"));

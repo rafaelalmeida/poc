@@ -146,6 +146,10 @@ void Ensemble::doClassify(Classifier* C, Size mapSize, Segmentation S,
 		classification += classifiedSegment;
 		_worklog[idx]++;
 		(*classifiedSegments)++;
+
+		// Log time taken
+		_totalTimeDescription += C->getDescriptionTime();
+		_totalTimeClassification += C->getClassificationTime();
 	}
 
 	// Resize classification map if necessary
@@ -162,10 +166,6 @@ void Ensemble::doClassify(Classifier* C, Size mapSize, Segmentation S,
 	auto p = make_pair(C->getID(), classification);
 	_classifications[*cursor] = p;
 	(*cursor)++;
-
-	// Log time taken
-	_totalTimeDescription += C->getDescriptionTime();
-	_totalTimeClassification += C->getClassificationTime();
 
 	// Finished updating shared memory, unlock it
 	if (!_parallel) _mutex.unlock();
