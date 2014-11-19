@@ -40,6 +40,11 @@ void printClassHistogram(ThematicMap& M);
 
 // Main function
 int main(int argc, char **argv) {
+	// Start timer
+	Stopwatch swatchMain;
+	swatchMain.start();
+
+	// Parse configuration
 	Configuration conf;
 	config::parse(argv, argc, conf);
 	verbose = conf.verbose;
@@ -249,6 +254,12 @@ int main(int argc, char **argv) {
 	cerr << agreement << " " << kappa << endl;
 	*results << "MAJORITY " << agreement << " " << kappa << endl;
 
+	// Stop timer and log execution time
+	swatchMain.stop();
+	double totalTime = swatchMain.read();
+	cerr << "Stopwatch: " << totalTime << endl;
+	*results << endl << "Total CPU time: " << totalTime << endl;
+
 	// Close result file
 	results->close();
 	delete results;
@@ -278,24 +289,24 @@ void setupClassifiers(Ensemble& ensemble, Mat vis, LWIRImage& lwir) {
 	// List classifier engines
 	vector<ClassifierEngine> engines = {
 		ClassifierEngine::SVM, 
-		ClassifierEngine::NBC, 
+		/*ClassifierEngine::NBC, 
 		ClassifierEngine::KNN, 
 		ClassifierEngine::DTREE, 
 		ClassifierEngine::GBT, 
 		ClassifierEngine::RTREES, 
 		ClassifierEngine::ERTREES, 
-		ClassifierEngine::MLP
+		ClassifierEngine::MLP*/
 	};
 
 	// Create the descriptors
 	vector<Descriptor*> descriptors;
 	descriptors.push_back(new GCHDescriptor("GCH"));
-	descriptors.push_back(new ACCDescriptor("ACC"));
+	/*descriptors.push_back(new ACCDescriptor("ACC"));
 	descriptors.push_back(new BICDescriptor("BIC"));
 	descriptors.push_back(new LCHDescriptor("LCH"));
 	descriptors.push_back(new SIGDescriptor("SIG"));
 	descriptors.push_back(new REDUCEDSIGDescriptor("RSIG"));
-	descriptors.push_back(new MOMENTSDescriptor("MMT"));
+	descriptors.push_back(new MOMENTSDescriptor("MMT"));*/
 
 	// Create the classifier <-> descriptor pairs and add them to the ensemble
 	for (auto engine : engines) {

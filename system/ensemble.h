@@ -22,6 +22,7 @@
 using namespace classification;
 using namespace segmentation;
 
+// Classifier consensus types
 enum ConsensusType {
 	MAJORITY_VOTING
 };
@@ -41,18 +42,26 @@ class Ensemble {
 	// is classified pixel-by-pixel instead
 	bool _pixelizeLWIR = true;
 
+	// Thematic Maps that represent the training data for the VIS and LWIR
+	// images
 	ThematicMap _trainingVIS;
 	ThematicMap _trainingLWIR;
 
+	// Logger object
 	Logger *_logger = NULL;
 
+	// Object to hold the individual classifications
 	std::vector<std::pair<std::string, cv::Mat> > _classifications;
 
+	// Multi-thread objects
 	bool _parallel = false;
 	int numThreads;
 	mutex _mutex;
 	mutex _consoleMutex;
 	vector<int> _worklog;
+
+	// Instrumentation timers
+	
 
 	public:
 		// Constructors
@@ -65,7 +74,8 @@ class Ensemble {
 
 		// Methods
 		ThematicMap classify();
-		std::vector<std::pair<std::string, cv::Mat> > individualClassifications();
+		std::vector<std::pair<std::string, cv::Mat> > 
+			individualClassifications();
 		void addClassifier(Classifier* c);
 		void doClassify(Classifier* C, cv::Size mapSize, Segmentation S, 
 			int *cursor, int *classifiedSegments, int totalToClassify, 

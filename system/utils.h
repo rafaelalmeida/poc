@@ -1,11 +1,13 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <stdio.h>
-#include <iostream>
 #include <cstdint>
+#include <iostream>
 #include <list>
 #include <map>
+#include <stdio.h>
+#include <time.h>
+
 #include <gdal_priv.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -45,9 +47,19 @@ inline int streq(const char *a, const char *b) {
 
 void log(const char *msg);
 
-/**
- * Small class to count things
- */
+// Helper class to measure time
+class Stopwatch {
+	private:
+		clock_t _start;
+		clock_t _finish;
+
+	public:
+		double read() { return (double) (_finish - _start) / CLOCKS_PER_SEC; }
+		void start() { _start = clock(); }
+		void stop() { _finish = clock(); }
+};
+
+// Helper class to count things
 template <typename T>
 class Counter {
 	std::map<T, int> _map;
