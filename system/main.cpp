@@ -303,14 +303,11 @@ void rescale(Mat& vis, LWIRImage& lwir, float scaleVIS, float scaleLWIR,
 void setupClassifiers(Ensemble& ensemble, Mat vis, LWIRImage& lwir) {
 	// List classifier engines
 	vector<ClassifierEngine> engines = {
-		//ClassifierEngine::SVM, 
-		// ClassifierEngine::NBC, 
-		// ClassifierEngine::KNN, 
-		// ClassifierEngine::DTREE, 
-		ClassifierEngine::GBT, 
-		// ClassifierEngine::RTREES, 
-		// ClassifierEngine::ERTREES, 
-		// ClassifierEngine::MLP
+		ClassifierEngine::SVM, 
+		ClassifierEngine::NBC, 
+		ClassifierEngine::KNN, 
+		ClassifierEngine::DTREE, 
+		ClassifierEngine::MLP
 	};
 
 	// Create the descriptors
