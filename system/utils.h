@@ -1,6 +1,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <chrono>
 #include <cstdint>
 #include <iostream>
 #include <list>
@@ -50,13 +51,13 @@ void log(const char *msg);
 // Helper class to measure time
 class Stopwatch {
 	private:
-		clock_t _start;
-		clock_t _finish;
+		std::chrono::time_point<std::chrono::system_clock> _start;
+		std::chrono::time_point<std::chrono::system_clock> _finish;
 
 	public:
-		double read() { return (double) (_finish - _start) / CLOCKS_PER_SEC; }
-		void start() { _start = clock(); }
-		void stop() { _finish = clock(); }
+		double read();
+		void start();
+		void stop();
 };
 
 // Helper class to count things

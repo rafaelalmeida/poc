@@ -27,6 +27,8 @@ void Classifier::train(Mat labels, Segmentation trainingSegments) {
 	list<SparseMat> validSegments = trainingSegments.getSegments();
 
 	// Compute features
+	_swatchDescription.start();
+
 	Mat features;
 	if (_type == VIS) {
 		features = _descriptor->describe(_vis, validSegments);
@@ -37,8 +39,10 @@ void Classifier::train(Mat labels, Segmentation trainingSegments) {
 	else {
 		assert(false && "Unknown classifier type");
 	}
+	_swatchDescription.stop();
 
 	// Train the correct classifier
+	_swatchTraining.start();
 	if (_engine == SVM) {
 		CvSVMParams params;
 		params.svm_type    = CvSVM::C_SVC;
@@ -86,10 +90,14 @@ void Classifier::train(Mat labels, Segmentation trainingSegments) {
 	else {
 		assert(false && "Unknown classifier engine");
 	}
+
+	_swatchTraining.stop();
 }
 
 Mat Classifier::classify(cv::SparseMat mask) {
 	// Compute features
+	_swatchDescription.start();
+
 	Mat features;
 	if (_type == VIS) {
 		features = _descriptor->describe(_vis, mask);
@@ -101,7 +109,11 @@ Mat Classifier::classify(cv::SparseMat mask) {
 		assert(false && "Unknown classifier type");
 	}
 
+	_swatchDescription.stop();
+
 	// Predict the class
+	_swatchClassification.start();
+
 	float theClass;
 	if (_engine == SVM) {
 		theClass = _svm.predict(features);
@@ -140,6 +152,8 @@ Mat Classifier::classify(cv::SparseMat mask) {
 	else {
 		assert(false && "Unknown classifier engine");
 	}
+
+	_swatchClassification.stop();
 
 	// Fill the matrix
 	Mat denseMask = densify(mask);
@@ -186,4 +200,16 @@ string Classifier::getID() {
 
 ClassifierType Classifier::getType() {
 	return _type;
+}
+
+double Classifier::getDescriptionTime() {
+	return _swatchDescription.read();
+}
+
+double Classifier::getTrainingTime() {
+	return _swatchTraining.read();
+}
+
+double Classifier::getClassificationTime() {
+	return _swatchClassification.read();
 }

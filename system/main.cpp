@@ -212,6 +212,15 @@ int main(int argc, char **argv) {
 		imageName += (fold+'0');
 		logger->saveImage(imageName.c_str(), blend(vis, C.coloredMap()));
 
+		// Log detailed execution times
+		*results << endl << 
+			"Total description time: " << E.getTotalDescriptionTime() << 
+			endl <<
+			"Total training time: " << E.getTotalTrainingTime() << 
+			endl << 
+			"Total classification time: " << E.getTotalClassificationTime() <<
+			endl;
+
 		// See if there is improvement
 		if (k > bestKappa) {
 			bestKappa = k;
@@ -254,11 +263,11 @@ int main(int argc, char **argv) {
 	cerr << agreement << " " << kappa << endl;
 	*results << "MAJORITY " << agreement << " " << kappa << endl;
 
-	// Stop timer and log execution time
+	// Stop timer and log total execution time
 	swatchMain.stop();
 	double totalTime = swatchMain.read();
 	cerr << "Stopwatch: " << totalTime << endl;
-	*results << endl << "Total CPU time: " << totalTime << endl;
+	*results << "Total CPU time: " << totalTime << endl;
 
 	// Close result file
 	results->close();

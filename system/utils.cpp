@@ -151,3 +151,15 @@ int translateInterpolationMode(InterpolationMode method) {
 		return -1;
 	}
 }
+
+double Stopwatch::read() { 
+	return (double) ((_finish - _start).count()) / 1000000;
+}
+
+void Stopwatch::start() { 
+	_start = chrono::system_clock::now(); 
+}
+
+void Stopwatch::stop() { 
+	_finish = chrono::system_clock::now(); 
+}

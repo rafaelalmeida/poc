@@ -60,8 +60,10 @@ class Ensemble {
 	mutex _consoleMutex;
 	vector<int> _worklog;
 
-	// Instrumentation timers
-	
+	// Instrumentation data
+	double _totalTimeDescription = 0;
+	double _totalTimeTraining = 0;
+	double _totalTimeClassification = 0;
 
 	public:
 		// Constructors
@@ -85,6 +87,12 @@ class Ensemble {
 		void train();
 		void setLWIRPixelize(bool p);
 		void setParallel(bool p);
+
+		// Instrumentation timers
+		void resetAllTimers();
+		double getTotalDescriptionTime();
+		double getTotalTrainingTime();
+		double getTotalClassificationTime();
 };
 
 #endif

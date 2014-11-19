@@ -95,6 +95,7 @@ void Ensemble::train() {
 		c++;
 	}
 
+	// Trains all classifiers
 	int i = 1;
 	int n = classifiers.size();
 
@@ -110,6 +111,10 @@ void Ensemble::train() {
 		}
 
 		i++;
+
+		// Log time taken
+		_totalTimeDescription += c->getDescriptionTime();
+		_totalTimeTraining += c->getTrainingTime();
 	}
 
 	cerr << "training classifiers... done     " << endl;
@@ -153,9 +158,14 @@ void Ensemble::doClassify(Classifier* C, Size mapSize, Segmentation S,
 	// Will update shared memory, lock it
 	if (!_parallel) _mutex.lock();
 
+	// Save individual classification
 	auto p = make_pair(C->getID(), classification);
 	_classifications[*cursor] = p;
 	(*cursor)++;
+
+	// Log time taken
+	_totalTimeDescription += C->getDescriptionTime();
+	_totalTimeClassification += C->getClassificationTime();
 
 	// Finished updating shared memory, unlock it
 	if (!_parallel) _mutex.unlock();
@@ -289,4 +299,22 @@ void Ensemble::setParallel(bool p) {
 
 void Ensemble::setLWIRPixelize(bool p) {
 	_pixelizeLWIR = p;
+}
+
+void Ensemble::resetAllTimers() {
+	_totalTimeDescription = 0;
+	_totalTimeTraining = 0;
+	_totalTimeClassification = 0;
+}
+
+double Ensemble::getTotalDescriptionTime() {
+	return _totalTimeDescription;
+}
+
+double Ensemble::getTotalTrainingTime() {
+	return _totalTimeTraining;
+}
+
+double Ensemble::getTotalClassificationTime() {
+	return _totalTimeClassification;
 }

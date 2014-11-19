@@ -22,11 +22,13 @@
 using namespace segmentation;
 
 namespace classification {
+	// Classifier types
 	enum ClassifierType {
 		VIS,
 		LWIR
 	};
 
+	// Classifier engines
 	enum ClassifierEngine {
 		SVM,
 		NBC,
@@ -44,16 +46,21 @@ namespace classification {
 	 * reuse them across classifiers.
 	 */
 	class Classifier {
-		// Members
+		// Images this classifier will classify
 		cv::Mat _vis;
 		LWIRImage *_lwir = NULL;
 
+		// The descriptor it will use
 		Descriptor *_descriptor;
 
+		// Some meta information
 		ClassifierType _type;
 		ClassifierEngine _engine;
 
-		string _id;
+		// Basic instrumentation
+		Stopwatch _swatchDescription;
+		Stopwatch _swatchTraining;
+		Stopwatch _swatchClassification;
 
 		// Classifier object members
 		CvSVM _svm;
@@ -77,6 +84,11 @@ namespace classification {
 			cv::Mat classify(cv::SparseMat mask);
 			string getID();
 			ClassifierType getType();
+
+			// Instrumentation methods
+			double getDescriptionTime();
+			double getTrainingTime();
+			double getClassificationTime();
 	};
 }
 
