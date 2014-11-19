@@ -12,7 +12,7 @@ OBJS = $(addprefix $(OBJDIR)/,$(SRCS:.c=.o))
 objs: directories $(OBJS)
 
 $(OBJDIR)/%.o : %.c
-	gcc -c $(CFLAGS) $< -o $@
+	clang -c $(CFLAGS) $< -o $@
 
 directories: $(OBJDIR) $(BINDIR)
 

@@ -304,7 +304,6 @@ void setupClassifiers(Ensemble& ensemble, Mat vis, LWIRImage& lwir) {
 	// List classifier engines
 	vector<ClassifierEngine> engines = {
 		ClassifierEngine::SVM, 
-		//ClassifierEngine::NBC, 
 		ClassifierEngine::KNN, 
 		ClassifierEngine::DTREE, 
 		ClassifierEngine::MLP
@@ -313,7 +312,6 @@ void setupClassifiers(Ensemble& ensemble, Mat vis, LWIRImage& lwir) {
 	// Create the descriptors
 	vector<Descriptor*> descriptors;
 	descriptors.push_back(new GCHDescriptor("GCH"));
-	descriptors.push_back(new ACCDescriptor("ACC"));
 	descriptors.push_back(new BICDescriptor("BIC"));
 	descriptors.push_back(new LCHDescriptor("LCH"));
 	descriptors.push_back(new SIGDescriptor("SIG"));

@@ -117,7 +117,7 @@ void Ensemble::train() {
 		_totalTimeTraining += c->getTrainingTime();
 	}
 
-	cerr << "training classifiers... done     " << endl;
+	cerr << "training classifiers... done             " << endl;
 }
 
 void Ensemble::doClassify(Classifier* C, Size mapSize, Segmentation S, 

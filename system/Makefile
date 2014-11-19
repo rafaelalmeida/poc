@@ -25,10 +25,10 @@ EXE = classify
 .PHONY: directories descriptors
 
 build: directories descriptors $(OBJS) copylibs
-	g++ $(OBJS) $(DESCRIPTORS_OBJS) $(LFLAGS) -o $(BINDIR)/$(EXE)
+	clang++ $(OBJS) $(DESCRIPTORS_OBJS) $(LFLAGS) -o $(BINDIR)/$(EXE)
 
 $(OBJDIR)/%.o : %.cpp
-	g++ -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+	clang++ -c $(CFLAGS) $(CPPFLAGS) $< -o $@
 
 directories: $(OBJDIR) $(BINDIR)
 
