@@ -1,4 +1,4 @@
-CFLAGS = 
+CFLAGS = -O2
 LFLAGS =
 
 BINDIR = bin
