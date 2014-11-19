@@ -39,8 +39,9 @@ namespace classification {
 	};
 
 	/**
-	 * Defines a classifier. Descriptors are automatically destroyed when
-	 * Classifier is destroyed.
+	 * Defines a classifier. Descriptors are NOT automatically destroyed when
+	 * Classifier is destroyed, you must destroy them manually because you can
+	 * reuse them across classifiers.
 	 */
 	class Classifier {
 		// Members
@@ -70,9 +71,6 @@ namespace classification {
 				Descriptor *descriptor);
 			Classifier(ClassifierEngine engine, LWIRImage *lwir, 
 				Descriptor *descriptor);
-
-			// Destructors
-			~Classifier();
 
 			// Methods
 			void train(cv::Mat labels, Segmentation trainingSegments);

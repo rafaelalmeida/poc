@@ -256,6 +256,8 @@ int main(int argc, char **argv) {
 	// Destroy logger
 	delete logger;
 
+	// TODO: Destroy descriptors
+
 	return 0;
 }
 
@@ -273,33 +275,43 @@ void rescale(Mat& vis, LWIRImage& lwir, float scaleVIS, float scaleLWIR,
 }
 
 void setupClassifiers(Ensemble& ensemble, Mat vis, LWIRImage& lwir) {
-	// Register ensemble classifiers - SVM
-	/*ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
-		vis, new GCHDescriptor("GCH")));
+	// List classifier engines
+	vector<ClassifierEngine> engines = {
+		ClassifierEngine::SVM, 
+		ClassifierEngine::NBC, 
+		ClassifierEngine::KNN, 
+		ClassifierEngine::DTREE, 
+		ClassifierEngine::GBT, 
+		ClassifierEngine::RTREES, 
+		ClassifierEngine::ERTREES, 
+		ClassifierEngine::MLP
+	};
 
-	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
-		vis, new ACCDescriptor("ACC")));
+	// Create the descriptors
+	vector<Descriptor*> descriptors;
+	descriptors.push_back(new GCHDescriptor("GCH"));
+	descriptors.push_back(new ACCDescriptor("ACC"));
+	descriptors.push_back(new BICDescriptor("BIC"));
+	descriptors.push_back(new LCHDescriptor("LCH"));
+	descriptors.push_back(new SIGDescriptor("SIG"));
+	descriptors.push_back(new REDUCEDSIGDescriptor("RSIG"));
+	descriptors.push_back(new MOMENTSDescriptor("MMT"));
 
-	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
-		vis, new BICDescriptor("BIC")));
+	// Create the classifier <-> descriptor pairs and add them to the ensemble
+	for (auto engine : engines) {
+		for (auto descriptor : descriptors) {
+			Classifier *classifier;
+			if (descriptor->getType() == DescriptorType::VIS) {
+				classifier = new Classifier(engine, vis, descriptor);
+			}
+			else {
+				classifier = new Classifier(engine, &lwir, descriptor);
+			}
 
-	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
-		vis, new LCHDescriptor("LCH")));
-
-	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
-		&lwir, new SIGDescriptor("SIG")));
-
-	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
-		&lwir, new REDUCEDSIGDescriptor("RSIG")));
-
-	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
-		&lwir, new MOMENTSDescriptor("MMT")));*/
-
-	ensemble.addClassifier(new Classifier(ClassifierEngine::SVM, 
-		vis, new GCHDescriptor("GCH")));
-
-	ensemble.addClassifier(new Classifier(ClassifierEngine::MLP, 
-		vis, new GCHDescriptor("GCH")));
+			cerr << "Adding classifier " << classifier->getID() << endl;
+			ensemble.addClassifier(classifier);
+		}
+	}
 }
 
 void printClassHistogram(ThematicMap& M) {

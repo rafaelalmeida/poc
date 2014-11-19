@@ -32,6 +32,12 @@ extern "C" {
 using namespace cv;
 using namespace std;
 
+// Descriptor types
+enum DescriptorType {
+	VIS,
+	LWIR
+};
+
 // Base descriptor class - subclass this and implement the describe() method
 // for the VIS or the LWIR image, depending on the type of descritor. The 
 // classifier will know which method to call. Implement only the method which
@@ -40,9 +46,10 @@ using namespace std;
 class Descriptor {
 	// Members
 	string _id;
+	DescriptorType _type;
 
 	public:
-		Descriptor(const char *id);
+		Descriptor(const char *id, DescriptorType type);
 
 		virtual Mat describe(Mat image, SparseMat mask);
 		virtual Mat describe(Mat image, list<SparseMat> masks);
@@ -50,61 +57,73 @@ class Descriptor {
 		virtual Mat describe(LWIRImage image, SparseMat mask);
 		virtual Mat describe(LWIRImage image, list<SparseMat> masks);
 
+		DescriptorType getType() { return _type; };
 		std::string getID();
 };
 
+// Wrapper classes for each classifier type, for easier polymorphism
+class VISDescriptor : public Descriptor {
+	public:
+		VISDescriptor(const char *id) : Descriptor(id, DescriptorType::VIS) {};
+};
+
+class LWIRDescriptor : public Descriptor {
+	public:
+		LWIRDescriptor(const char *id) : Descriptor(id, DescriptorType::LWIR) {};
+};
+
 // Descriptor wrappers
-class GCHDescriptor : public Descriptor {
+class GCHDescriptor : public VISDescriptor {
 	public:
-		GCHDescriptor(const char* id) : Descriptor(id) {};
+		GCHDescriptor(const char* id) : VISDescriptor(id) {};
 		virtual Mat describe(Mat image, list<SparseMat> masks) override;
 };
 
-class ACCDescriptor : public Descriptor {
+class ACCDescriptor : public VISDescriptor {
 	public:
-		ACCDescriptor(const char* id) : Descriptor(id) {};
+		ACCDescriptor(const char* id) : VISDescriptor(id) {};
 		virtual Mat describe(Mat image, list<SparseMat> masks) override;
 };
 
-class BICDescriptor : public Descriptor {
+class BICDescriptor : public VISDescriptor {
 	public:
-		BICDescriptor(const char* id) : Descriptor(id) {};
+		BICDescriptor(const char* id) : VISDescriptor(id) {};
 		virtual Mat describe(Mat image, list<SparseMat> masks) override;
 };
 
-class LCHDescriptor : public Descriptor {
+class LCHDescriptor : public VISDescriptor {
 	public:
-		LCHDescriptor(const char* id) : Descriptor(id) {};
+		LCHDescriptor(const char* id) : VISDescriptor(id) {};
 		virtual Mat describe(Mat image, list<SparseMat> masks) override;
 };
 
-class UnserDescriptor : public Descriptor {
+class UnserDescriptor : public VISDescriptor {
 	public:
-		UnserDescriptor(const char* id) : Descriptor(id) {};
+		UnserDescriptor(const char* id) : VISDescriptor(id) {};
 		virtual Mat describe(Mat image, list<SparseMat> masks) override;
 };
 
-class CBCDescriptor : public Descriptor {
+class CBCDescriptor : public VISDescriptor {
 	public:
-		CBCDescriptor(const char* id) : Descriptor(id) {};
+		CBCDescriptor(const char* id) : VISDescriptor(id) {};
 		virtual Mat describe(Mat image, list<SparseMat> masks) override;
 };
 
-class SIGDescriptor : public Descriptor {
+class SIGDescriptor : public LWIRDescriptor {
 	public:
-		SIGDescriptor(const char* id) : Descriptor(id) {};
+		SIGDescriptor(const char* id) : LWIRDescriptor(id) {};
 		virtual Mat describe(LWIRImage image, list<SparseMat> masks) override;
 };
 
-class REDUCEDSIGDescriptor : public Descriptor {
+class REDUCEDSIGDescriptor : public LWIRDescriptor {
 	public:
-		REDUCEDSIGDescriptor(const char* id) : Descriptor(id) {};
+		REDUCEDSIGDescriptor(const char* id) : LWIRDescriptor(id) {};
 		virtual Mat describe(LWIRImage image, list<SparseMat> masks) override;
 };
 
-class MOMENTSDescriptor : public Descriptor {
+class MOMENTSDescriptor : public LWIRDescriptor {
 	public:
-		MOMENTSDescriptor(const char* id) : Descriptor(id) {};
+		MOMENTSDescriptor(const char* id) : LWIRDescriptor(id) {};
 		virtual Mat describe(LWIRImage image, list<SparseMat> masks) override;
 };
 

@@ -22,10 +22,6 @@ Classifier::Classifier(ClassifierEngine engine, LWIRImage *lwir,
 	  _type(LWIR) {
 }
 
-Classifier::~Classifier() {
-	delete _descriptor;
-}
-
 void Classifier::train(Mat labels, Segmentation trainingSegments) {
 	// Get valid segments
 	list<SparseMat> validSegments = trainingSegments.getSegments();

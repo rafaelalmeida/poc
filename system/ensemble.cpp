@@ -102,7 +102,7 @@ void Ensemble::train() {
 		cerr << "training classifier " << i << " of " << n << "     \r" << 
 			flush;
 
-		if (c->getType() == VIS) {
+		if (c->getType() == ClassifierType::VIS) {
 			c->train(labelsMatVIS, Segmentation(validSegmentsVIS));
 		}
 		else {
@@ -179,7 +179,7 @@ ThematicMap Ensemble::classify() {
 	int segmentsPerLWIRImage = _segmentationLWIR.segmentCount();
 	int totalToClassify = 0;
 	for (auto& c : classifiers) {
-		if (_pixelizeLWIR && c->getType() == LWIR) {
+		if (_pixelizeLWIR && c->getType() == ClassifierType::LWIR) {
 			totalToClassify += segmentsPerLWIRImage;
 		}
 		else {
@@ -200,7 +200,7 @@ ThematicMap Ensemble::classify() {
 		for (auto& c : classifiers) {
 			// Determine which segmentation to send to classifier
 			Segmentation S;
-			if (_pixelizeLWIR && c->getType() == LWIR) {
+			if (_pixelizeLWIR && c->getType() == ClassifierType::LWIR) {
 				S = _segmentationLWIR;
 			}
 			else {
@@ -225,7 +225,7 @@ ThematicMap Ensemble::classify() {
 		for (auto& c : classifiers) {
 			// Determine which segmentation to send to classifier
 			Segmentation S;
-			if (_pixelizeLWIR && c->getType() == LWIR) {
+			if (_pixelizeLWIR && c->getType() == ClassifierType::LWIR) {
 				S = _segmentationLWIR;
 			}
 			else {
