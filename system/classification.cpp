@@ -58,7 +58,11 @@ void Classifier::train(Mat labels, Segmentation trainingSegments) {
 		_knn.train(features, labels);
 	}
 	else if (_engine == DTREE) {
-		_dtree.train(features, CV_ROW_SAMPLE, labels);
+		CvDTreeParams params; // Initialize with default parameters
+		params.cv_folds = 1; // Disable k-fold cross-validation
+
+		_dtree.train(features, CV_ROW_SAMPLE, labels, Mat(), Mat(), Mat(), 
+			Mat(), params);
 	}
 	else if (_engine == GBT) {
 		_gbtrees.train(features, CV_ROW_SAMPLE, labels);

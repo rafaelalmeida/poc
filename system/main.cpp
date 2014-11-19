@@ -159,7 +159,7 @@ int main(int argc, char **argv) {
 	double classificationTime = 0;
 
 	// Run k-fold cross validation
-	float bestKappa = FLT_MIN;
+	float bestKappa = -numeric_limits<float>::max();
 	int bestFold = -1; // Sentinel
 	vector<pair<string, Mat> > bestClassifications;
 	vector<ThematicMap> foldValidationMaps;
@@ -303,21 +303,21 @@ void rescale(Mat& vis, LWIRImage& lwir, float scaleVIS, float scaleLWIR,
 void setupClassifiers(Ensemble& ensemble, Mat vis, LWIRImage& lwir) {
 	// List classifier engines
 	vector<ClassifierEngine> engines = {
-		ClassifierEngine::SVM, 
-		/*ClassifierEngine::NBC, 
-		ClassifierEngine::KNN, 
-		ClassifierEngine::DTREE, 
+		//ClassifierEngine::SVM, 
+		// ClassifierEngine::NBC, 
+		// ClassifierEngine::KNN, 
+		// ClassifierEngine::DTREE, 
 		ClassifierEngine::GBT, 
-		ClassifierEngine::RTREES, 
-		ClassifierEngine::ERTREES, 
-		ClassifierEngine::MLP*/
+		// ClassifierEngine::RTREES, 
+		// ClassifierEngine::ERTREES, 
+		// ClassifierEngine::MLP
 	};
 
 	// Create the descriptors
 	vector<Descriptor*> descriptors;
 	descriptors.push_back(new GCHDescriptor("GCH"));
-	descriptors.push_back(new ACCDescriptor("ACC"));
-	/*descriptors.push_back(new BICDescriptor("BIC"));
+	/*descriptors.push_back(new ACCDescriptor("ACC"));
+	descriptors.push_back(new BICDescriptor("BIC"));
 	descriptors.push_back(new LCHDescriptor("LCH"));
 	descriptors.push_back(new SIGDescriptor("SIG"));
 	descriptors.push_back(new REDUCEDSIGDescriptor("RSIG"));
