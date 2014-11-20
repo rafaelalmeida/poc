@@ -80,6 +80,7 @@ class Segmentation {
 
 		int regionCount();
 		list<Region> getRegions();
+		list<SparseMat> getRegionMasks();
 		Mat representation();
 		Size getMapSize();
 

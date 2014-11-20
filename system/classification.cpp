@@ -174,7 +174,7 @@ string Classifier::getID() {
 	return id;
 }
 
-ClassifierType Classifier::getType() {
+ImageType Classifier::getType() {
 	return _type;
 }
 

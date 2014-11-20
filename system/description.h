@@ -35,12 +35,12 @@ using namespace std;
 // Forward declarations
 class VISImage;
 class LWIRImage;
+class Segmentation;
+class Region;
 
 // Base descriptor class - subclass this and implement the describe() method
 // for the VIS or the LWIR image, depending on the type of descritor. The 
-// classifier will know which method to call. Implement only the method which
-// receives a list of masks, the one that receives a single mask will
-// automatically use the other implementation.
+// classifier will know which method to call.
 class Descriptor {
 	// Members
 	string _id;
@@ -49,11 +49,8 @@ class Descriptor {
 	public:
 		Descriptor(const char *id, ImageType type);
 
-		virtual Mat describe(Mat image, SparseMat mask);
-		virtual Mat describe(Mat image, list<SparseMat> masks);
-
-		virtual Mat describe(LWIRImage image, SparseMat mask);
-		virtual Mat describe(LWIRImage image, list<SparseMat> masks);
+		virtual Mat describe(VISImage vis, Segmentation S);
+		virtual Mat describe(LWIRImage image, Segmentation S);
 
 		ImageType getType() { return _type; };
 		std::string getID();
@@ -74,59 +71,53 @@ class LWIRDescriptor : public Descriptor {
 class GCHDescriptor : public VISDescriptor {
 	public:
 		GCHDescriptor(const char* id) : VISDescriptor(id) {};
-		virtual Mat describe(Mat image, list<SparseMat> masks) override;
+		virtual Mat describe(VISImage vis, Segmentation S) override;
 };
 
 class ACCDescriptor : public VISDescriptor {
 	public:
 		ACCDescriptor(const char* id) : VISDescriptor(id) {};
-		virtual Mat describe(Mat image, list<SparseMat> masks) override;
+		virtual Mat describe(VISImage vis, Segmentation S) override;
 };
 
 class BICDescriptor : public VISDescriptor {
 	public:
 		BICDescriptor(const char* id) : VISDescriptor(id) {};
-		virtual Mat describe(Mat image, list<SparseMat> masks) override;
+		virtual Mat describe(VISImage vis, Segmentation S) override;
 };
 
 class LCHDescriptor : public VISDescriptor {
 	public:
 		LCHDescriptor(const char* id) : VISDescriptor(id) {};
-		virtual Mat describe(Mat image, list<SparseMat> masks) override;
+		virtual Mat describe(VISImage vis, Segmentation S) override;
 };
 
 class UnserDescriptor : public VISDescriptor {
 	public:
 		UnserDescriptor(const char* id) : VISDescriptor(id) {};
-		virtual Mat describe(Mat image, list<SparseMat> masks) override;
-};
-
-class CBCDescriptor : public VISDescriptor {
-	public:
-		CBCDescriptor(const char* id) : VISDescriptor(id) {};
-		virtual Mat describe(Mat image, list<SparseMat> masks) override;
+		virtual Mat describe(VISImage vis, Segmentation S) override;
 };
 
 class SIGDescriptor : public LWIRDescriptor {
 	public:
 		SIGDescriptor(const char* id) : LWIRDescriptor(id) {};
-		virtual Mat describe(LWIRImage image, list<SparseMat> masks) override;
+		virtual Mat describe(LWIRImage image, Segmentation S) override;
 };
 
 class REDUCEDSIGDescriptor : public LWIRDescriptor {
 	public:
 		REDUCEDSIGDescriptor(const char* id) : LWIRDescriptor(id) {};
-		virtual Mat describe(LWIRImage image, list<SparseMat> masks) override;
+		virtual Mat describe(LWIRImage image, Segmentation S) override;
 };
 
 class MOMENTSDescriptor : public LWIRDescriptor {
 	public:
 		MOMENTSDescriptor(const char* id) : LWIRDescriptor(id) {};
-		virtual Mat describe(LWIRImage image, list<SparseMat> masks) override;
+		virtual Mat describe(LWIRImage image, Segmentation S) override;
 };
 
 // Util functions
-Mat convertHistogramColor(Mat image, list<SparseMat> masks, 
+Mat convertHistogramColor(VISImage vis, Segmentation S, 
 	int dimensions, Histogram *(*descriptor)(CImage*, Image*));
 
 #endif

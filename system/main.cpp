@@ -112,7 +112,7 @@ int main(int argc, char **argv) {
 		lwir.setRoi(roi);
 	}
 
-	// Segment image
+	// Create segmentation - VIS
 	log("creating segmentation...");
 	Segmentation segmentationVIS;
 	if (conf.segmentationMode == GRID) {
@@ -136,13 +136,35 @@ int main(int argc, char **argv) {
 		assert(false && "Unsupported segmentation mode");
 	}
 
+	// Create segmentation - LWIR
 	Segmentation segmentationLWIR = segmentation::segmentLWIRPixelated(
 		lwir, vis);
 
-	// TODO: describe segmentation objects
-
 	// Save segmentation representation
 	logger->saveImage("segmentation", segmentationVIS.representation());
+
+	// Assign images to segmentations
+	segmentationVIS.setImage(&vis);
+	segmentationLWIR.setImage(&lwir);
+
+	// Create descriptors
+	vector<Descriptor*> descriptors;
+	descriptors.push_back(new GCHDescriptor("GCH"));
+	descriptors.push_back(new BICDescriptor("BIC"));
+	descriptors.push_back(new LCHDescriptor("LCH"));
+	descriptors.push_back(new SIGDescriptor("SIG"));
+	descriptors.push_back(new REDUCEDSIGDescriptor("RSIG"));
+	descriptors.push_back(new MOMENTSDescriptor("MMT"));
+
+	// Describe segmentation objects
+	for (auto d : descriptors) {
+		if (d->getType() == VIS) {
+			segmentationVIS.describe(d);
+		}
+		else {
+			segmentationLWIR.describe(d);
+		}
+	}
 
 	// Open result file
 	ofstream *results = logger->makeFile("results.txt");
@@ -159,15 +181,6 @@ int main(int argc, char **argv) {
 	vector<pair<string, Mat> > bestClassifications;
 	vector<ThematicMap> foldValidationMaps;
 	ThematicMap bestConsensus;
-
-	// Create descriptors
-	vector<Descriptor*> descriptors;
-	descriptors.push_back(new GCHDescriptor("GCH"));
-	descriptors.push_back(new BICDescriptor("BIC"));
-	descriptors.push_back(new LCHDescriptor("LCH"));
-	descriptors.push_back(new SIGDescriptor("SIG"));
-	descriptors.push_back(new REDUCEDSIGDescriptor("RSIG"));
-	descriptors.push_back(new MOMENTSDescriptor("MMT"));
 
 	cerr << "running k-fold cross-validation (k = " << K_FOLDS << ")" << endl;
 	for (int fold = 0; fold < K_FOLDS; fold++) {

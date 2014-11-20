@@ -216,6 +216,15 @@ list<Region> Segmentation::getRegions() {
 	return _regions;
 }
 
+list<SparseMat> Segmentation::getRegionMasks() {
+	list<SparseMat> masks;
+	for (auto& r : _regions) {
+		masks.push_back(r.getMask());
+	}
+
+	return masks;
+}
+
 cv::Mat Segmentation::representation() {
 	assert(_regions.size() > 0);
 
@@ -266,4 +275,18 @@ RSImage *Segmentation::getImage() {
 	}
 
 	return _image;
+}
+
+void Segmentation::describe(Descriptor *descriptor) {
+	// Extract features
+	Mat features;
+	if (_image->getType() == VIS) {
+		features = descriptor->describe(*((VISImage*) _image), *this);
+	}
+	else {
+		features = descriptor->describe(*((LWIRImage*) _image), *this);
+	}
+
+	// Record features
+	_descriptions[descriptor->getID()] = features;
 }

@@ -107,7 +107,7 @@ void Ensemble::train() {
 		// Determine which information to send
 		Mat lbl;
 		Segmentation S;
-		if (c->getType() == ClassifierType::VIS) {
+		if (c->getType() == ImageType::VIS) {
 			lbl = labelsMatVIS;
 			S = validVISSegmentation;
 		}
@@ -225,7 +225,7 @@ ThematicMap Ensemble::classify() {
 	int segmentsPerLWIRImage = _segmentationLWIR.regionCount();
 	int totalToClassify = 0;
 	for (auto& c : classifiers) {
-		if (_pixelizeLWIR && c->getType() == ClassifierType::LWIR) {
+		if (_pixelizeLWIR && c->getType() == ImageType::LWIR) {
 			totalToClassify += segmentsPerLWIRImage;
 		}
 		else {
@@ -246,7 +246,7 @@ ThematicMap Ensemble::classify() {
 		for (auto& c : classifiers) {
 			// Determine which segmentation to send to classifier
 			Segmentation S;
-			if (_pixelizeLWIR && c->getType() == ClassifierType::LWIR) {
+			if (_pixelizeLWIR && c->getType() == ImageType::LWIR) {
 				S = _segmentationLWIR;
 			}
 			else {
@@ -271,7 +271,7 @@ ThematicMap Ensemble::classify() {
 		for (auto& c : classifiers) {
 			// Determine which segmentation to send to classifier
 			Segmentation S;
-			if (_pixelizeLWIR && c->getType() == ClassifierType::LWIR) {
+			if (_pixelizeLWIR && c->getType() == ImageType::LWIR) {
 				S = _segmentationLWIR;
 			}
 			else {

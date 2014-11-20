@@ -20,12 +20,6 @@
 using namespace segmentation;
 
 namespace classification {
-	// Classifier types
-	enum ClassifierType {
-		VIS,
-		LWIR
-	};
-
 	// Classifier engines
 	enum ClassifierEngine {
 		SVM,
@@ -52,7 +46,7 @@ namespace classification {
 		Descriptor *_descriptor;
 
 		// Some meta information
-		ClassifierType _type;
+		ImageType _type;
 		ClassifierEngine _engine;
 
 		// Basic instrumentation
@@ -81,7 +75,7 @@ namespace classification {
 			void train(cv::Mat labels, Segmentation S);
 			cv::Mat classify(Region region);
 			string getID();
-			ClassifierType getType();
+			ImageType getType();
 
 			// Instrumentation methods
 			double getDescriptionTime();
