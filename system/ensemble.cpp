@@ -162,8 +162,8 @@ void Ensemble::doClassify(Classifier* C, Size mapSize, Segmentation S,
 	Mat classification = Mat::zeros(S.getMapSize(), CV_8UC1);
 
 	// Classify all segments
-	int n = S.segmentCount();
-	for (auto mask : S.getSegments()) {
+	int n = S.regionCount();
+	for (auto region : S.getRegions()) {
 		// Report progress from time to time
 		if (*classifiedSegments % 10 == 0) {
 
@@ -178,7 +178,7 @@ void Ensemble::doClassify(Classifier* C, Size mapSize, Segmentation S,
 		}
 
 		// Execute classification
-		Mat classifiedSegment = C->classify(mask);
+		Mat classifiedSegment = C->classify(region);
 		classification += classifiedSegment;
 		_worklog[idx]++;
 		(*classifiedSegments)++;
@@ -221,8 +221,8 @@ ThematicMap Ensemble::classify() {
 	int totalClassified = 0;
 
 	// Determine total segments to classify
-	int segmentsPerVISImage = _segmentationVIS.segmentCount();
-	int segmentsPerLWIRImage = _segmentationLWIR.segmentCount();
+	int segmentsPerVISImage = _segmentationVIS.regionCount();
+	int segmentsPerLWIRImage = _segmentationLWIR.regionCount();
 	int totalToClassify = 0;
 	for (auto& c : classifiers) {
 		if (_pixelizeLWIR && c->getType() == ClassifierType::LWIR) {

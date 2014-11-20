@@ -22,24 +22,9 @@ Classifier::Classifier(ClassifierEngine engine, LWIRImage *lwir,
 	  _type(LWIR) {
 }
 
-void Classifier::train(Mat labels, Segmentation trainingSegments) {
-	// Get valid segments
-	list<SparseMat> validSegments = trainingSegments.getSegments();
-
-	// Compute features
-	_swatchDescription.start();
-
-	Mat features;
-	if (_type == VIS) {
-		features = _descriptor->describe(_vis, validSegments);
-	}
-	else if (_type == LWIR) {
-		features = _descriptor->describe(*_lwir, validSegments);
-	}
-	else {
-		assert(false && "Unknown classifier type");
-	}
-	_swatchDescription.stop();
+void Classifier::train(Mat labels, Segmentation S) {
+	// Get features
+	Mat features = S.getDescription(_descriptor->getID());
 
 	// Train the correct classifier
 	_swatchTraining.start();
@@ -98,22 +83,9 @@ void Classifier::train(Mat labels, Segmentation trainingSegments) {
 	_swatchTraining.stop();
 }
 
-Mat Classifier::classify(cv::SparseMat mask) {
-	// Compute features
-	_swatchDescription.start();
-
-	Mat features;
-	if (_type == VIS) {
-		features = _descriptor->describe(_vis, mask);
-	}
-	else if (_type == LWIR) {
-		features = _descriptor->describe(*_lwir, mask);
-	}
-	else {
-		assert(false && "Unknown classifier type");
-	}
-
-	_swatchDescription.stop();
+Mat Classifier::classify(Region region) {
+	// Get features
+	Mat features = region.getDescription(_descriptor->getID());
 
 	// Predict the class
 	_swatchClassification.start();
@@ -160,9 +132,9 @@ Mat Classifier::classify(cv::SparseMat mask) {
 	_swatchClassification.stop();
 
 	// Fill the matrix
-	Mat denseMask = densify(mask);
-	Mat classification = Mat::zeros(denseMask.size(), CV_8UC1);
-	classification += theClass * (denseMask / 255);
+	Mat mask = densify(region.getMask());
+	Mat classification = Mat::zeros(mask.size(), CV_8UC1);
+	classification += theClass * (mask / 255);
 
 	return classification;
 }

@@ -17,6 +17,12 @@
 #include "config.h"
 #include "utils.h"
 
+// Class to represent a VIS image
+class VISImage {
+	cv::Mat _mat;
+};
+
+// Class to represent a LWIR image
 class LWIRImage {
 	public:
 		// Members
@@ -52,6 +58,7 @@ class LWIRImage {
 		void rescale(float scale, InterpolationMode mode);
 };
 
+// Class to represent a thematic map
 class ThematicMap {
 	cv::Mat _map;
 

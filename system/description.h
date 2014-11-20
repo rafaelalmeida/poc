@@ -32,6 +32,10 @@ extern "C" {
 using namespace cv;
 using namespace std;
 
+// Forward declarations
+class VISImage;
+class LWIRImage;
+
 // Descriptor types
 enum DescriptorType {
 	VIS,

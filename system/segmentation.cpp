@@ -246,19 +246,22 @@ list<SparseMat> segmentation::getColorBlobs(Mat posterized) {
 }
 
 Segmentation::Segmentation(list<SparseMat> masks) {
-	this->_masks = masks;
+	int idx = 0;
+	for (auto m : masks) {
+		this->_regions.push_back(Region(m, idx++));
+	}
 }
 
-list<SparseMat> Segmentation::getSegments() {
-	return _masks;
+list<Region> Segmentation::getRegions() {
+	return _regions;
 }
 
 cv::Mat Segmentation::representation() {
-	assert(_masks.size() > 0);
+	assert(_regions.size() > 0);
 
 	Mat repr = Mat::zeros(getMapSize(), CV_8UC3);
-	for (auto mask : _masks) {
-		Mat clone = densify(mask);
+	for (auto region : _regions) {
+		Mat clone = densify(region.getMask());
 		vector<vector<Point> > contours;
 		findContours(clone, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
 
@@ -269,7 +272,7 @@ cv::Mat Segmentation::representation() {
 }
 
 cv::Size Segmentation::getMapSize() {
-	return densify(_masks.front()).size();
+	return densify(_regions.front().getMask()).size();
 }
 
 vector<SparseMat> segmentation::pixelSegmentation(Mat image) {
@@ -292,8 +295,8 @@ vector<SparseMat> segmentation::pixelSegmentation(Mat image) {
 
 Segmentation Segmentation::pixelize() {
 	Mat fullMask = Mat::zeros(this->getMapSize(), CV_8UC1);
-	for (auto m : _masks) {
-		fullMask += densify(m);
+	for (auto region : _regions) {
+		fullMask += densify(region.getMask());
 	}
 
 	list<SparseMat> pixelatedSegments;
@@ -312,6 +315,23 @@ Segmentation Segmentation::pixelize() {
 	return Segmentation(pixelatedSegments);
 }
 
-int Segmentation::segmentCount() {
-	return _masks.size();
+int Segmentation::regionCount() {
+	return _regions.size();
+}
+
+Mat Segmentation::getDescription(string descriptorID) {
+	return _descriptions[descriptorID];
+}
+
+SparseMat Region::getMask() {
+	return _mask;
+}
+
+Region::Region(SparseMat mask, int parentIdx) 
+	: _mask(mask),
+	  _parentIdx(parentIdx) {}
+
+Mat Region::getDescription(string descriptorID) {
+	Mat features = _parentSegmentation->getDescription(descriptorID);
+	return features.row(_parentIdx);
 }

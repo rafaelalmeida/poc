@@ -13,8 +13,6 @@
 
 #include "classification.h"
 #include "description.h"
-#include "description_vis.h"
-#include "description_lwir.h"
 #include "models.h"
 #include "segmentation.h"
 #include "utils.h"
@@ -80,8 +78,8 @@ namespace classification {
 				Descriptor *descriptor);
 
 			// Methods
-			void train(cv::Mat labels, Segmentation trainingSegments);
-			cv::Mat classify(cv::SparseMat mask);
+			void train(cv::Mat labels, Segmentation S);
+			cv::Mat classify(Region region);
 			string getID();
 			ClassifierType getType();
 

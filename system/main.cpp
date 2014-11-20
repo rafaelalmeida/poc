@@ -11,8 +11,6 @@
 #include "classification.h"
 #include "common.h"
 #include "config.h"
-#include "description_lwir.h"
-#include "description_vis.h"
 #include "ensemble.h"
 #include "gdal_driver.h"
 #include "logging.h"
@@ -122,6 +120,7 @@ int main(int argc, char **argv) {
 		lwir.setRoi(roi);
 	}
 
+	// Segment image
 	log("segmenting image...");
 	Segmentation segmentationVIS;
 	if (conf.segmentationMode == GRID) {
@@ -146,6 +145,8 @@ int main(int argc, char **argv) {
 
 	Segmentation segmentationLWIR = segmentation::segmentLWIRPixelated(
 		lwir, vis);
+
+	// TODO: describe segmentation objects
 
 	// Save segmentation representation
 	logger->saveImage("segmentation", segmentationVIS.representation());
