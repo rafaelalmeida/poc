@@ -37,6 +37,8 @@ class Ensemble {
 	ConsensusType _consensusType;
 	Segmentation& _segmentationVIS;
 	Segmentation& _segmentationLWIR;
+	Segmentation& _segmentationVISTraining;
+	Segmentation& _segmentationLWIRTraining;
 
 	// Flag to see if segmentation is ignored for LWIR images, and the image
 	// is classified pixel-by-pixel instead
@@ -67,9 +69,9 @@ class Ensemble {
 
 	public:
 		// Constructors
-		Ensemble(ConsensusType t, Segmentation& segmentationVIS, 
-			Segmentation& segmentationLWIR, ThematicMap trainingVIS, 
-			ThematicMap trainingLWIR);
+		Ensemble(ConsensusType t, Segmentation& vis, Segmentation& lwir, 
+			Segmentation& visTraining, Segmentation& lwirTraining,
+			ThematicMap trainingVIS, ThematicMap trainingLWIR);
 
 		// Destructors
 		~Ensemble();

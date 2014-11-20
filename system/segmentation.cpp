@@ -135,10 +135,13 @@ Segmentation segmentation::segmentVISGrid(cv::Mat M, int tileSize) {
 Segmentation segmentation::segmentLWIRPixelated(LWIRImage& lwir, 
 	VISImage& vis) {
 
+	// Make a mask of non-missing pixels using the VIS image. We only consider
+	// those pixels to create the LWIR segmentation.
 	Mat nonMissing = makeNonMissingDataMask(vis.asMat());
 	Mat M;
 	resize(nonMissing, M, lwir.size(), 0, 0, INTER_NEAREST);
 
+	// Adds every pixel
 	list<SparseMat> pixels;
 	for (int row = 0; row < M.rows; row++) {
 		for (int col = 0; col < M.cols; col++) {
@@ -152,7 +155,10 @@ Segmentation segmentation::segmentLWIRPixelated(LWIRImage& lwir,
 		}
 	}
 
-	return Segmentation(pixels);
+	// Create and return the segmentation
+	Segmentation S(pixels);
+	S.setPixalated();
+	return S;
 }
 
 // Create a binary mask to show where we have missing data and ignore
@@ -209,6 +215,14 @@ Segmentation::Segmentation(list<SparseMat> masks) {
 	int idx = 0;
 	for (auto m : masks) {
 		this->_regions.push_back(Region(m, idx++));
+	}
+}
+
+Segmentation::Segmentation(ThematicMap M) {
+	list<pair<SparseMat, int> > regions1 = M.enumerateRegions();
+	int idx = 0;
+	for (auto r1 : regions1) {
+		_regions.push_back(Region(r1.first, idx++));
 	}
 }
 
@@ -289,4 +303,63 @@ void Segmentation::describe(Descriptor *descriptor) {
 
 	// Record features
 	_descriptions[descriptor->getID()] = features;
+}
+
+void Segmentation::setPixalated(bool v) {
+	_pixelated = v;
+}
+
+Segmentation Segmentation::cloneWithMask(SparseMat mask) {
+	// Check eligibility
+	if (!_pixelated) {
+		assert(false && 
+			"Error: cloning with mask only works on pixelated segmentations.");
+
+		return Segmentation(); // Dummy
+	}
+
+	// Densify the mask
+	Mat maskD = densify(mask);
+
+	// Find the regions to clone
+	list<int> clonedRegionsIdx;
+	list<SparseMat> clonedRegions;
+	int idx = 0;
+	for (auto& r : _regions) {
+		// Check if region is in mask. 
+		// IMPROVENT: This is not currently very efficient due to the 
+		// allocation of a matrix for every region. If we guarantee that
+		// regions always have one pixel, we can find that pixel position and
+		// and check if that position in the mask is white.
+		if (countNonZero(densify(r.getMask()) & maskD) > 0) {
+			clonedRegions.push_back(r.getMask());
+			clonedRegionsIdx.push_back(idx);
+		}
+
+		// Increase the index
+		idx++;
+	}
+
+	// Create the feature matrixes (FMs) that correspond to the cloned regions
+	int fmRows = clonedRegions.size();
+	map<string, Mat> subFMs;
+	for (auto d : _descriptions) {
+		string id = d.first;
+		Mat FM = d.second;
+
+		Mat subFM(fmRows, FM.cols, FM.type());
+		int i = 0;
+		for (auto rIdx : clonedRegionsIdx) {
+			FM.row(rIdx).copyTo(subFM.row(i++));
+		}
+
+		subFMs[id] = subFM;
+	}
+
+	// Create the Segmentation object
+	Segmentation cloned(clonedRegions);
+	cloned.setPixalated();
+	cloned._descriptions = subFMs;
+
+	return cloned;
 }

@@ -28,6 +28,7 @@ class Descriptor;
 class RSImage;
 class LWIRImage;
 class VISImage;
+class ThematicMap;
 class Region;
 class Segmentation;
 
@@ -71,9 +72,14 @@ class Segmentation {
 	// for description purposes.
 	RSImage *_image = NULL;
 
+	// Pixelatedness of the segmentation. Some operations are only possible
+	// on pixelated types.
+	bool _pixelated = false;
+
 	public:
 		Segmentation() {};
 		Segmentation(list<SparseMat> masks);
+		Segmentation(ThematicMap M);
 
 		void setImage(RSImage *image);
 		RSImage *getImage();
@@ -83,6 +89,8 @@ class Segmentation {
 		list<SparseMat> getRegionMasks();
 		Mat representation();
 		Size getMapSize();
+		void setPixalated(bool v=true);
+		Segmentation cloneWithMask(SparseMat mask);
 
 		Mat getDescription(string descriptorID);
 		void describe(Descriptor *descriptor);

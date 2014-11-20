@@ -88,9 +88,11 @@ class ThematicMap {
 		ThematicMap clone();
 		cv::Mat coloredMap();
 		cv::Size size();
-		float getRegionClass(cv::Mat mask);
+
 		std::map<unsigned char, int> getClassesCounts();
 		std::list<std::pair<cv::SparseMat, int> > enumerateRegions();
+		cv::SparseMat getFullMask();
+
 		std::vector<ThematicMap> split(int k);
 		void resize(cv::Size newSize);
 		void combine(ThematicMap T);

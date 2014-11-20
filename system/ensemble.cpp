@@ -2,13 +2,15 @@
 
 using namespace cv;
 
-Ensemble::Ensemble(ConsensusType t, Segmentation& segmentationVIS, 
-	Segmentation& segmentationLWIR, ThematicMap trainingVIS,
-	ThematicMap trainingLWIR)
+Ensemble::Ensemble(ConsensusType t, Segmentation& vis, Segmentation& lwir, 
+			Segmentation& visTraining, Segmentation& lwirTraining,
+			ThematicMap trainingVIS, ThematicMap trainingLWIR)
 
     : _consensusType(t),
-	  _segmentationVIS(segmentationVIS),
-	  _segmentationLWIR(segmentationLWIR),
+	  _segmentationVIS(vis),
+	  _segmentationLWIR(lwir),
+	  _segmentationVISTraining(visTraining),
+	  _segmentationLWIRTraining(lwirTraining),
 	  _trainingVIS(trainingVIS),
 	  _trainingLWIR(trainingLWIR) {
 
@@ -95,9 +97,6 @@ void Ensemble::train() {
 		c++;
 	}
 
-	Segmentation validVISSegmentation(validSegmentsVIS);
-	Segmentation validLWIRSegmentation(validSegmentsLWIR);
-
 	// Trains all classifiers
 	int i = 1;
 	int n = classifiers.size();
@@ -109,11 +108,11 @@ void Ensemble::train() {
 		Segmentation S;
 		if (c->getType() == ImageType::VIS) {
 			lbl = labelsMatVIS;
-			S = validVISSegmentation;
+			S = _segmentationVISTraining;
 		}
 		else {
 			lbl = labelsMatLWIR;
-			S = validLWIRSegmentation;
+			S = _segmentationLWIRTraining;
 		}
 
 		// Run or start the threads

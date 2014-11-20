@@ -156,8 +156,9 @@ int main(int argc, char **argv) {
 	descriptors.push_back(new REDUCEDSIGDescriptor("RSIG"));
 	descriptors.push_back(new MOMENTSDescriptor("MMT"));
 
-	// Describe segmentation objects
+	// Describe segmentation objects - main classification
 	for (auto d : descriptors) {
+		cerr << "describing with " << d->getID() << " (main set)" << endl;
 		if (d->getType() == VIS) {
 			segmentationVIS.describe(d);
 		}
@@ -166,9 +167,25 @@ int main(int argc, char **argv) {
 		}
 	}
 
+	// Describe VIS training set
+	Segmentation visTrainingSegmentation(trainingMapVIS);
+	visTrainingSegmentation.setImage(&vis);
+	for (auto d : descriptors) {
+		cerr << "describing with " << d->getID() << " (VIS training set)" << 
+			endl;
+		if (d->getType() == VIS) {
+			visTrainingSegmentation.describe(d);
+		}
+	}
+
+	// Describe LWIR training set - reuse the main LWIR segmentation, which
+	// is already described, and take a subset of it.
+	Segmentation lwirTrainingSegmentation = segmentationLWIR.cloneWithMask(
+		trainingMapLWIR.getFullMask());
+
 	// Open result file
 	ofstream *results = logger->makeFile("results.txt");
-	*results << "MAP AGREEMENT KAPPA" << endl;
+	*results << "MAP / AGREEMENT / KAPPA" << endl;
 
 	// Initialize time loggers
 	double descriptionTime = 0;
@@ -207,12 +224,15 @@ int main(int argc, char **argv) {
 
 		// Build the ensemble
 		Ensemble E(MAJORITY_VOTING, segmentationVIS, segmentationLWIR,
-		T_VIS, T_LWIR);
+			visTrainingSegmentation, lwirTrainingSegmentation, T_VIS, T_LWIR);
 		E.setParallel(conf.parallel);
 		setupClassifiers(E, vis, lwir, descriptors);
 
 		// Train the ensemble
 		E.train();
+
+		cerr << "Got here well" << endl;
+		exit(EXIT_SUCCESS);
 
 		// Run the classification
 		ThematicMap C = E.classify();

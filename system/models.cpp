@@ -155,27 +155,6 @@ cv::Mat ThematicMap::asMat() {
 	return _map;
 }
 
-float ThematicMap::getRegionClass(cv::Mat mask) {
-	assert(_map.type() == CV_8UC1);
-	assert(mask.type() == CV_8UC1);
-	assert((_map.rows == mask.rows) && (_map.cols = mask.cols));
-
-	typedef unsigned char uchar;
-
-	Counter<uchar> counter;
-
-	for (int row = 0; row < _map.rows; row++) {
-		for (int col = 0; col < _map.cols; col++) {
-			if (mask.at<uchar>(row, col)) {
-				uchar val = _map.at<uchar>(row, col);
-				counter.inc(val);
-			}
-		}
-	}
-
-	return (float) counter.top();
-}
-
 cv::Mat ThematicMap::coloredMap() {
 	assert(_map.type() == CV_8UC1);
 	Mat map = Mat::zeros(_map.size(), CV_8UC3);
@@ -410,4 +389,10 @@ void VISImage::rescale(float scale, InterpolationMode mode) {
 
 void VISImage::setRoi(cv::Rect roi) {
 	_vis = _vis(roi);
+}
+
+cv::SparseMat ThematicMap::getFullMask() {
+	Mat mask(_map.rows, _map.cols, _map.type());
+	threshold(_map, mask, 1, 255, THRESH_BINARY);
+	return SparseMat(mask);
 }
