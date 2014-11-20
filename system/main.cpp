@@ -34,7 +34,8 @@ Logger *logger = NULL;
 void rescale(Mat& vis, LWIRImage& lwir, float scaleVIS, float scaleLWIR, 
 	InterpolationMode interpolationMode);
 
-void setupClassifiers(Ensemble& e, Mat vis, LWIRImage& lwir);
+void setupClassifiers(Ensemble& e, Mat vis, LWIRImage& lwir, 
+	vector<Descriptor*> descriptors);
 
 void printClassHistogram(ThematicMap& M);
 
@@ -165,6 +166,15 @@ int main(int argc, char **argv) {
 	vector<ThematicMap> foldValidationMaps;
 	ThematicMap bestConsensus;
 
+	// Create descriptors
+	vector<Descriptor*> descriptors;
+	descriptors.push_back(new GCHDescriptor("GCH"));
+	descriptors.push_back(new BICDescriptor("BIC"));
+	descriptors.push_back(new LCHDescriptor("LCH"));
+	descriptors.push_back(new SIGDescriptor("SIG"));
+	descriptors.push_back(new REDUCEDSIGDescriptor("RSIG"));
+	descriptors.push_back(new MOMENTSDescriptor("MMT"));
+
 	cerr << "running k-fold cross-validation (k = " << K_FOLDS << ")" << endl;
 	for (int fold = 0; fold < K_FOLDS; fold++) {
 		// Report progress
@@ -192,7 +202,7 @@ int main(int argc, char **argv) {
 		Ensemble E(MAJORITY_VOTING, segmentationVIS, segmentationLWIR,
 		T_VIS, T_LWIR);
 		E.setParallel(conf.parallel);
-		setupClassifiers(E, vis, lwir);
+		setupClassifiers(E, vis, lwir, descriptors);
 
 		// Train the ensemble
 		E.train();
@@ -282,7 +292,10 @@ int main(int argc, char **argv) {
 	// Destroy logger
 	delete logger;
 
-	// TODO: Destroy descriptors
+	// Destroy descriptors
+	for (auto d : descriptors) {
+		delete d;
+	}
 
 	return 0;
 }
@@ -300,7 +313,8 @@ void rescale(Mat& vis, LWIRImage& lwir, float scaleVIS, float scaleLWIR,
 	vis = visR;
 }
 
-void setupClassifiers(Ensemble& ensemble, Mat vis, LWIRImage& lwir) {
+void setupClassifiers(Ensemble& ensemble, Mat vis, LWIRImage& lwir,
+	vector<Descriptor*> descriptors) {
 	// List classifier engines
 	vector<ClassifierEngine> engines = {
 		ClassifierEngine::SVM, 
@@ -308,15 +322,6 @@ void setupClassifiers(Ensemble& ensemble, Mat vis, LWIRImage& lwir) {
 		ClassifierEngine::DTREE, 
 		ClassifierEngine::MLP
 	};
-
-	// Create the descriptors
-	vector<Descriptor*> descriptors;
-	descriptors.push_back(new GCHDescriptor("GCH"));
-	descriptors.push_back(new BICDescriptor("BIC"));
-	descriptors.push_back(new LCHDescriptor("LCH"));
-	descriptors.push_back(new SIGDescriptor("SIG"));
-	descriptors.push_back(new REDUCEDSIGDescriptor("RSIG"));
-	descriptors.push_back(new MOMENTSDescriptor("MMT"));
 
 	// Create the classifier <-> descriptor pairs and add them to the ensemble
 	for (auto engine : engines) {
