@@ -168,48 +168,6 @@ Mat segmentation::makeNonMissingDataMask(Mat vis) {
 	return bin;
 }
 
-Segmentation segmentation::segmentVISWatershed(Mat M, int tileSize) {
-	// Build some rough markers using the grid tile centers as seed points
-	int regionsPerLine = (M.cols / tileSize);
-	int regionsPerColumn = (M.rows / tileSize);
-
-	Mat markers(M.size(), CV_32S);
-	int currentLabel = 1;
-
-	for (int i = 0; i < regionsPerLine; i++) {
-		for (int j = 0; j < regionsPerColumn; j++) {
-			Point P(i*tileSize + tileSize/2, j*tileSize + tileSize/2);
-			markers.at<int>(i, j) = currentLabel++;
-		}
-	}
-
-	// Notes the total number of regions
-	int totalRegions = currentLabel - 1;
-
-	// Run the watershed
-	watershed(M, markers);
-
-	// Creates a list of region masks
-	list<SparseMat> regionMasks;
-	for (int i = 1; i <= totalRegions; i++) {
-		float progress = (float) 100 * i / totalRegions;
-		cerr << progress << "%          \r" << flush;
-
-		Mat thisMask(markers.size(), CV_8UC1);
-		for (int row = 0; row < markers.rows; row++) {
-			for (int col = 0; col < markers.cols; col++) {
-				if (markers.at<int>(row, col) == i) {
-					thisMask.at<unsigned char>(row, col) = 255;
-				}
-			}
-		}
-
-		regionMasks.push_back(SparseMat(thisMask));
-	}
-
-	return Segmentation(regionMasks);
-}
-
 float segmentation::getSegmentLabel(Mat classificationMap, Mat mask) {
 	assert(classificationMap.type() == CV_8UC1);
 	assert(mask.type() == CV_8UC1);
@@ -273,46 +231,6 @@ cv::Mat Segmentation::representation() {
 
 cv::Size Segmentation::getMapSize() {
 	return densify(_regions.front().getMask()).size();
-}
-
-vector<SparseMat> segmentation::pixelSegmentation(Mat image) {
-	vector<SparseMat> segments;
-	segments.reserve(image.rows * image.cols);
-
-	for (int row = 0; row < image.rows; row++) {
-		for (int col = 0; image.cols; col++) {
-			Mat mask(image.size(), CV_8UC1);
-			mask.at<unsigned char>(row, col) = 255;
-
-			SparseMat sparseMask(mask);
-
-			segments.push_back(sparseMask);
-		}
-	}
-
-	return segments;
-}
-
-Segmentation Segmentation::pixelize() {
-	Mat fullMask = Mat::zeros(this->getMapSize(), CV_8UC1);
-	for (auto region : _regions) {
-		fullMask += densify(region.getMask());
-	}
-
-	list<SparseMat> pixelatedSegments;
-
-	for (int row = 0; row < fullMask.rows; row++) {
-		for (int col = 0; col < fullMask.cols; col++) {
-			if (fullMask.at<unsigned char>(row, col) != 0) {
-				Mat mask = Mat::zeros(fullMask.size(), CV_8UC1);
-				mask.at<unsigned char>(row, col) = 255;
-
-				pixelatedSegments.push_back(SparseMat(mask));
-			}
-		}
-	}
-
-	return Segmentation(pixelatedSegments);
 }
 
 int Segmentation::regionCount() {

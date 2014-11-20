@@ -72,7 +72,6 @@ class Segmentation {
 		int regionCount();
 		list<Region> getRegions();
 		Mat representation();
-		Segmentation pixelize();
 		Size getMapSize();
 
 		Mat getDescription(string descriptorID);
@@ -81,7 +80,6 @@ class Segmentation {
 
 namespace segmentation {
 	Segmentation segmentVISGrid(Mat M, int tileSize=10);
-	Segmentation segmentVISWatershed(Mat M, int tileSize=100);
 	Segmentation segmentVIS_SLIC(Mat M, int regionSize, int minRegionSize, 
 		float regularization);
 
@@ -91,7 +89,6 @@ namespace segmentation {
 
 	float getSegmentLabel(Mat classificationMap, Mat mask);
 	list<SparseMat> getColorBlobs(Mat posterized);
-	vector<SparseMat> pixelSegmentation(Mat image);
 }
 
 #endif
