@@ -25,7 +25,9 @@ using namespace std;
 
 // Forward declarations
 class Descriptor;
+class RSImage;
 class LWIRImage;
+class VISImage;
 class Region;
 class Segmentation;
 
@@ -65,9 +67,16 @@ class Segmentation {
 	// list.
 	map<string, Mat> _descriptions;
 
+	// Pointer to the image segmented by this segmentation. This can be used
+	// for description purposes.
+	RSImage *_image = NULL;
+
 	public:
 		Segmentation() {};
 		Segmentation(list<SparseMat> masks);
+
+		void setImage(RSImage *image);
+		RSImage *getImage();
 
 		int regionCount();
 		list<Region> getRegions();
@@ -83,7 +92,7 @@ namespace segmentation {
 	Segmentation segmentVIS_SLIC(Mat M, int regionSize, int minRegionSize, 
 		float regularization);
 
-	Segmentation segmentLWIRPixelated(LWIRImage& lwir, Mat vis);
+	Segmentation segmentLWIRPixelated(LWIRImage& lwir, VISImage& vis);
 
 	Mat makeNonMissingDataMask(Mat vis);
 

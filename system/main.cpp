@@ -29,10 +29,10 @@ bool verbose;
 Logger *logger = NULL;
 
 // Signatures
-void rescale(Mat& vis, LWIRImage& lwir, float scaleVIS, float scaleLWIR, 
+void rescale(VISImage& vis, LWIRImage& lwir, float scaleVIS, float scaleLWIR, 
 	InterpolationMode interpolationMode);
 
-void setupClassifiers(Ensemble& e, Mat vis, LWIRImage& lwir, 
+void setupClassifiers(Ensemble& e, VISImage& vis, LWIRImage& lwir, 
 	vector<Descriptor*> descriptors);
 
 void printClassHistogram(ThematicMap& M);
@@ -54,20 +54,11 @@ int main(int argc, char **argv) {
 
 	// Load images
 	log("loading VIS image...");
-	Mat vis = gdal_driver::loadVIS(conf.pathVIS);
+	VISImage vis = gdal_driver::loadVIS(conf.pathVIS);
 	log("loading LWIR image...");
 	LWIRImage lwir = gdal_driver::loadLWIR(conf.pathLWIR);
 	log("loading training data...");
 	Mat training = gdal_driver::loadTrainingData(conf.pathTraining);
-
-	// Ignore unclassed pixels to speed up classification, if enabled
-	if (conf.ignoreUnclassedPixels) {
-		Mat trainingMask = training > 0;
-		Mat trainingMask3C;
-		cvtColor(trainingMask, trainingMask3C, CV_GRAY2BGR);
-
-		vis = vis & trainingMask3C;
-	}
 
 	// Rescale images if necessary
 	if (conf.scaleVIS != 1.0 || conf.scaleLWIR != 1.0) {
@@ -103,7 +94,8 @@ int main(int argc, char **argv) {
 	}
 
 	// Save training map for debugging
-	logger->saveImage("training", blend(vis, trainingMapVIS.coloredMap()));
+	logger->saveImage("training", 
+	                  blend(vis.asMat(), trainingMapVIS.coloredMap()));
 
 	// Show classes counts in the whole training map
 	cerr << "Amount of pixels per class in the whole map: " << endl;
@@ -113,18 +105,19 @@ int main(int argc, char **argv) {
 	Rect roi;
 	if (conf.roiWidth > 0 && conf.roiHeight > 0) {
 		roi = Rect(conf.roiX, conf.roiY, conf.roiWidth, conf.roiHeight);
-		vis = vis(roi);
+		vis.setRoi(roi);
 		training = training(roi);
 
-		log("applying ROI to LWIR...");
+		log("applying ROIs to LWIR...");
 		lwir.setRoi(roi);
 	}
 
 	// Segment image
-	log("segmenting image...");
+	log("creating segmentation...");
 	Segmentation segmentationVIS;
 	if (conf.segmentationMode == GRID) {
-		segmentationVIS = segmentation::segmentVISGrid(vis, conf.gridTileSize);
+		segmentationVIS = segmentation::segmentVISGrid(vis.asMat(), 
+			conf.gridTileSize);
 	}
 	else if (conf.segmentationMode == SLIC) {
 		// Try to guess rescaled parameters for SLIC, if desired
@@ -135,7 +128,7 @@ int main(int argc, char **argv) {
 			conf.slicMinRegionSize *= s;
 		}
 
-		segmentationVIS = segmentation::segmentVIS_SLIC(vis, 
+		segmentationVIS = segmentation::segmentVIS_SLIC(vis.asMat(), 
 			conf.slicRegionSize, conf.slicMinRegionSize, 
 			conf.slicRegularization);
 	}
@@ -226,7 +219,8 @@ int main(int argc, char **argv) {
 		// Log results
 		string imageName("fold_");
 		imageName += (fold+'0');
-		logger->saveImage(imageName.c_str(), blend(vis, C.coloredMap()));
+		logger->saveImage(imageName.c_str(), 
+		                  blend(vis.asMat(), C.coloredMap()));
 
 		// Register time taken
 		descriptionTime += E.getTotalDescriptionTime();
@@ -262,7 +256,7 @@ int main(int argc, char **argv) {
 		string imageName("classifier-");
 		imageName += c.first;
 		logger->saveImage(imageName.c_str(), 
-			blend(vis, ThematicMap(c.second).coloredMap()));
+			blend(vis.asMat(), ThematicMap(c.second).coloredMap()));
 	}
 
 	// Calculate consensus kappa
@@ -301,20 +295,17 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-void rescale(Mat& vis, LWIRImage& lwir, float scaleVIS, float scaleLWIR, 
+void rescale(VISImage& vis, LWIRImage& lwir, float scaleVIS, float scaleLWIR, 
 	InterpolationMode interpolationMode) {
 
 	// Scale LWIR
 	lwir.rescale(scaleLWIR, interpolationMode);
 
 	// Scale VIS
-	Mat visR;
-	resize(vis, visR, Size(), scaleVIS, scaleVIS, 
-		translateInterpolationMode(interpolationMode));
-	vis = visR;
+	vis.rescale(scaleVIS, interpolationMode);
 }
 
-void setupClassifiers(Ensemble& ensemble, Mat vis, LWIRImage& lwir,
+void setupClassifiers(Ensemble& ensemble, VISImage& vis, LWIRImage& lwir,
 	vector<Descriptor*> descriptors) {
 	// List classifier engines
 	vector<ClassifierEngine> engines = {
@@ -328,8 +319,8 @@ void setupClassifiers(Ensemble& ensemble, Mat vis, LWIRImage& lwir,
 	for (auto engine : engines) {
 		for (auto descriptor : descriptors) {
 			Classifier *classifier;
-			if (descriptor->getType() == DescriptorType::VIS) {
-				classifier = new Classifier(engine, vis, descriptor);
+			if (descriptor->getType() == ImageType::VIS) {
+				classifier = new Classifier(engine, &vis, descriptor);
 			}
 			else {
 				classifier = new Classifier(engine, &lwir, descriptor);

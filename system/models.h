@@ -14,16 +14,33 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
+#include "common.h"
 #include "config.h"
 #include "utils.h"
 
+// Base class to represent a remote sensing image
+class RSImage {
+	ImageType _type;
+
+	public:
+		RSImage(ImageType type) : _type(type) {};
+		ImageType getType() { return _type; };
+};
+
 // Class to represent a VIS image
-class VISImage {
-	cv::Mat _mat;
+class VISImage : public RSImage {
+	cv::Mat _vis;
+
+	public:
+		VISImage(cv::Mat vis);
+		cv::Size size();
+		cv::Mat asMat();
+		void rescale(float scale, InterpolationMode mode);
+		void setRoi(cv::Rect roi);
 };
 
 // Class to represent a LWIR image
-class LWIRImage {
+class LWIRImage : public RSImage {
 	public:
 		// Members
 		std::vector<cv::Mat> bands;

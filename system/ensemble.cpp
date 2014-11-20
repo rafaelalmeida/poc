@@ -142,8 +142,8 @@ void Ensemble::doTrain(Classifier *C, Mat labels, Segmentation S, int *trained,
 	// Report progress
 	if (_parallel) _consoleMutex.lock();
 
-	cerr << "training classifier " << *trained << " of " << totalToTrain << 
-		" (" << C->getID() << ")      \r" << flush;
+	cerr << "training " << *trained << " of " << totalToTrain << 
+		" classifiers (" << C->getID() << ")      \r" << flush;
 	
 	if (_parallel) _consoleMutex.unlock();
 

@@ -2,7 +2,7 @@
 
 using namespace cv;
 
-LWIRImage::LWIRImage(std::vector<cv::Mat> bands) {
+LWIRImage::LWIRImage(std::vector<cv::Mat> bands) : RSImage(LWIR) {
 	// Saves the bands
 	this->bands = bands;
 
@@ -12,6 +12,8 @@ LWIRImage::LWIRImage(std::vector<cv::Mat> bands) {
 	// Init the ROI as blank
 	this->roi = Rect(0, 0, 0, 0);
 }
+
+LWIRImage::LWIRImage() : RSImage(LWIR) {}
 
 cv::Mat LWIRImage::spectralSignature(cv::Mat mask, bool reduced) {
 	vector<Mat> &myBands = reduced ? this->reducedBands : this->bands;
@@ -386,4 +388,26 @@ void ThematicMap::combine(ThematicMap T) {
 
 ThematicMap ThematicMap::clone() {
 	return ThematicMap(_map);
+}
+
+VISImage::VISImage(cv::Mat vis) 
+	: _vis(vis),
+	  RSImage(VIS) {}
+
+cv::Size VISImage::size() {
+	return _vis.size();
+}
+
+cv::Mat VISImage::asMat() {
+	return _vis;
+}
+
+void VISImage::rescale(float scale, InterpolationMode mode) {
+	Mat visR;
+	resize(_vis, visR, Size(), scale, scale, translateInterpolationMode(mode));
+	_vis = visR;
+}
+
+void VISImage::setRoi(cv::Rect roi) {
+	_vis = _vis(roi);
 }

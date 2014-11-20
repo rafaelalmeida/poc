@@ -132,8 +132,10 @@ Segmentation segmentation::segmentVISGrid(cv::Mat M, int tileSize) {
 	return Segmentation(segments);
 }
 
-Segmentation segmentation::segmentLWIRPixelated(LWIRImage& lwir, Mat vis) {
-	Mat nonMissing = makeNonMissingDataMask(vis);
+Segmentation segmentation::segmentLWIRPixelated(LWIRImage& lwir, 
+	VISImage& vis) {
+
+	Mat nonMissing = makeNonMissingDataMask(vis.asMat());
 	Mat M;
 	resize(nonMissing, M, lwir.size(), 0, 0, INTER_NEAREST);
 
@@ -252,4 +254,16 @@ Region::Region(SparseMat mask, int parentIdx)
 Mat Region::getDescription(string descriptorID) {
 	Mat features = _parentSegmentation->getDescription(descriptorID);
 	return features.row(_parentIdx);
+}
+
+void Segmentation::setImage(RSImage *image) {
+	_image = image;
+}
+
+RSImage *Segmentation::getImage() {
+	if (_image == NULL) {
+		assert(false && "Error: no image defined for this segmentation.");
+	}
+
+	return _image;
 }

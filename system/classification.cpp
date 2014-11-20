@@ -6,7 +6,7 @@ using namespace std;
 using namespace classification;
 using namespace segmentation;
 
-Classifier::Classifier(ClassifierEngine engine, cv::Mat vis, 
+Classifier::Classifier(ClassifierEngine engine, VISImage *vis, 
 	Descriptor *descriptor)
 	: _engine(engine),
 	  _vis(vis),

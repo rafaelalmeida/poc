@@ -33,7 +33,7 @@ LWIRImage gdal_driver::loadLWIR(const char* path) {
 	return LWIRImage(matx);
 }
 
-Mat gdal_driver::loadVIS(const char* path) {
+VISImage gdal_driver::loadVIS(const char* path) {
 	GDALAllRegister();
 	GDALDataset *data = (GDALDataset*) GDALOpen(path, GA_ReadOnly);
 
@@ -66,7 +66,7 @@ Mat gdal_driver::loadVIS(const char* path) {
 	delete scanlineGreen;
 	delete scanlineBlue;
 
-	return M;
+	return VISImage(M);
 }
 
 Mat gdal_driver::loadTrainingData(const char* path) {

@@ -14,7 +14,7 @@
 
 namespace gdal_driver {
 	LWIRImage loadLWIR(const char*);
-	cv::Mat loadVIS(const char*);
+	VISImage loadVIS(const char*);
 	cv::Mat loadTrainingData(const char*);
 }
 

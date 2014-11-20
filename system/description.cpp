@@ -197,5 +197,5 @@ std::string Descriptor::getID() {
 	return _id;
 }
 
-Descriptor::Descriptor(const char *id, DescriptorType type) 
+Descriptor::Descriptor(const char *id, ImageType type) 
 	: _id(string(id)), _type(type) {}

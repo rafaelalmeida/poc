@@ -116,11 +116,6 @@ void config::parse(char **argv, int argc, Configuration &config) {
 			config.parallel = true;
 		}
 
-		// Optimizations
-		else if (streq("--ignore-unclassed-pixels", argv[c])) {
-			config.ignoreUnclassedPixels = true;
-		}
-
 		// Default
 		else {
 			cerr << "Unrecognized option: " << argv[c] << endl;

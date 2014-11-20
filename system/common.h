@@ -1,15 +1,23 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+// Interpolation modes
 enum InterpolationMode {
 	NEAREST_NEIGHBOR,
 	LINEAR,
 	CUBIC
 };
 
+// Segmentation modes
 enum SegmentationMode {
 	GRID,
 	SLIC
+};
+
+// Image types
+enum ImageType {
+	VIS,
+	LWIR
 };
 
 // Number of classes in the thematic map

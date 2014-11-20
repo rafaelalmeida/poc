@@ -45,7 +45,7 @@ namespace classification {
 	 */
 	class Classifier {
 		// Images this classifier will classify
-		cv::Mat _vis;
+		VISImage *_vis = NULL;
 		LWIRImage *_lwir = NULL;
 
 		// The descriptor it will use
@@ -72,7 +72,7 @@ namespace classification {
 
 		public:
 			// Constructors
-			Classifier(ClassifierEngine engine, cv::Mat vis, 
+			Classifier(ClassifierEngine engine, VISImage *vis, 
 				Descriptor *descriptor);
 			Classifier(ClassifierEngine engine, LWIRImage *lwir, 
 				Descriptor *descriptor);

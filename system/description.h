@@ -36,12 +36,6 @@ using namespace std;
 class VISImage;
 class LWIRImage;
 
-// Descriptor types
-enum DescriptorType {
-	VIS,
-	LWIR
-};
-
 // Base descriptor class - subclass this and implement the describe() method
 // for the VIS or the LWIR image, depending on the type of descritor. The 
 // classifier will know which method to call. Implement only the method which
@@ -50,10 +44,10 @@ enum DescriptorType {
 class Descriptor {
 	// Members
 	string _id;
-	DescriptorType _type;
+	ImageType _type;
 
 	public:
-		Descriptor(const char *id, DescriptorType type);
+		Descriptor(const char *id, ImageType type);
 
 		virtual Mat describe(Mat image, SparseMat mask);
 		virtual Mat describe(Mat image, list<SparseMat> masks);
@@ -61,19 +55,19 @@ class Descriptor {
 		virtual Mat describe(LWIRImage image, SparseMat mask);
 		virtual Mat describe(LWIRImage image, list<SparseMat> masks);
 
-		DescriptorType getType() { return _type; };
+		ImageType getType() { return _type; };
 		std::string getID();
 };
 
 // Wrapper classes for each classifier type, for easier polymorphism
 class VISDescriptor : public Descriptor {
 	public:
-		VISDescriptor(const char *id) : Descriptor(id, DescriptorType::VIS) {};
+		VISDescriptor(const char *id) : Descriptor(id, ImageType::VIS) {};
 };
 
 class LWIRDescriptor : public Descriptor {
 	public:
-		LWIRDescriptor(const char *id) : Descriptor(id, DescriptorType::LWIR) {};
+		LWIRDescriptor(const char *id) : Descriptor(id, ImageType::LWIR) {};
 };
 
 // Descriptor wrappers
