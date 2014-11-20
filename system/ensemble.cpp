@@ -95,29 +95,65 @@ void Ensemble::train() {
 		c++;
 	}
 
+	Segmentation validVISSegmentation(validSegmentsVIS);
+	Segmentation validLWIRSegmentation(validSegmentsLWIR);
+
 	// Trains all classifiers
 	int i = 1;
 	int n = classifiers.size();
 
+	list<thread> threads;
 	for (auto c : classifiers) {
-		cerr << "training classifier " << i << " of " << n << " (" << 
-			c->getID() << ")      \r" << flush;
-
+		// Determine which information to send
+		Mat lbl;
+		Segmentation S;
 		if (c->getType() == ClassifierType::VIS) {
-			c->train(labelsMatVIS, Segmentation(validSegmentsVIS));
+			lbl = labelsMatVIS;
+			S = validVISSegmentation;
 		}
 		else {
-			c->train(labelsMatLWIR, Segmentation(validSegmentsLWIR));
+			lbl = labelsMatLWIR;
+			S = validLWIRSegmentation;
 		}
 
-		i++;
+		// Run or start the threads
+		if (_parallel) {
+			threads.push_back(thread(&Ensemble::doTrain, this, c, lbl,
+				S, &i, n));	
+		}
+		else {
+			this->doTrain(c, lbl, S, &i, n);
+		}
+	}
 
-		// Log time taken
-		_totalTimeDescription += c->getDescriptionTime();
-		_totalTimeTraining += c->getTrainingTime();
+	// Syncronization
+	if (_parallel) {
+		for (auto& t : threads) {
+			t.join();
+		}
 	}
 
 	cerr << "training classifiers... done             " << endl;
+}
+
+void Ensemble::doTrain(Classifier *C, Mat labels, Segmentation S, int *trained, 
+	int totalToTrain) {
+
+	// Report progress
+	if (_parallel) _consoleMutex.lock();
+
+	cerr << "training classifier " << *trained << " of " << totalToTrain << 
+		" (" << C->getID() << ")      \r" << flush;
+	
+	if (_parallel) _consoleMutex.unlock();
+
+	// Execute training
+	C->train(labels, S);
+	(*trained)++;
+
+	// Log time taken
+	_totalTimeDescription += C->getDescriptionTime();
+	_totalTimeTraining += C->getTrainingTime();
 }
 
 void Ensemble::doClassify(Classifier* C, Size mapSize, Segmentation S, 

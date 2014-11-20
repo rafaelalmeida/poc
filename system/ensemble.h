@@ -82,6 +82,8 @@ class Ensemble {
 		void doClassify(Classifier* C, cv::Size mapSize, Segmentation S, 
 			int *cursor, int *classifiedSegments, int totalToClassify, 
 			int threadID);
+		void doTrain(Classifier *C, Mat labels, Segmentation S, int *trained, 
+			int totalToTrain);
 		void setLogger(Logger *logger);
 		void setThreads(int n);
 		void train();
