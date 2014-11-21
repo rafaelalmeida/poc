@@ -1,0 +1,102 @@
+Speedup experiment test
+
+Commit: 3d57cf5cf778b44493ff45c782fa4900be051c9d
+
+Training and classification are parallel, but not description. Grid search
+still not implemented. 
+
+Scale: 10%
+==========
+Single-thread: 0m21.884s
+Multi-thread: 0m17.426s
+
+Speedup: 20.4% speedup
+
+Scale: 20%
+==========
+Single-thread: 1m6.170s = 66.170s
+Multi-thread: 0m54.370s
+
+Speedup: 17.8% speedup
+
+--------------------------------------------------------------------------------
+
+Memory usage experiment
+
+Scale: 10%
+memusg: peak=259156
+
+Scale 12.5%
+memusg: peak=263272
+
+Scale 15%
+memusg: peak=270568
+
+Scale 17.5%
+memusg: peak=351668
+
+Scale: 20%
+memusg: peak=379988
+
+--------------------------------------------------------------------------------
+
+Memory and exectution time of with individual fold maps vs no maps
+
+With maps
+=========
+Scale: 10%
+Time: 18.008s
+Mempeak: 272964 266252 276268
+
+No maps
+=======
+Scale: 10%
+Time: 12.596s
+Mempeak: 266980
+
+--------------------------------------------------------------------------------
+
+KNN optimization
+
+Commit: fd32edb2e6d14dfbd8dba8367fc87cc22922361a
+Notes: with all other classifiers disabled
+
+First, we test the same K in different scales to see how much the accuracy 
+changes. The goal is to see if we can do the optimization with smaller
+scale, to make it faster.
+
+Using k = 5
+
+Start: 0.1, end: 0.3, step: 1.25
+
+SCALE                  ACC          KAPPA
+0.1                    0.763211     0.655023
+0.125                  0.901639     0.725188
+0.15625                0.821513     0.727863
+0.1953125              0.820054     0.732829
+0.244140625            0.791455     0.729246
+0.30517578125          0.747528     0.679938
+
+Result: correlation between kappa and scale is very low (0.08218886), which
+suggests it is independent and that we can test using an arbitrary scale.
+
+NOTE: how to report statistical confidence that two variables are independent?
+
+Now we test, with scale 0.15, some values of k
+
+K      ACC      KAPPA      EXECUTION TIME
+2      0.842601 0.796558   0m15.958s
+3      0.842601 0.796558   0m13.086s
+5      0.842601 0.796558   0m13.745s
+8      0.842601 0.796558   0m15.456s
+13     0.842601 0.796558   0m18.675s
+21     0.842601 0.796558   0m15.468s
+
+It seems that these values of K are too small to make a difference. We then 
+test with larger steps.
+
+K     ACC      KAPPA       EXECUTION TIME
+32    0.507365 0.36039     NOT MEASURED
+64    0.507365 0.36039     NOT MEASURED
+128   0.507365 0.36039     0m15.723s
+
