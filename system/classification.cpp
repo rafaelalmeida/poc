@@ -31,7 +31,7 @@ void Classifier::train(Mat labels, Segmentation S) {
 	if (_engine == SVM) {
 		CvSVMParams params;
 		params.svm_type    = CvSVM::C_SVC;
-		params.kernel_type = CvSVM::LINEAR;
+		params.kernel_type = CvSVM::RBF;
 		params.term_crit   = cvTermCriteria(CV_TERMCRIT_ITER, 100, 1e-6);
 
 		_svm.train(features, labels, Mat(), Mat(), params);
