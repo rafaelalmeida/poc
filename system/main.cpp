@@ -40,6 +40,11 @@ void printClassHistogram(ThematicMap& M);
 void describeAll(list<Segmentation*>& segmentations, 
 	vector<Descriptor*>& descriptors, bool parallel);
 
+void doDescribe(Segmentation *S, Descriptor *D, int *numDone, int n, 
+	mutex *mtx);
+
+void reportDescriptionProcess(int *numDone, int n, mutex *mtx);
+
 // Main function
 int main(int argc, char **argv) {
 	// Start timer
@@ -231,12 +236,6 @@ int main(int argc, char **argv) {
 		// Show statistics
 		cerr << "agreement = " << a << ", kappa = " << k << endl;
 
-		// Log results
-		string imageName("fold_");
-		imageName += (fold+'0');
-		logger->saveImage(imageName.c_str(), 
-		                  blend(vis.asMat(), C.coloredMap()));
-
 		// Register time taken
 		descriptionTime += E.getTotalDescriptionTime();
 		trainingTime += E.getTotalTrainingTime();
@@ -318,9 +317,9 @@ void setupClassifiers(Ensemble& ensemble, VISImage& vis, LWIRImage& lwir,
 	vector<Descriptor*> descriptors) {
 	// List classifier engines
 	vector<ClassifierEngine> engines = {
-		ClassifierEngine::SVM, 
-		ClassifierEngine::KNN, 
-		ClassifierEngine::DTREE, 
+		ClassifierEngine::SVM,
+		ClassifierEngine::KNN,
+		ClassifierEngine::DTREE,
 		ClassifierEngine::MLP
 	};
 
@@ -351,19 +350,41 @@ void printClassHistogram(ThematicMap& M) {
 void describeAll(list<Segmentation*>& segmentations, 
 	vector<Descriptor*>& descriptors, bool parallel) {
 
+	// Count how many descriptions will be performed
+	int total = 0;
+	for (auto& s : segmentations) {
+		for (auto& d : descriptors) {
+			if (s->getImage()->getType() == d->getType()) {
+				total++;
+			}
+		}
+	}
+
 	// Start the description threads
 	list<thread> threads;
+	int numDone = 0;
+	mutex mtx;
+
 	for (auto& s : segmentations) {
 		for (auto& d : descriptors) {
 			if (s->getImage()->getType() == d->getType()) {
 				if (parallel) {
-					threads.push_back(thread(&Segmentation::describe, s, d));
+					threads.push_back(thread(doDescribe, s, d, &numDone, total, 
+						&mtx));
 				}
 				else {
+					doDescribe(s, d, &numDone, total, NULL);
 					s->describe(d);
 				}
 			}
 		}
+	}
+
+	// If parallel, start the progress reporting procedure
+	thread *progressThread = NULL;
+	if (parallel) {
+		progressThread = new thread(reportDescriptionProcess, &numDone, total,
+			&mtx);
 	}
 
 	// Synchronize
@@ -371,5 +392,42 @@ void describeAll(list<Segmentation*>& segmentations,
 		for (auto& t : threads) {
 			t.join();
 		}
+
+		if (progressThread != NULL) {
+			progressThread->join();
+			delete progressThread;
+		}
+	}
+
+	// Finish progress reporting
+	cerr << "describing: done           " << endl;
+}
+
+void doDescribe(Segmentation *S, Descriptor *D, int *numDone, int n, 
+	mutex *mtx) {
+
+	// If the description is not parallel, we report at the beginning of
+	// procedure. If it is, we just update the statistics, and another
+	// function will take care of reporting.
+	if (mtx == NULL) {
+		cerr << "describing: " << *numDone << " of " << n << 
+		"       \r" << flush;
+	}
+
+	S->describe(D);
+
+	if (mtx != NULL) mtx->lock();
+	(*numDone)++;
+	if (mtx != NULL) mtx->unlock();
+}
+
+void reportDescriptionProcess(int *numDone, int n, mutex *mtx) {
+	while (*numDone < n) {
+		mtx->lock();
+		cerr << "describing: " << *numDone << " of " << n << 
+			"       \r" << flush;
+		mtx->unlock();
+
+		this_thread::sleep_for(std::chrono::milliseconds(300));
 	}
 }
