@@ -13,6 +13,7 @@
 #include "common.h"
 #include "description.h"
 #include "models.h"
+#include "statistics.h"
 #include "utils.h"
 
 extern "C" {
@@ -31,6 +32,7 @@ class VISImage;
 class ThematicMap;
 class Region;
 class Segmentation;
+class KFolder;
 
 // Class to represent a region
 class Region {
@@ -51,6 +53,7 @@ class Region {
 		Region(SparseMat mask, int parentIdx);
 		Mat getDescription(string descriptorID);
 		SparseMat getMask();
+		void setParent(Segmentation *parent);
 };
 
 // Class to represent a Segmentation (collection of regions)
@@ -76,6 +79,9 @@ class Segmentation {
 	// on pixelated types.
 	bool _pixelated = false;
 
+	private:
+		void setRegionsParent();
+
 	public:
 		Segmentation() {};
 		Segmentation(list<SparseMat> masks);
@@ -90,7 +96,12 @@ class Segmentation {
 		Mat representation();
 		Size getMapSize();
 		void setPixalated(bool v=true);
+
 		Segmentation cloneWithMask(SparseMat mask);
+		Segmentation cloneWithIndexes(vector<int> indexes);
+
+		std::vector<std::pair<Segmentation, Segmentation> > split(
+			KFolder folder);
 
 		Mat getDescription(string descriptorID);
 		void describe(Descriptor *descriptor);

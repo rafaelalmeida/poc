@@ -168,7 +168,7 @@ Mat segmentation::makeNonMissingDataMask(Mat vis) {
 	cvtColor(vis, gray, CV_BGR2GRAY);
 
 	Mat bin(gray.size(), CV_8UC1);
-	threshold(gray, bin, 1, 255, CV_THRESH_BINARY);
+	threshold(gray, bin, 0, 255, CV_THRESH_BINARY);
 
 	// TODO? fill holes in mask to account for pixels inside non missing region
 	// that have zero value
@@ -216,6 +216,8 @@ Segmentation::Segmentation(list<SparseMat> masks) {
 	for (auto m : masks) {
 		this->_regions.push_back(Region(m, idx++));
 	}
+
+	this->setRegionsParent();
 }
 
 Segmentation::Segmentation(ThematicMap M) {
@@ -224,6 +226,8 @@ Segmentation::Segmentation(ThematicMap M) {
 	for (auto r1 : regions1) {
 		_regions.push_back(Region(r1.first, idx++));
 	}
+
+	this->setRegionsParent();
 }
 
 list<Region> Segmentation::getRegions() {
@@ -263,6 +267,7 @@ int Segmentation::regionCount() {
 }
 
 Mat Segmentation::getDescription(string descriptorID) {
+	cerr << _descriptions.size() << endl;
 	return _descriptions[descriptorID];
 }
 
@@ -275,6 +280,11 @@ Region::Region(SparseMat mask, int parentIdx)
 	  _parentIdx(parentIdx) {}
 
 Mat Region::getDescription(string descriptorID) {
+	// Check if parent has been 
+	assert (_parentSegmentation != NULL && 
+		"Region construction error: no parent has been set");
+
+	// Get features
 	Mat features = _parentSegmentation->getDescription(descriptorID);
 	return features.row(_parentIdx);
 }
@@ -326,9 +336,9 @@ Segmentation Segmentation::cloneWithMask(SparseMat mask) {
 	list<SparseMat> clonedRegions;
 	int idx = 0;
 	for (auto& r : _regions) {
-		// Check if region is in mask. 
-		// IMPROVENT: This is not currently very efficient due to the 
-		// allocation of a matrix for every region. If we guarantee that
+		// Check if region is in mask.
+		// IMPROVENT: This is not currently very efficient due to the
+		// allocation of a dense matrix for every region. If we guarantee that
 		// regions always have one pixel, we can find that pixel position and
 		// and check if that position in the mask is white.
 		if (countNonZero(densify(r.getMask()) & maskD) > 0) {
@@ -362,4 +372,70 @@ Segmentation Segmentation::cloneWithMask(SparseMat mask) {
 	cloned._descriptions = subFMs;
 
 	return cloned;
+}
+
+Segmentation Segmentation::cloneWithIndexes(vector<int> indexes) {
+	// Put the regions into a vector
+	vector<Region> regionsV(_regions.begin(), _regions.end());
+
+	// Clone the desired indexes
+	list<SparseMat> clonedRegions;
+	for (auto index : indexes) {
+		clonedRegions.push_back(regionsV[index].getMask());
+	}
+
+	// Create the feature matrixes (FMs) that correspond to the cloned regions
+	int fmRows = indexes.size();
+	map<string, Mat> subFMs;
+	for (auto d : _descriptions) {
+		string id = d.first;
+		Mat FM = d.second;
+
+		Mat subFM(fmRows, FM.cols, FM.type());
+		int i = 0;
+		for (auto index : indexes) {
+			FM.row(index).copyTo(subFM.row(i++));
+		}
+
+		subFMs[id] = subFM;
+	}
+
+	// Create the Segmentation object
+	Segmentation cloned(clonedRegions);
+	cloned._descriptions = subFMs;
+	cloned.setRegionsParent();
+
+	return cloned;
+}
+
+std::vector<std::pair<Segmentation, Segmentation> > Segmentation::split(
+	KFolder folder) {
+
+	// Get the regions into a vector
+	vector<Region> regions(_regions.begin(), _regions.end());
+
+	// Create the split pairs (for now in index form)
+	list<KFoldIndexes> foldsIdx = folder.makeFolds(regions.size());
+
+	// Create the vector to hold the split pairs
+	vector<pair<Segmentation, Segmentation> > folds;
+	folds.reserve(foldsIdx.size());
+	for (auto f : foldsIdx) {
+		Segmentation T = this->cloneWithIndexes(f.first);
+		Segmentation V = this->cloneWithIndexes(f.second);
+
+		folds.push_back(make_pair(T, V));
+	}
+
+	return folds;
+}
+
+void Segmentation::setRegionsParent() {
+	for (auto& r : _regions) {
+		r.setParent(this);
+	}
+}
+
+void Region::setParent(Segmentation *parent) {
+	_parentSegmentation = parent;
 }

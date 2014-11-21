@@ -81,22 +81,6 @@ int main(int argc, char **argv) {
 	log("reducing LWIR dimensionality...");
 	lwir.reduceDimensionality(LWIR_BANDS_TO_KEEP_ON_PCA);
 
-	// Create k-fold splits
-	log("creating k-fold splits...");
-	vector<ThematicMap> splits = trainingMapVIS.split(K_FOLDS);
-	int c = 0;
-	for (auto s : splits) {
-		string n = "training-split-";
-		n += (c + '0');
-
-		logger->saveImage(n.c_str(), s.coloredMap());
-		c++;
-	}
-
-	// Save training map for debugging
-	logger->saveImage("training", 
-	                  blend(vis.asMat(), trainingMapVIS.coloredMap()));
-
 	// Show classes counts in the whole training map
 	cerr << "Amount of pixels per class in the whole map: " << endl;
 	printClassHistogram(trainingMapVIS);
@@ -167,13 +151,17 @@ int main(int argc, char **argv) {
 		}
 	}
 
+	cerr << segmentationVIS.getRegions().front().getDescription(string("GCH")) << endl;
+	exit(0);
+
 	// Describe VIS training set
 	Segmentation visTrainingSegmentation(trainingMapVIS);
 	visTrainingSegmentation.setImage(&vis);
 	for (auto d : descriptors) {
-		cerr << "describing with " << d->getID() << " (VIS training set)" << 
-			endl;
 		if (d->getType() == VIS) {
+			cerr << "describing with " << d->getID() << 
+				" (VIS training set)" << endl;
+
 			visTrainingSegmentation.describe(d);
 		}
 	}
@@ -182,6 +170,29 @@ int main(int argc, char **argv) {
 	// is already described, and take a subset of it.
 	Segmentation lwirTrainingSegmentation = segmentationLWIR.cloneWithMask(
 		trainingMapLWIR.getFullMask());
+
+	// Create k-fold splits
+	log("creating k-fold splits...");
+	KFolder folder(K_FOLDS, RANDOM_SEED);
+	vector<pair<ThematicMap, ThematicMap> > splits = trainingMapVIS.split(
+		folder);
+	vector<pair<Segmentation, Segmentation> > visSegmentationSplits = 
+		visTrainingSegmentation.split(folder);
+	vector<pair<Segmentation, Segmentation> > lwirSegmentationSplits = 
+		lwirTrainingSegmentation.split(folder);
+
+	int c = 0;
+	for (auto s : splits) {
+		string n = "training-split-";
+		n += (c + '0');
+
+		logger->saveImage(n.c_str(), s.first.coloredMap());
+		c++;
+	}
+
+	// Save training map for debugging
+	logger->saveImage("training", 
+	                  blend(vis.asMat(), trainingMapVIS.coloredMap()));
 
 	// Open result file
 	ofstream *results = logger->makeFile("results.txt");
@@ -204,13 +215,9 @@ int main(int argc, char **argv) {
 		// Report progress
 		cerr << "running fold " << (fold+1) << " of " << K_FOLDS << endl;
 
-		// Build training map (made by all folds except this one)
-		ThematicMap T(trainingMapVIS.size());
-		for (int i = 0; i < K_FOLDS; i++) {
-			if (i != fold) {
-				T.combine(splits[i]);
-			}
-		}
+		// Get training and validation maps
+		ThematicMap T = splits[fold].first;
+		ThematicMap V = splits[fold].second;
 
 		// Resize this fold's training map to the correct sizes
 		ThematicMap T_VIS = T.clone();
@@ -218,33 +225,37 @@ int main(int argc, char **argv) {
 		T_VIS.resize(vis.size());
 		T_LWIR.resize(lwir.size());
 
+		// Get VIS and LWIR training segmentations
+		Segmentation TS_VIS = visSegmentationSplits[fold].first;
+		Segmentation TS_LWIR = segmentationLWIR.cloneWithMask(
+			T_LWIR.getFullMask());
+
 		// Show classes counts in this fold
 		cerr << "Amount of pixels per class in fold: " << endl;
 		printClassHistogram(T_VIS);
 
 		// Build the ensemble
 		Ensemble E(MAJORITY_VOTING, segmentationVIS, segmentationLWIR,
-			visTrainingSegmentation, lwirTrainingSegmentation, T_VIS, T_LWIR);
+			TS_VIS, TS_LWIR, T_VIS, T_LWIR);
 		E.setParallel(conf.parallel);
 		setupClassifiers(E, vis, lwir, descriptors);
 
 		// Train the ensemble
 		E.train();
 
-		cerr << "Got here well" << endl;
-		exit(EXIT_SUCCESS);
-
 		// Run the classification
 		ThematicMap C = E.classify();
 
+		cerr << "got here well" << endl;
+		exit(EXIT_SUCCESS);
+
 		// Use the current fold for validation
-		Mat V = splits[fold].asMat();
-		foldValidationMaps.push_back(V);
+		foldValidationMaps.push_back(V.asMat());
 
 		// Calculate performance metrics
 		Mat X = C.asMat();
-		float a = statistics::agreement(V, X);
-		float k = statistics::kappa(V, X);
+		float a = statistics::agreement(V.asMat(), X);
+		float k = statistics::kappa(V.asMat(), X);
 
 		// Show statistics
 		cerr << "agreement = " << a << ", kappa = " << k << endl;

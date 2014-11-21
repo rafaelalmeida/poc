@@ -16,7 +16,11 @@
 
 #include "common.h"
 #include "config.h"
+#include "statistics.h"
 #include "utils.h"
+
+// Forward declarations
+class KFolder;
 
 // Base class to represent a remote sensing image
 class RSImage {
@@ -93,7 +97,10 @@ class ThematicMap {
 		std::list<std::pair<cv::SparseMat, int> > enumerateRegions();
 		cv::SparseMat getFullMask();
 
-		std::vector<ThematicMap> split(int k);
+		// Splits the map using a KFolder object. Return form is a list
+		// of k (training, validation) thematic maps.
+		std::vector<std::pair<ThematicMap, ThematicMap> > split(KFolder folder);
+
 		void resize(cv::Size newSize);
 		void combine(ThematicMap T);
 };

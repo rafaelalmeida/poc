@@ -307,52 +307,42 @@ std::list<std::pair<cv::SparseMat, int> > ThematicMap::enumerateRegions() {
 	return regions;
 }
 
-std::vector<ThematicMap> ThematicMap::split(int k) {
+std::vector<std::pair<ThematicMap, ThematicMap> > ThematicMap::split(
+	KFolder folder) {
+
 	// Grab the list of regions and get it into a vector
 	list<pair<SparseMat, int> > regions = this->enumerateRegions();
 	vector<pair<SparseMat, int> > regionsV(regions.begin(), regions.end());
 
-	// Create a vector of folds
-	vector<int> folds(regions.size());
+	// Create the split pairs (for now in index form)
+	list<KFoldIndexes> foldsIdx = folder.makeFolds(regions.size());
 
-	// Assign the folds
-	int foldToGo = 0;
-	for (int i = 0; i < folds.size(); i++) {
-		folds[i] = foldToGo++;
+	// Create the vector to hold the split pairs
+	vector<pair<ThematicMap, ThematicMap> > folds;
+	folds.reserve(foldsIdx.size());
+	for (auto f : foldsIdx) {
+		// The training and validation thematic maps (we will populate them
+		// below)
+		ThematicMap T(this->size());
+		ThematicMap V(this->size());
 
-		// Circle back to first fold
-		if (foldToGo == k) {
-			foldToGo = 0;
-		}
-	}
-	
-	// Shuffle the assigned folds
-	auto engine = default_random_engine(RANDOM_SEED);
-	shuffle(begin(folds), end(folds), engine);
-
-	// Group the shuffled segments together
-	vector<list<pair<SparseMat, int> > > splitRegionGroups(k);
-	for (int i = 0; i < folds.size(); i++) {
-		splitRegionGroups[folds[i]].push_back(regionsV[i]);
-	}
-
-	// Convert the grouped segments into matrixes with the correct maps
-	vector<ThematicMap> splits;
-	splits.reserve(k);
-
-	for (auto& g : splitRegionGroups) {
-		Mat M = Mat::zeros(_map.size(), _map.type());
-
-		// Paint the regions into the blank map
-		for (auto r : g) {
-			Mat R = densify(r.first);
-			M += r.second * R / 255;
+		// Populate the training map
+		for (auto idx : f.first) {
+			pair<SparseMat, int> region = regionsV[idx];
+			T._map += region.second * (densify(region.first) / 255);
 		}
 
-		splits.push_back(ThematicMap(M));
+		// Populate the validation map
+		for (auto idx : f.second) {
+			pair<SparseMat, int> region = regionsV[idx];
+			V._map += region.second * (densify(region.first) / 255);
+		}
+
+		// Add the pair to the list
+		folds.push_back(make_pair(T, V));
 	}
 
-	return splits;
+	return folds;
 }
 
 void ThematicMap::resize(cv::Size newSize) {
@@ -393,6 +383,6 @@ void VISImage::setRoi(cv::Rect roi) {
 
 cv::SparseMat ThematicMap::getFullMask() {
 	Mat mask(_map.rows, _map.cols, _map.type());
-	threshold(_map, mask, 1, 255, THRESH_BINARY);
+	threshold(_map, mask, 0, 255, THRESH_BINARY);
 	return SparseMat(mask);
 }

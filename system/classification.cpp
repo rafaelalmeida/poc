@@ -26,9 +26,6 @@ void Classifier::train(Mat labels, Segmentation S) {
 	// Get features
 	Mat features = S.getDescription(_descriptor->getID());
 
-	cerr << features.size() << endl;
-	cerr << labels.size() << endl;
-
 	// Train the correct classifier
 	_swatchTraining.start();
 	if (_engine == SVM) {

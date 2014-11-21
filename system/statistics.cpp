@@ -149,3 +149,52 @@ std::vector<float> statistics::moments(std::vector<float> samples, int maxOrder)
 
 	return moments;
 }
+
+KFolder::KFolder(int k, int seed) : k(k), seed(seed) {}
+
+list<KFoldIndexes> KFolder::makeFolds(int collectionSize) {
+	vector<int> folds(collectionSize);
+
+	// Assign the folds
+	int foldToGo = 0;
+	for (int i = 0; i < collectionSize; i++) {
+		folds[i] = foldToGo++;
+
+		// Circle back to first fold
+		if (foldToGo == k) {
+			foldToGo = 0;
+		}
+	}
+	
+	// Shuffle the assigned folds
+	auto engine = default_random_engine(seed);
+	shuffle(begin(folds), end(folds), engine);
+
+	// Create the fold (TRAINING, VALIDATION) pairs
+	list<KFoldIndexes> pairs;
+	for (int i = 0; i < k; i++) {
+		// Create the vectors that will hold the indexes
+		vector<int> trainingIdx;
+		vector<int> validationIdx;
+		trainingIdx.reserve(collectionSize);
+		validationIdx.reserve(collectionSize);
+
+		// Populate the vectors. Each fold is a pair, where the validation 
+		// set is composed of the elements in the i-th folder, and the training
+		// set by elements in the other folds.
+		for (int j = 0; j < collectionSize; j++) {
+			if (folds[j] == i) {
+				validationIdx.push_back(j);
+			}
+			else {
+				trainingIdx.push_back(j);
+			}
+		}
+
+		// Add the pair to the list
+		pairs.push_back(make_pair(trainingIdx, validationIdx));
+	}
+
+	// Return the pairs
+	return pairs;
+}
