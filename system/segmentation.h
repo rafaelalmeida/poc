@@ -79,12 +79,13 @@ class Segmentation {
 	// on pixelated types.
 	bool _pixelated = false;
 
-	private:
-		//void setRegionsParent();
+	// Mutex to access the descriptions map
+	std::mutex _mtx;
 
-	public:
+	private:
 		void setRegionsParent();
 
+	public:
 		// Default constructors
 		Segmentation() {};
 		Segmentation(list<SparseMat> masks);
@@ -111,7 +112,8 @@ class Segmentation {
 			KFolder folder);
 
 		Mat getDescription(string descriptorID);
-		void describe(Descriptor *descriptor);
+		void showDescriptionStats();
+		void describe(Descriptor *descriptor); // Thread-safe
 };
 
 namespace segmentation {

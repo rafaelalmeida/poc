@@ -37,6 +37,9 @@ void setupClassifiers(Ensemble& e, VISImage& vis, LWIRImage& lwir,
 
 void printClassHistogram(ThematicMap& M);
 
+void describeAll(list<Segmentation*>& segmentations, 
+	vector<Descriptor*>& descriptors, bool parallel);
+
 // Main function
 int main(int argc, char **argv) {
 	// Start timer
@@ -140,28 +143,15 @@ int main(int argc, char **argv) {
 	descriptors.push_back(new REDUCEDSIGDescriptor("RSIG"));
 	descriptors.push_back(new MOMENTSDescriptor("MMT"));
 
-	// Describe segmentation objects - main classification
-	for (auto d : descriptors) {
-		cerr << "describing with " << d->getID() << " (main set)" << endl;
-		if (d->getType() == VIS) {
-			segmentationVIS.describe(d);
-		}
-		else {
-			segmentationLWIR.describe(d);
-		}
-	}
-
-	// Describe VIS training set
+	// Describe the images
+	cerr << "describing images..." << endl;
 	Segmentation visTrainingSegmentation(trainingMapVIS);
 	visTrainingSegmentation.setImage(&vis);
-	for (auto d : descriptors) {
-		if (d->getType() == VIS) {
-			cerr << "describing with " << d->getID() << 
-				" (VIS training set)" << endl;
 
-			visTrainingSegmentation.describe(d);
-		}
-	}
+	list<Segmentation*> segmentations = {&segmentationVIS, &segmentationLWIR,
+		&visTrainingSegmentation};
+
+	describeAll(segmentations, descriptors, conf.parallel);
 
 	// Describe LWIR training set - reuse the main LWIR segmentation, which
 	// is already described, and take a subset of it.
@@ -177,19 +167,6 @@ int main(int argc, char **argv) {
 		visTrainingSegmentation.split(folder);
 	vector<pair<Segmentation, Segmentation> > lwirSegmentationSplits = 
 		lwirTrainingSegmentation.split(folder);
-
-	int c = 0;
-	for (auto s : splits) {
-		string n = "training-split-";
-		n += (c + '0');
-
-		logger->saveImage(n.c_str(), s.first.coloredMap());
-		c++;
-	}
-
-	// Save training map for debugging
-	logger->saveImage("training", 
-	                  blend(vis.asMat(), trainingMapVIS.coloredMap()));
 
 	// Open result file
 	ofstream *results = logger->makeFile("results.txt");
@@ -369,4 +346,30 @@ void printClassHistogram(ThematicMap& M) {
 		cerr << counts[(unsigned char) i] << " ";
 	}
 	cerr << endl;
+}
+
+void describeAll(list<Segmentation*>& segmentations, 
+	vector<Descriptor*>& descriptors, bool parallel) {
+
+	// Start the description threads
+	list<thread> threads;
+	for (auto& s : segmentations) {
+		for (auto& d : descriptors) {
+			if (s->getImage()->getType() == d->getType()) {
+				if (parallel) {
+					threads.push_back(thread(&Segmentation::describe, s, d));
+				}
+				else {
+					s->describe(d);
+				}
+			}
+		}
+	}
+
+	// Synchronize
+	if (parallel) {
+		for (auto& t : threads) {
+			t.join();
+		}
+	}
 }

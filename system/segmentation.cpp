@@ -268,7 +268,6 @@ Segmentation::Segmentation(const Segmentation& other)
 }
 
 Segmentation Segmentation::operator=(const Segmentation& rhs) {
-
 	_regions = rhs._regions;
 	_descriptions = rhs._descriptions;
 	_image = rhs._image;
@@ -361,7 +360,9 @@ void Segmentation::describe(Descriptor *descriptor) {
 	}
 
 	// Record features
+	_mtx.lock();
 	_descriptions[descriptor->getID()] = features;
+	_mtx.unlock();
 }
 
 void Segmentation::setPixalated(bool v) {
@@ -487,4 +488,10 @@ void Segmentation::setRegionsParent() {
 
 void Region::setParent(Segmentation *parent) {
 	_parentSegmentation = parent;
+}
+
+void Segmentation::showDescriptionStats() {
+	for (auto& p : _descriptions) {
+		cerr << p.first << ": " << p.second.size() << endl;
+	}
 }
