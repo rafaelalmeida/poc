@@ -230,6 +230,29 @@ Segmentation::Segmentation(ThematicMap M) {
 	this->setRegionsParent();
 }
 
+Segmentation::Segmentation(const Segmentation& other)
+	: _regions(other._regions),
+	  _descriptions(other._descriptions),
+	  _image(other._image),
+	  _pixelated(other._pixelated) {
+
+	// Update regions parent reference
+	this->setRegionsParent();
+}
+
+Segmentation Segmentation::operator=(const Segmentation& rhs) {
+
+	_regions = rhs._regions;
+	_descriptions = rhs._descriptions;
+	_image = rhs._image;
+	_pixelated = rhs._pixelated;
+
+	// Update regions parent reference
+	this->setRegionsParent();
+
+	return *this;
+}
+
 list<Region> Segmentation::getRegions() {
 	return _regions;
 }
@@ -267,7 +290,6 @@ int Segmentation::regionCount() {
 }
 
 Mat Segmentation::getDescription(string descriptorID) {
-	cerr << _descriptions.size() << endl;
 	return _descriptions[descriptorID];
 }
 

@@ -151,9 +151,6 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	cerr << segmentationVIS.getRegions().front().getDescription(string("GCH")) << endl;
-	exit(0);
-
 	// Describe VIS training set
 	Segmentation visTrainingSegmentation(trainingMapVIS);
 	visTrainingSegmentation.setImage(&vis);
@@ -245,9 +242,6 @@ int main(int argc, char **argv) {
 
 		// Run the classification
 		ThematicMap C = E.classify();
-
-		cerr << "got here well" << endl;
-		exit(EXIT_SUCCESS);
 
 		// Use the current fold for validation
 		foldValidationMaps.push_back(V.asMat());

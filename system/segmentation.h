@@ -80,12 +80,19 @@ class Segmentation {
 	bool _pixelated = false;
 
 	private:
-		void setRegionsParent();
+		//void setRegionsParent();
 
 	public:
+		void setRegionsParent();
+
+		// Default constructors
 		Segmentation() {};
 		Segmentation(list<SparseMat> masks);
 		Segmentation(ThematicMap M);
+
+		// Copy and assignment constructors
+		Segmentation(const Segmentation& other);
+		Segmentation operator=(const Segmentation& rhs);
 
 		void setImage(RSImage *image);
 		RSImage *getImage();
