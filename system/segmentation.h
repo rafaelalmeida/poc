@@ -125,6 +125,7 @@ namespace segmentation {
 
 	float getSegmentLabel(Mat classificationMap, Mat mask);
 	list<SparseMat> getColorBlobs(Mat posterized);
+	list<SparseMat> getGrayBlobs(Mat posterized, int threshold);
 }
 
 #endif

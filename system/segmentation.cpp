@@ -211,6 +211,33 @@ list<SparseMat> segmentation::getColorBlobs(Mat posterized) {
 	return segments;
 }
 
+list<SparseMat> segmentation::getGrayBlobs(Mat posterized, int threshold) {
+	// Alias and checking
+	Mat M = posterized;
+	assert(M.type() == CV_8UC1);
+
+	// List to hold the blobs
+	list<SparseMat> blobs;
+
+	// Scan all levels from the threshold to find the blobs
+	for (int level = threshold; level < 256; level++) {
+		Mat mask = (M == level);
+		if (countNonZero(mask) > 0) {
+			vector<vector<Point> > contours;
+			findContours(mask, contours, CV_RETR_EXTERNAL, 
+				CV_CHAIN_APPROX_NONE);
+
+			for (int i = 0; i < contours.size(); i++) {
+				Mat blob = Mat::zeros(M.rows, M.cols, M.type());
+				drawContours(blob, contours, i, Scalar(255), CV_FILLED);
+				blobs.push_back(SparseMat(blob));
+			}
+		}
+	}
+
+	return blobs;
+}
+
 Segmentation::Segmentation(list<SparseMat> masks) {
 	int idx = 0;
 	for (auto m : masks) {

@@ -285,7 +285,7 @@ std::list<std::pair<cv::SparseMat, int> > ThematicMap::enumerateRegions() {
 		// Get the region label. We assume, by construction, that all pixels
 		// inside a region have the same label. So, for efficiency, we take
 		// the first one we find and look at its label.
-		int label = 0;
+		int label = -1;
 		bool keepLooking = true;
 
 		for (int row = 0; keepLooking && (row < _map.rows); row++) {
@@ -297,9 +297,9 @@ std::list<std::pair<cv::SparseMat, int> > ThematicMap::enumerateRegions() {
 			}
 		}
 
-		// By construction, we only look at regions whose label is positive,
+		// By construction, we only look at regions whose label is non-negative,
 		// so if label is still the sentinel value, something wrong happened.
-		assert(label > 0);
+		assert(label > -1);
 
 		regions.push_back(make_pair(cc, label));
 	}
