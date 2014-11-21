@@ -289,12 +289,6 @@ int main(int argc, char **argv) {
 
 		*results << c.first << " " << agreement << " " << kappa 
 			<< endl;
-
-		// Save images
-		string imageName("classifier-");
-		imageName += c.first;
-		logger->saveImage(imageName.c_str(), 
-			blend(vis.asMat(), ThematicMap(c.second).coloredMap()));
 	}
 
 	// Calculate consensus kappa
