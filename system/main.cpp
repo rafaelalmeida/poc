@@ -364,7 +364,6 @@ void setupClassifiers(Ensemble& ensemble, VISImage& vis, LWIRImage& lwir,
 				classifier = new Classifier(engine, &lwir, descriptor);
 			}
 
-			cerr << "Adding classifier " << classifier->getID() << endl;
 			ensemble.addClassifier(classifier);
 		}
 	}
