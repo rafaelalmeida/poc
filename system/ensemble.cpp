@@ -26,6 +26,7 @@ Ensemble::~Ensemble() {
 }
 
 void Ensemble::addClassifier(Classifier *c) {
+	c->setTrainingMap(&_trainingVIS);
 	classifiers.push_back(c);
 }
 

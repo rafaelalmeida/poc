@@ -42,6 +42,10 @@ namespace classification {
 		VISImage *_vis = NULL;
 		LWIRImage *_lwir = NULL;
 
+		// The optional training map. This can be used to compute class
+		// probabilities for the DTREE classifier.
+		ThematicMap *_trainingMap = NULL;
+
 		// The descriptor it will use
 		Descriptor *_descriptor;
 
@@ -76,6 +80,7 @@ namespace classification {
 			cv::Mat classify(Region region);
 			string getID();
 			ImageType getType();
+			void setTrainingMap(ThematicMap *map);
 
 			// Instrumentation methods
 			double getDescriptionTime();

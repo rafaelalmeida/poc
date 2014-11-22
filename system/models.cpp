@@ -386,3 +386,29 @@ cv::SparseMat ThematicMap::getFullMask() {
 	threshold(_map, mask, 0, 255, THRESH_BINARY);
 	return SparseMat(mask);
 }
+
+std::vector<float> *ThematicMap::classProbabilities() {
+	vector<float> *P = new vector<float>();
+	P->reserve(CLASS_COUNT);
+
+	// Count the classes
+	auto counts = getClassesCounts();
+	for (int i = 1; i < CLASS_COUNT; i++) {
+		if (counts.find((unsigned char) i) != counts.end()) {
+			P->push_back((float) counts[(unsigned char) i]);
+		}
+	}
+
+	// Get the total, for normalization
+	float sum = 0;
+	for (auto p : *P) {
+		sum += p;
+	}
+
+	// Normalize so all probabilities add up to 1
+	for (auto& p : *P) {
+		p /= sum;
+	}
+
+	return P;
+}

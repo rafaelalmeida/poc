@@ -46,10 +46,29 @@ void Classifier::train(Mat labels, Segmentation S) {
 		CvDTreeParams params; // Initialize with default parameters
 		params.cv_folds = 1; // Disable k-fold cross-validation
 		params.min_sample_count = DTREE_MIN_SAMPLE_SIZE;
-		
+
+		// Include the class probabilities, if available
+		vector<float> *prob = NULL;
+		float probF[CLASS_COUNT];
+
+		if (_trainingMap != NULL) {
+			prob = _trainingMap->classProbabilities();
+
+			int idx = 0;
+			for (auto p : *prob) {
+				probF[idx++] = p;
+			}
+
+			params.priors = probF;
+		}
 
 		_dtree.train(features, CV_ROW_SAMPLE, labels, Mat(), Mat(), Mat(), 
 			Mat(), params);
+
+		// Free class probabilities vector
+		if (prob != NULL) {
+			delete prob;
+		}
 	}
 	else if (_engine == GBT) {
 		_gbtrees.train(features, CV_ROW_SAMPLE, labels);
@@ -190,4 +209,8 @@ double Classifier::getTrainingTime() {
 
 double Classifier::getClassificationTime() {
 	return _swatchClassification.read();
+}
+
+void Classifier::setTrainingMap(ThematicMap *map) {
+	_trainingMap = map;
 }

@@ -101,6 +101,10 @@ class ThematicMap {
 		// of k (training, validation) thematic maps.
 		std::vector<std::pair<ThematicMap, ThematicMap> > split(KFolder folder);
 
+		// Calculate a vector of class probabilities for this map, 
+		// disconsidering unclassed pixels
+		std::vector<float> *classProbabilities();
+
 		void resize(cv::Size newSize);
 		void combine(ThematicMap T);
 };
