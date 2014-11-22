@@ -176,3 +176,71 @@ it. This was tested with no priors vector.
 
 ===
 
+Now we test if including the priors vector makes any difference. For this test,
+we will use min_sample_count = 5, like determined above.
+
+Scale: 15%
+
+priors    ACC      KAPPA
+NO        0.6918   0.621797
+YES       0.707823 0.629614
+
+Scale: 25%
+
+NO 0.703352 0.584141
+YES 0.852071 0.660886
+
+Based on this, we can see that adding prior class information can change the
+kappa value by more than 10%, so we enable it.
+
+--------------------------------------------------------------------------------
+
+SVM optimization
+
+For SVM, we use OpenCV's grid search to determine the best parameters gamma and
+C, for RBF kernel.
+
+Methodology: we have many SVM classifiers. So, we run a grid-search on them all
+and grab individual values of C and kappa for every grid-search. This happens
+at scale 10% and 20%. Afterwards, we analyse the values.
+
+After analysis, we find that for scale 10%, mean C = 95.1 and mean 
+gamma = 0.16913. For scale 20%, mean C = 67.38 and mean gamma = 0.20612.
+
+We then test with some modes: mean params at scale 10%, 20%, default params
+and auto params for each classification. All tests are run at 20% scale.
+
+mode        KAPPA
+scale10     0.249078
+scale20     0.253554
+default     0.213601
+auto        0.729924
+
+We then see that, for the RBF kernel, no single value seems to be good, and
+it's better to leave as automatic for every classifier. This seems to make
+sense, since the %RSD for C, as determined for each auto classifier, is between 
+1.307952 and 1.505331 and for gamma is between 1.210172 and 1.433491.
+
+We also compare the LINEAR versus the RBF kernel with auto training. (scale
+20%)
+
+mode       KAPPA
+LINEAR     0.823897
+RBF        0.729924
+
+It seems that the linear kernel gives better results. Since we'd like to avoid
+high execution times, we also try linear kernel with default parameters and
+auto training. Scale = 0.2
+
+mode       KAPPA
+AUTO       0.823897
+DEFAULT    0.803869
+
+Default parameters in this case are not much worse than auto training, so we
+leave as OpenCV's default to reduce execution time.
+
+--------------------------------------------------------------------------------
+
+Scale independence
+
+Test scale independence with all classifiers enabled and several scale steps.
