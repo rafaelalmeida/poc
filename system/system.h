@@ -8,8 +8,7 @@
 #include <list>
 #include <stdio.h>
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/gpu/gpu.hpp>
+#include <opencv2/opencv.hpp>
 
 #include "classification.h"
 #include "common.h"
@@ -22,6 +21,7 @@
 #include "statistics.h"
 #include "utils.h"
 
+// Class to manage the whole classifier system
 class System {
 	Configuration _conf;
 	Logger _logger;

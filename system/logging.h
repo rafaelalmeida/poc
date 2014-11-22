@@ -7,11 +7,9 @@
 #include <list>
 #include <map>
 #include <stdio.h>
+#include <sys/stat.h>
 
-#include <gdal_priv.h>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/opencv.hpp>
 
 class Logger {
 	std::string _fullPath;
