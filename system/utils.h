@@ -24,8 +24,6 @@ extern "C" {
 
 using namespace std;
 
-extern bool verbose;
-
 cv::Mat blend(cv::Mat M1, cv::Mat M2);
 cv::Mat floatImageTo8UC3Image(cv::Mat floatImage);
 cv::Mat formatImagesForPCA(const std::vector<cv::Mat> &data);
@@ -45,8 +43,6 @@ CImage *matToRawColor(cv::Mat color);
 inline int streq(const char *a, const char *b) {
 	return strcmp(a, b) == 0;
 }
-
-void log(const char *msg);
 
 // Helper class to measure time
 class Stopwatch {

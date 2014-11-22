@@ -77,12 +77,6 @@ cv::Mat blend(cv::Mat M1, cv::Mat M2) {
 	return dst;
 }
 
-void log(const char *msg) {
-	if (verbose) {
-		cerr << msg << endl;
-	}
-}
-
 cv::Mat mergeVISandLWIR(cv::Mat vis, cv::Mat lwirAvg) {
 	Mat visGray(vis.rows, vis.cols, CV_8UC1);
 	cvtColor(vis, visGray, CV_BGR2GRAY);
