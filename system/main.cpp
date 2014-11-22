@@ -249,6 +249,9 @@ int main(int argc, char **argv) {
 			bestClassifications = E.individualClassifications();
 			bestConsensus = C;
 		}
+
+		// Separate visually from other folds
+		cerr << endl;
 	}
 
 	cerr << "best kappa = " << bestKappa << " on fold " << (bestFold) << 
@@ -401,6 +404,7 @@ void describeAll(list<Segmentation*>& segmentations,
 	}
 
 	// Finish progress reporting
+	cerr << ANSI_CLEAR_SCREEN << std::flush;
 	cerr << "describing: done           " << endl;
 }
 
