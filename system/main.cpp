@@ -317,9 +317,9 @@ void setupClassifiers(Ensemble& ensemble, VISImage& vis, LWIRImage& lwir,
 	vector<Descriptor*> descriptors) {
 	// List classifier engines
 	vector<ClassifierEngine> engines = {
-		//ClassifierEngine::SVM,
+		ClassifierEngine::SVM,
 		//ClassifierEngine::KNN,
-		ClassifierEngine::DTREE,
+		//ClassifierEngine::DTREE,
 		//ClassifierEngine::MLP
 	};
 
