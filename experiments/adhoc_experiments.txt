@@ -100,3 +100,79 @@ K     ACC      KAPPA       EXECUTION TIME
 64    0.507365 0.36039     NOT MEASURED
 128   0.507365 0.36039     0m15.723s
 
+Based on this, we choose k = 5 and max_k = 32, OpenCV's default.
+
+--------------------------------------------------------------------------------
+
+MLP optimization
+
+We change the hidden layer size, n.
+
+n     ACC      KAPPA       EXECUTION TIME
+2     0.805128 0.59108     0m15.819s
+3     0.755769 0.520238    0m15.402s
+5     0.814744 0.603096    0m15.322s
+8     0.880769 0.72174     0m12.941s
+13    0.892949 0.751946    0m15.622s
+21    0.806786 0.745706    0m14.764s
+34    0.896154 0.759334    0m16.755s
+55    0.901923 0.770098    0m17.277s
+89    0.899359 0.759446    0m17.657s
+144   0.848438 0.758206    0m18.998s
+233   0.624882 0.515858    0m21.208s
+
+It seems to peak around n = 55, so we choose that value.
+
+Now, we test to see if scale changes will affect the kappa.
+
+Using n = 55
+
+SCALE                  ACC      KAPPA
+0.1                    0.903926 0.755262
+0.125                  0.84926  0.80084
+0.15625                0.709125 0.539621
+0.1953125              0.89602  0.715223
+0.244140625            0.895636 0.85894
+0.30517578125          0.838354 0.78165
+
+Correlation is 0.2965351, a little high, but still possibly independent.
+
+We run more experiments with step 1.1, results in mlp_varying_scale_2.csv.
+Correlation is 0.3885179, but it can be incidental. The scatter plot does
+not show much of a pattern and the function is not monotonic.
+
+--------------------------------------------------------------------------------
+
+DTREE optimization
+
+There are many parameters we can change. We choose to test the min_sample_count
+parameter and the priors parameter to see the effect. As usual, we will run the 
+tests using scale = 0.15.
+
+Min sample count, n
+
+n     ACC      KAPPA
+-1    0.767308 0.566675
+0     0.767308 0.566675
+1     0.767308 0.566675
+2     0.66164  0.58297
+32    0.722436 0.525799
+128   0.41768  0.248403
+512   0.049010 0
+
+It seems clear that an increase in n make the results worse. To be sure, though,
+we test some values between 2 and 21.
+
+n     ACC      KAPPA   
+2     0.66164  0.58297
+3     0.66164  0.584047
+5     0.6918   0.621797
+8     0.760897 0.567474
+13    0.666121 0.573589
+21    0.585297 0.480436
+
+From this, we see that the value of 5 seems to be a good value, and so we use 
+it. This was tested with no priors vector.
+
+===
+

@@ -274,7 +274,7 @@ int main(int argc, char **argv) {
 	float agreement = statistics::agreement(G, C);
 	float kappa = statistics::kappa(G, C);
 
-	cerr << agreement << " " << kappa << endl;
+	cout << agreement << " " << kappa << endl;
 	*results << "MAJORITY " << agreement << " " << kappa << endl;
 
 	// Stop timer and log total execution time
@@ -317,10 +317,10 @@ void setupClassifiers(Ensemble& ensemble, VISImage& vis, LWIRImage& lwir,
 	vector<Descriptor*> descriptors) {
 	// List classifier engines
 	vector<ClassifierEngine> engines = {
-		ClassifierEngine::SVM,
-		ClassifierEngine::KNN,
+		//ClassifierEngine::SVM,
+		//ClassifierEngine::KNN,
 		ClassifierEngine::DTREE,
-		ClassifierEngine::MLP
+		//ClassifierEngine::MLP
 	};
 
 	// Create the classifier <-> descriptor pairs and add them to the ensemble

@@ -45,4 +45,10 @@ enum ImageType {
 // Number of neighbors to consider in KNN classifier (hardcoded for now)
 #define KNN_K 5
 
+// MLP hidden layer size
+#define MLP_HIDDEN_LAYER_SIZE 55
+
+// Minimum sample size for node splitting in decision tree classifier
+#define DTREE_MIN_SAMPLE_SIZE 5
+
 #endif // COMMON_H

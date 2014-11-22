@@ -45,6 +45,8 @@ void Classifier::train(Mat labels, Segmentation S) {
 	else if (_engine == DTREE) {
 		CvDTreeParams params; // Initialize with default parameters
 		params.cv_folds = 1; // Disable k-fold cross-validation
+		params.min_sample_count = DTREE_MIN_SAMPLE_SIZE;
+		
 
 		_dtree.train(features, CV_ROW_SAMPLE, labels, Mat(), Mat(), Mat(), 
 			Mat(), params);
@@ -61,7 +63,7 @@ void Classifier::train(Mat labels, Segmentation S) {
 	else if (_engine == MLP) {
 		Mat layers(3, 1, CV_32S);
 		layers.at<int>(0, 0) = features.cols;
-		layers.at<int>(1, 0) = 16;
+		layers.at<int>(1, 0) = MLP_HIDDEN_LAYER_SIZE;
 		layers.at<int>(2, 0) = CLASS_COUNT;
 
 		// Since MLPs can't handle categorical data, we encode it as a vector v
