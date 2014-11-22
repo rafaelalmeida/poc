@@ -6,12 +6,12 @@ using namespace std;
 // ==================
 // Base class methods
 // ==================
-Mat Descriptor::describe(VISImage vis, Segmentation S) {
+Mat Descriptor::describe(VISImage vis, Segmentation *S) {
 	assert(false && "Not impelemented. Maybe this is a LWIR descriptor?");
 	return Mat();
 }
 
-Mat Descriptor::describe(LWIRImage image, Segmentation S) {
+Mat Descriptor::describe(LWIRImage image, Segmentation *S) {
 	assert(false && "Not impelemented. Maybe this is a VIS descriptor?");
 	return Mat();
 }
@@ -19,34 +19,37 @@ Mat Descriptor::describe(LWIRImage image, Segmentation S) {
 // ===============================
 // LWIR Descriptors implementation
 // ===============================
-Mat getSpectralSignature(LWIRImage image, Segmentation S, bool reduced) {
+Mat getSpectralSignature(Descriptor *D, LWIRImage image, Segmentation *S, 
+	bool reduced) {
+
 	int cols = reduced ? image.numReducedBands() : image.numBands();
-	Mat samples(S.regionCount(), cols, CV_32FC1);
+	Mat samples(S->regionCount(), cols, CV_32FC1);
 
 	int i = 0;
-	for (auto mask : S.getRegionMasks()) {
+	for (auto mask : S->getRegionMasks()) {
 		Mat sig = image.normalizedSpectralSignature(densify(mask), reduced);
 		sig.row(0).copyTo(samples.row(i++));
+		S->upcountDescription(D);
 	}
 
 	return samples;
 }
 
-Mat SIGDescriptor::describe(LWIRImage image, Segmentation S) {
-	return getSpectralSignature(image, S.getRegionMasks(), false);
+Mat SIGDescriptor::describe(LWIRImage image, Segmentation *S) {
+	return getSpectralSignature(this, image, S, false);
 }
 
-Mat REDUCEDSIGDescriptor::describe(LWIRImage image, Segmentation S) {
-	return getSpectralSignature(image, S.getRegionMasks(), true);
+Mat REDUCEDSIGDescriptor::describe(LWIRImage image, Segmentation *S) {
+	return getSpectralSignature(this, image, S, true);
 }
 
-Mat MOMENTSDescriptor::describe(LWIRImage image, Segmentation S) {
+Mat MOMENTSDescriptor::describe(LWIRImage image, Segmentation *S) {
 	const int MAX_MOMENT_ORDER = 4;
 
-	Mat samples(S.regionCount(), MAX_MOMENT_ORDER, CV_32FC1);
+	Mat samples(S->regionCount(), MAX_MOMENT_ORDER, CV_32FC1);
 
 	int i = 0;
-	for (auto mask : S.getRegionMasks()) {
+	for (auto mask : S->getRegionMasks()) {
 		Mat sig = image.spectralSignature(densify(mask));
 
 		const float *p = sig.ptr<float>(0);
@@ -60,6 +63,7 @@ Mat MOMENTSDescriptor::describe(LWIRImage image, Segmentation S) {
 		}
 
 		i++;
+		S->upcountDescription(this);
 	}
 
 	return samples;
@@ -68,27 +72,23 @@ Mat MOMENTSDescriptor::describe(LWIRImage image, Segmentation S) {
 // =======================
 // VIS descriptor wrappers
 // =======================
-Mat GCHDescriptor::describe(VISImage vis, Segmentation S) {
-	return convertHistogramColor(vis.asMat(), S.getRegionMasks(), 
-		GCHDimensions(), &GCH);
+Mat GCHDescriptor::describe(VISImage vis, Segmentation *S) {
+	return convertHistogramColor(this, vis.asMat(), S, GCHDimensions(), &GCH);
 }
 
-Mat ACCDescriptor::describe(VISImage vis, Segmentation S) {
-	return convertHistogramColor(vis.asMat(), S.getRegionMasks(), 
-		ACCDimensions(), &ACC);
+Mat ACCDescriptor::describe(VISImage vis, Segmentation *S) {
+	return convertHistogramColor(this, vis.asMat(), S, ACCDimensions(), &ACC);
 }
 
-Mat BICDescriptor::describe(VISImage vis, Segmentation S) {
-	return convertHistogramColor(vis.asMat(), S.getRegionMasks(), 
-		BICDimensions(), &BIC);
+Mat BICDescriptor::describe(VISImage vis, Segmentation *S) {
+	return convertHistogramColor(this, vis.asMat(), S, BICDimensions(), &BIC);
 }
 
-Mat LCHDescriptor::describe(VISImage vis, Segmentation S) {
-	return convertHistogramColor(vis.asMat(), S.getRegionMasks(), 
-		LCHDimensions(), &LCH);
+Mat LCHDescriptor::describe(VISImage vis, Segmentation *S) {
+	return convertHistogramColor(this, vis.asMat(), S, LCHDimensions(), &LCH);
 }
 
-Mat UnserDescriptor::describe(VISImage vis, Segmentation S) {
+Mat UnserDescriptor::describe(VISImage vis, Segmentation *S) {
 	// TODO: refactor to leverage convertHistogramColor code
 
 	int dimensions = UnserDimensions();
@@ -99,10 +99,10 @@ Mat UnserDescriptor::describe(VISImage vis, Segmentation S) {
 
 	Image *img = matToRawGray(gray);
 
-	Mat samples(S.regionCount(), dimensions, CV_32FC1);
+	Mat samples(S->regionCount(), dimensions, CV_32FC1);
 
 	int currentMask = 0;
-	for (auto mask : S.getRegionMasks()) {
+	for (auto mask : S->getRegionMasks()) {
 		Image *cMask = matToRawGray(densify(mask));
 
 		Histogram *hist = Unser(img, cMask);
@@ -123,15 +123,16 @@ Mat UnserDescriptor::describe(VISImage vis, Segmentation S) {
 	return samples;
 }
 
-Mat convertHistogramColor(VISImage vis, Segmentation S, 
-	int dimensions, Histogram *(*descriptor)(CImage*, Image*)) {
+Mat convertHistogramColor(Descriptor *D, VISImage vis, 
+	Segmentation *S, int dimensions, 
+	Histogram *(*descriptor)(CImage*, Image*)) {
 	
 	CImage *cimg = matToRawColor(vis.asMat());
 
-	Mat samples(S.regionCount(), dimensions, CV_32FC1);
+	Mat samples(S->regionCount(), dimensions, CV_32FC1);
 
 	int currentMask = 0;
-	for (auto mask : S.getRegionMasks()) {
+	for (auto mask : S->getRegionMasks()) {
 		Image *cMask = matToRawGray(densify(mask));
 
 		Histogram *hist = descriptor(cimg, cMask);
@@ -145,6 +146,7 @@ Mat convertHistogramColor(VISImage vis, Segmentation S,
 		DestroyImage(&cMask);
 
 		currentMask++;
+		S->upcountDescription(D);
 	}
 
 	DestroyCImage(&cimg);

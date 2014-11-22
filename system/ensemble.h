@@ -16,6 +16,7 @@
 
 #include "classification.h"
 #include "common.h"
+#include "counter.h"
 #include "logging.h"
 #include "segmentation.h"
 

@@ -43,7 +43,8 @@ void describeAll(list<Segmentation*>& segmentations,
 void doDescribe(Segmentation *S, Descriptor *D, int *numDone, int n, 
 	mutex *mtx);
 
-void reportDescriptionProcess(int *numDone, int n, mutex *mtx);
+void reportDescriptionProcess(list<Segmentation*> segmentations, int *numDone, 
+	int n, mutex *mtx);
 
 // Main function
 int main(int argc, char **argv) {
@@ -383,8 +384,8 @@ void describeAll(list<Segmentation*>& segmentations,
 	// If parallel, start the progress reporting procedure
 	thread *progressThread = NULL;
 	if (parallel) {
-		progressThread = new thread(reportDescriptionProcess, &numDone, total,
-			&mtx);
+		progressThread = new thread(reportDescriptionProcess, segmentations, 
+			&numDone, total, &mtx);
 	}
 
 	// Synchronize
@@ -421,13 +422,32 @@ void doDescribe(Segmentation *S, Descriptor *D, int *numDone, int n,
 	if (mtx != NULL) mtx->unlock();
 }
 
-void reportDescriptionProcess(int *numDone, int n, mutex *mtx) {
+void reportDescriptionProcess(list<Segmentation*> segmentations, int *numDone, 
+	int n, mutex *mtx) {
+
 	while (*numDone < n) {
 		mtx->lock();
-		cerr << "describing: " << *numDone << " of " << n << 
-			"       \r" << flush;
+		/*cerr << "describing: " << *numDone << " of " << n << 
+			"       \r" << flush;*/
+
+		// Clear the screen with an ANSI escape sequence
+		cerr << ANSI_CLEAR_SCREEN << std::flush;
+
+		int i = 0, n = segmentations.size();
+		for (auto S : segmentations) {
+			cerr << "Segmentation " << i << " of " << n << endl;
+			cerr << "===================" << endl;
+			for (auto dp : S->getDescriptionCounts().getCounts()) {
+				float progress = 100.0 * dp.second / S->regionCount();
+				cerr << dp.first << ": " << progress << "%" << endl;
+			}
+			cerr << endl;
+
+			i++;
+		}
+
 		mtx->unlock();
 
-		this_thread::sleep_for(std::chrono::milliseconds(300));
+		this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
 }

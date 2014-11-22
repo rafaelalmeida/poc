@@ -353,10 +353,10 @@ void Segmentation::describe(Descriptor *descriptor) {
 	// Extract features
 	Mat features;
 	if (_image->getType() == VIS) {
-		features = descriptor->describe(*((VISImage*) _image), *this);
+		features = descriptor->describe(*((VISImage*) _image), this);
 	}
 	else {
-		features = descriptor->describe(*((LWIRImage*) _image), *this);
+		features = descriptor->describe(*((LWIRImage*) _image), this);
 	}
 
 	// Record features
@@ -494,4 +494,12 @@ void Segmentation::showDescriptionStats() {
 	for (auto& p : _descriptions) {
 		cerr << p.first << ": " << p.second.size() << endl;
 	}
+}
+
+void Segmentation::upcountDescription(Descriptor *descriptor) {
+	_regionsDescribed.inc(descriptor->getID());
+}
+
+Counter<string> Segmentation::getDescriptionCounts() {
+	return _regionsDescribed;
 }

@@ -16,6 +16,7 @@
 
 #include "common.h"
 #include "config.h"
+#include "counter.h"
 #include "statistics.h"
 #include "utils.h"
 

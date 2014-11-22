@@ -11,10 +11,10 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #include "common.h"
+#include "counter.h"
 #include "description.h"
 #include "models.h"
 #include "statistics.h"
-#include "utils.h"
 
 extern "C" {
 	#include "include/vl/generic.h"
@@ -71,6 +71,12 @@ class Segmentation {
 	// list.
 	map<string, Mat> _descriptions;
 
+	// The amount of regions described, grouped by descriptor id. This is 
+	// updated by the descriptor while calculating the features. Since this
+	// can be done in another thread, this count can be used for progress
+	// reporting.
+	Counter<string> _regionsDescribed;
+
 	// Pointer to the image segmented by this segmentation. This can be used
 	// for description purposes.
 	RSImage *_image = NULL;
@@ -114,6 +120,8 @@ class Segmentation {
 		Mat getDescription(string descriptorID);
 		void showDescriptionStats();
 		void describe(Descriptor *descriptor); // Thread-safe
+		void upcountDescription(Descriptor *descriptor);
+		Counter<string> getDescriptionCounts();
 };
 
 namespace segmentation {

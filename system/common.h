@@ -51,4 +51,7 @@ enum ImageType {
 // Minimum sample size for node splitting in decision tree classifier
 #define DTREE_MIN_SAMPLE_SIZE 5
 
+// ANSI escape sequence to clear the console screen
+#define ANSI_CLEAR_SCREEN "\x1b[2J\x1b[1;1H"
+
 #endif // COMMON_H

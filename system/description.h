@@ -49,8 +49,8 @@ class Descriptor {
 	public:
 		Descriptor(const char *id, ImageType type);
 
-		virtual Mat describe(VISImage vis, Segmentation S);
-		virtual Mat describe(LWIRImage image, Segmentation S);
+		virtual Mat describe(VISImage vis, Segmentation *S);
+		virtual Mat describe(LWIRImage image, Segmentation *S);
 
 		ImageType getType() { return _type; };
 		std::string getID();
@@ -71,53 +71,54 @@ class LWIRDescriptor : public Descriptor {
 class GCHDescriptor : public VISDescriptor {
 	public:
 		GCHDescriptor(const char* id) : VISDescriptor(id) {};
-		virtual Mat describe(VISImage vis, Segmentation S) override;
+		virtual Mat describe(VISImage vis, Segmentation *S) override;
 };
 
 class ACCDescriptor : public VISDescriptor {
 	public:
 		ACCDescriptor(const char* id) : VISDescriptor(id) {};
-		virtual Mat describe(VISImage vis, Segmentation S) override;
+		virtual Mat describe(VISImage vis, Segmentation *S) override;
 };
 
 class BICDescriptor : public VISDescriptor {
 	public:
 		BICDescriptor(const char* id) : VISDescriptor(id) {};
-		virtual Mat describe(VISImage vis, Segmentation S) override;
+		virtual Mat describe(VISImage vis, Segmentation *S) override;
 };
 
 class LCHDescriptor : public VISDescriptor {
 	public:
 		LCHDescriptor(const char* id) : VISDescriptor(id) {};
-		virtual Mat describe(VISImage vis, Segmentation S) override;
+		virtual Mat describe(VISImage vis, Segmentation *S) override;
 };
 
 class UnserDescriptor : public VISDescriptor {
 	public:
 		UnserDescriptor(const char* id) : VISDescriptor(id) {};
-		virtual Mat describe(VISImage vis, Segmentation S) override;
+		virtual Mat describe(VISImage vis, Segmentation *S) override;
 };
 
 class SIGDescriptor : public LWIRDescriptor {
 	public:
 		SIGDescriptor(const char* id) : LWIRDescriptor(id) {};
-		virtual Mat describe(LWIRImage image, Segmentation S) override;
+		virtual Mat describe(LWIRImage image, Segmentation *S) override;
 };
 
 class REDUCEDSIGDescriptor : public LWIRDescriptor {
 	public:
 		REDUCEDSIGDescriptor(const char* id) : LWIRDescriptor(id) {};
-		virtual Mat describe(LWIRImage image, Segmentation S) override;
+		virtual Mat describe(LWIRImage image, Segmentation *S) override;
 };
 
 class MOMENTSDescriptor : public LWIRDescriptor {
 	public:
 		MOMENTSDescriptor(const char* id) : LWIRDescriptor(id) {};
-		virtual Mat describe(LWIRImage image, Segmentation S) override;
+		virtual Mat describe(LWIRImage image, Segmentation *S) override;
 };
 
 // Util functions
-Mat convertHistogramColor(VISImage vis, Segmentation S, 
-	int dimensions, Histogram *(*descriptor)(CImage*, Image*));
+Mat convertHistogramColor(Descriptor *D, VISImage vis, 
+	Segmentation *S, int dimensions, 
+	Histogram *(*descriptor)(CImage*, Image*));
 
 #endif
