@@ -315,7 +315,7 @@ ThematicMap Ensemble::classify() {
 		}
 	}
 	else {
-		assert(false && "Unknown consensus type");
+		FATAL_ERROR("Unknown consensus type");
 	}
 
 	return ThematicMap(consensus);

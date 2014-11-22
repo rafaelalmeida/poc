@@ -343,7 +343,7 @@ void Segmentation::setImage(RSImage *image) {
 
 RSImage *Segmentation::getImage() {
 	if (_image == NULL) {
-		assert(false && "Error: no image defined for this segmentation.");
+		FATAL_ERROR("Error: no image defined for this segmentation.");
 	}
 
 	return _image;
@@ -372,7 +372,7 @@ void Segmentation::setPixalated(bool v) {
 Segmentation Segmentation::cloneWithMask(SparseMat mask) {
 	// Check eligibility
 	if (!_pixelated) {
-		assert(false && 
+		FATAL_ERROR(
 			"Error: cloning with mask only works on pixelated segmentations.");
 
 		return Segmentation(); // Dummy

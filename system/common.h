@@ -54,4 +54,8 @@ enum ImageType {
 // ANSI escape sequence to clear the console screen
 #define ANSI_CLEAR_SCREEN "\x1b[2J\x1b[1;1H"
 
+// Macro to raise an error
+#define FATAL_ERROR(msg) cerr << "Fatal error: " << msg << " (" << \
+	__FILE__ << ":"<< __LINE__ << ")" << endl; exit(1);
+
 #endif // COMMON_H

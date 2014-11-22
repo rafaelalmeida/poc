@@ -147,7 +147,7 @@ int translateInterpolationMode(InterpolationMode method) {
 	}
 	else {
 		// Should not get here
-		assert(false && "Invalid interpolation mode.");
+		FATAL_ERROR("Invalid interpolation mode.");
 		return -1;
 	}
 }

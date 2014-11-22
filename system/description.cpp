@@ -7,12 +7,12 @@ using namespace std;
 // Base class methods
 // ==================
 Mat Descriptor::describe(VISImage vis, Segmentation *S) {
-	assert(false && "Not impelemented. Maybe this is a LWIR descriptor?");
+	FATAL_ERROR("Not impelemented. Maybe this is a LWIR descriptor?");
 	return Mat();
 }
 
 Mat Descriptor::describe(LWIRImage image, Segmentation *S) {
-	assert(false && "Not impelemented. Maybe this is a VIS descriptor?");
+	FATAL_ERROR("Not impelemented. Maybe this is a VIS descriptor?");
 	return Mat();
 }
 

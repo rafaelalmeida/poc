@@ -100,7 +100,7 @@ void Classifier::train(Mat labels, Segmentation S) {
 		_mlp.train(features, encodedLabels, Mat());
 	}
 	else {
-		assert(false && "Unknown classifier engine");
+		FATAL_ERROR("Unknown classifier engine");
 	}
 
 	_swatchTraining.stop();
@@ -149,7 +149,7 @@ Mat Classifier::classify(Region region) {
 		theClass = (float) (maxIndex[1] + 1);
 	}
 	else {
-		assert(false && "Unknown classifier engine");
+		FATAL_ERROR("Unknown classifier engine");
 	}
 
 	_swatchClassification.stop();

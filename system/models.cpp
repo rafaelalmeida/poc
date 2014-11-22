@@ -195,7 +195,7 @@ cv::Mat ThematicMap::coloredMap() {
 			color = Scalar(0, 255, 255); // YELLOW
 		}
 		else {
-			assert(false && "Error! Unknown label");
+			FATAL_ERROR("Error! Unknown label");
 		}
 
 		// Paint the region

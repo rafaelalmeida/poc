@@ -126,7 +126,7 @@ int main(int argc, char **argv) {
 			conf.slicRegularization);
 	}
 	else {
-		assert(false && "Unsupported segmentation mode");
+		FATAL_ERROR("Unsupported segmentation mode");
 	}
 
 	// Create segmentation - LWIR
