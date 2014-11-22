@@ -363,6 +363,8 @@ VISImage::VISImage(cv::Mat vis)
 	: _vis(vis),
 	  RSImage(VIS) {}
 
+VISImage::VISImage() : RSImage(VIS) {}
+
 cv::Size VISImage::size() {
 	return _vis.size();
 }

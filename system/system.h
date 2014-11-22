@@ -26,6 +26,27 @@ class System {
 	Configuration _conf;
 	Logger _logger;
 
+	// Data members
+	VISImage vis;
+	LWIRImage lwir;
+	Mat training;
+
+	ThematicMap trainingMapVIS;
+	ThematicMap trainingMapLWIR;
+
+	Segmentation segmentationVIS;
+	Segmentation segmentationLWIR;
+
+	vector<Descriptor*> descriptors;
+
+	Segmentation visTrainingSegmentation;
+	Segmentation lwirTrainingSegmentation;
+
+	// Initialize time loggers
+	double descriptionTime = 0;
+	double trainingTime = 0;
+	double classificationTime = 0;
+
 	public:
 		// Constructors
 		System(Configuration config);
@@ -34,6 +55,11 @@ class System {
 		void run();
 
 	private:
+		// System phases
+		void loadAndSetupData();
+		void segment();
+		void describe();
+
 		// Other procedures
 		void rescale(VISImage& vis, LWIRImage& lwir, float scaleVIS, 
 			float scaleLWIR, InterpolationMode interpolationMode);

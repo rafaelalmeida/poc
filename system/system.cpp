@@ -6,120 +6,31 @@ using namespace cv;
 using namespace segmentation;
 using namespace classification;
 
-Logger *logger = NULL;
-
 System::System(Configuration config) 
 	: _conf(config),
 	  _logger(config.logPath) {}
 
-// Main function
+// =============================================================================
+// MAIN ENTRY POINT IMPLEMENTATION
+// =============================================================================
+
 void System::run() {
 	// Start timer
 	Stopwatch swatchMain;
 	swatchMain.start();
 
-	// Load images
-	log("loading VIS image...");
-	VISImage vis = gdal_driver::loadVIS(_conf.pathVIS);
-	log("loading LWIR image...");
-	LWIRImage lwir = gdal_driver::loadLWIR(_conf.pathLWIR);
-	log("loading training data...");
-	Mat training = gdal_driver::loadTrainingData(_conf.pathTraining);
-
-	// Rescale images if necessary
-	if (_conf.scaleVIS != 1.0 || _conf.scaleLWIR != 1.0) {
-		log("rescaling images...");
-		rescale(vis, lwir, _conf.scaleVIS, _conf.scaleLWIR, 
-			_conf.interpolationMode);
-	}
-
-	log("creating training thematic maps...");
-
-	// Create training map objects
-	ThematicMap trainingMapVIS(training);
-	ThematicMap trainingMapLWIR(training);
-
-	// Scale the training map
-	trainingMapVIS.resize(vis.size());
-	trainingMapLWIR.resize(lwir.size());
+	// Load and setup data
+	loadAndSetupData();
 
 	// Reduce dimensionality of LWIR image
 	log("reducing LWIR dimensionality...");
 	lwir.reduceDimensionality(LWIR_BANDS_TO_KEEP_ON_PCA);
 
-	// Show classes counts in the whole training map
-	cerr << "Amount of pixels per class in the whole map: " << endl;
-	printClassHistogram(trainingMapVIS);
-
-	// Set ROI if there is one
-	Rect roi;
-	if (_conf.roiWidth > 0 && _conf.roiHeight > 0) {
-		roi = Rect(_conf.roiX, _conf.roiY, _conf.roiWidth, _conf.roiHeight);
-		vis.setRoi(roi);
-		training = training(roi);
-
-		log("applying ROIs to LWIR...");
-		lwir.setRoi(roi);
-	}
-
-	// Create segmentation - VIS
-	log("creating segmentation...");
-	Segmentation segmentationVIS;
-	if (_conf.segmentationMode == GRID) {
-		segmentationVIS = segmentation::segmentVISGrid(vis.asMat(), 
-			_conf.gridTileSize);
-	}
-	else if (_conf.segmentationMode == SLIC) {
-		// Try to guess rescaled parameters for SLIC, if desired
-		if (_conf.slicAutoScaleParameters) {
-			float s = _conf.scaleVIS;
-
-			_conf.slicRegionSize *= s;
-			_conf.slicMinRegionSize *= s;
-		}
-
-		segmentationVIS = segmentation::segmentVIS_SLIC(vis.asMat(), 
-			_conf.slicRegionSize, _conf.slicMinRegionSize, 
-			_conf.slicRegularization);
-	}
-	else {
-		FATAL_ERROR("Unsupported segmentation mode");
-	}
-
-	// Create segmentation - LWIR
-	Segmentation segmentationLWIR = segmentation::segmentLWIRPixelated(
-		lwir, vis);
-
-	// Save segmentation representation
-	_logger.saveImage("segmentation", segmentationVIS.representation());
-
-	// Assign images to segmentations
-	segmentationVIS.setImage(&vis);
-	segmentationLWIR.setImage(&lwir);
+	// Run segmentation phase
+	segment();
 
 	// Create descriptors
-	vector<Descriptor*> descriptors;
-	descriptors.push_back(new GCHDescriptor("GCH"));
-	descriptors.push_back(new BICDescriptor("BIC"));
-	descriptors.push_back(new LCHDescriptor("LCH"));
-	descriptors.push_back(new SIGDescriptor("SIG"));
-	descriptors.push_back(new REDUCEDSIGDescriptor("RSIG"));
-	descriptors.push_back(new MOMENTSDescriptor("MMT"));
-
-	// Describe the images
-	cerr << "describing images..." << endl;
-	Segmentation visTrainingSegmentation(trainingMapVIS);
-	visTrainingSegmentation.setImage(&vis);
-
-	list<Segmentation*> segmentations = {&segmentationVIS, &segmentationLWIR,
-		&visTrainingSegmentation};
-
-	describeAll(segmentations, descriptors, _conf.parallel);
-
-	// Describe LWIR training set - reuse the main LWIR segmentation, which
-	// is already described, and take a subset of it.
-	Segmentation lwirTrainingSegmentation = segmentationLWIR.cloneWithMask(
-		trainingMapLWIR.getFullMask());
+	describe();
 
 	// Create k-fold splits
 	log("creating k-fold splits...");
@@ -134,11 +45,6 @@ void System::run() {
 	// Open result file
 	ofstream *results = _logger.makeFile("results.txt");
 	*results << "MAP / AGREEMENT / KAPPA" << endl;
-
-	// Initialize time loggers
-	double descriptionTime = 0;
-	double trainingTime = 0;
-	double classificationTime = 0;
 
 	// Run k-fold cross validation
 	float bestKappa = -numeric_limits<float>::max();
@@ -235,7 +141,6 @@ void System::run() {
 	float agreement = statistics::agreement(G, C);
 	float kappa = statistics::kappa(G, C);
 
-	cout << agreement << " " << kappa << endl;
 	*results << "MAJORITY " << agreement << " " << kappa << endl;
 
 	// Stop timer and log total execution time
@@ -257,7 +162,117 @@ void System::run() {
 	for (auto d : descriptors) {
 		delete d;
 	}
+
+	// Print kappa and accuracy on stdout
+	cerr << endl;
+	cout << agreement << " " << kappa << endl;
 }
+
+// =============================================================================
+// SYSTEM PHASES IMPLEMENTATION
+// =============================================================================
+
+void System::loadAndSetupData() {
+	// Load images
+	log("loading VIS image...");
+	vis = gdal_driver::loadVIS(_conf.pathVIS);
+	log("loading LWIR image...");
+	lwir = gdal_driver::loadLWIR(_conf.pathLWIR);
+	log("loading training data...");
+	training = gdal_driver::loadTrainingData(_conf.pathTraining);
+
+	// Rescale images if necessary
+	if (_conf.scaleVIS != 1.0 || _conf.scaleLWIR != 1.0) {
+		log("rescaling images...");
+		rescale(vis, lwir, _conf.scaleVIS, _conf.scaleLWIR, 
+			_conf.interpolationMode);
+	}
+
+	log("creating training thematic maps...");
+
+	// Create training map objects
+	trainingMapVIS = ThematicMap(training);
+	trainingMapLWIR = ThematicMap(training);
+
+	// Scale the training map
+	trainingMapVIS.resize(vis.size());
+	trainingMapLWIR.resize(lwir.size());
+
+	// Set ROI if there is one
+	Rect roi;
+	if (_conf.roiWidth > 0 && _conf.roiHeight > 0) {
+		roi = Rect(_conf.roiX, _conf.roiY, _conf.roiWidth, _conf.roiHeight);
+		vis.setRoi(roi);
+		training = training(roi);
+
+		log("applying ROIs to LWIR...");
+		lwir.setRoi(roi);
+	}
+}
+
+void System::segment() {
+	// Create segmentation - VIS
+	log("creating segmentation...");
+	if (_conf.segmentationMode == GRID) {
+		segmentationVIS = segmentation::segmentVISGrid(vis.asMat(), 
+			_conf.gridTileSize);
+	}
+	else if (_conf.segmentationMode == SLIC) {
+		// Try to guess rescaled parameters for SLIC, if desired
+		if (_conf.slicAutoScaleParameters) {
+			float s = _conf.scaleVIS;
+
+			_conf.slicRegionSize *= s;
+			_conf.slicMinRegionSize *= s;
+		}
+
+		segmentationVIS = segmentation::segmentVIS_SLIC(vis.asMat(), 
+			_conf.slicRegionSize, _conf.slicMinRegionSize, 
+			_conf.slicRegularization);
+	}
+	else {
+		FATAL_ERROR("Unsupported segmentation mode");
+	}
+
+	// Create segmentation - LWIR
+	segmentationLWIR = segmentation::segmentLWIRPixelated(
+		lwir, vis);
+
+	// Save segmentation representation
+	_logger.saveImage("segmentation", segmentationVIS.representation());
+
+	// Assign images to segmentations
+	segmentationVIS.setImage(&vis);
+	segmentationLWIR.setImage(&lwir);
+}
+
+void System::describe() {
+	descriptors.push_back(new GCHDescriptor("GCH"));
+	descriptors.push_back(new BICDescriptor("BIC"));
+	descriptors.push_back(new LCHDescriptor("LCH"));
+	descriptors.push_back(new SIGDescriptor("SIG"));
+	descriptors.push_back(new REDUCEDSIGDescriptor("RSIG"));
+	descriptors.push_back(new MOMENTSDescriptor("MMT"));
+
+	// Describe the images
+	cerr << "describing images..." << endl;
+	visTrainingSegmentation = Segmentation(trainingMapVIS);
+	visTrainingSegmentation.setImage(&vis);
+
+	list<Segmentation*> segmentations = {&segmentationVIS, &segmentationLWIR,
+		&visTrainingSegmentation};
+
+	describeAll(segmentations, descriptors, _conf.parallel);
+
+	// Describe LWIR training set - reuse the main LWIR segmentation, which
+	// is already described, and take a subset of it.
+	lwirTrainingSegmentation = segmentationLWIR.cloneWithMask(
+		trainingMapLWIR.getFullMask());
+}
+
+// =============================================================================
+// SYSTEM PHASES IMPLEMENTATION
+// =============================================================================
 
 void System::rescale(VISImage& vis, LWIRImage& lwir, float scaleVIS, 
 	float scaleLWIR, InterpolationMode interpolationMode) {

@@ -34,6 +34,7 @@ class VISImage : public RSImage {
 	cv::Mat _vis;
 
 	public:
+		VISImage();
 		VISImage(cv::Mat vis);
 		cv::Size size();
 		cv::Mat asMat();
