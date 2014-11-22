@@ -26,8 +26,17 @@ Mat getSpectralSignature(Descriptor *D, LWIRImage image, Segmentation *S,
 	Mat samples(S->regionCount(), cols, CV_32FC1);
 
 	int i = 0;
-	for (auto mask : S->getRegionMasks()) {
-		Mat sig = image.normalizedSpectralSignature(densify(mask), reduced);
+	for (auto region : S->getRegions()) {
+		Mat sig;
+		if (region.getRepresentationMode() == PIXEL) {
+			Point P = region.getPoint();
+			sig = image.normalizedSpectralSignature(P, reduced);
+		}
+		else {
+			SparseMat M = region.getMask();
+			sig = image.normalizedSpectralSignature(densify(M), reduced);
+		}
+
 		sig.row(0).copyTo(samples.row(i++));
 		S->upcountDescription(D);
 	}
@@ -49,19 +58,32 @@ Mat MOMENTSDescriptor::describe(LWIRImage image, Segmentation *S) {
 	Mat samples(S->regionCount(), MAX_MOMENT_ORDER, CV_32FC1);
 
 	int i = 0;
-	for (auto mask : S->getRegionMasks()) {
-		Mat sig = image.spectralSignature(densify(mask));
+	for (auto region : S->getRegions()) {
+		// Get the original spectral signature
+		Mat sig;
+		if (region.getRepresentationMode() == PIXEL) {
+			Point P = region.getPoint();
+			sig = image.spectralSignature(P);
+		}
+		else {
+			SparseMat M = region.getMask();
+			sig = image.spectralSignature(densify(M));
+		}
 
+		// Convert into a vector
 		const float *p = sig.ptr<float>(0);
 		vector<float> values(p, p + sig.cols);
 
+		// Calculate statistical moments of this vector
 		vector<float> moments = statistics::moments(values, MAX_MOMENT_ORDER);
 
+		// Put the moments in the feature matrix
 		int j = 0;
 		for (auto m : moments) {
 			samples.at<float>(i, j++) = moments[j];
 		}
 
+		// Update and report progress
 		i++;
 		S->upcountDescription(this);
 	}

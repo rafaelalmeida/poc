@@ -32,15 +32,28 @@ class Region;
 class Segmentation;
 class KFolder;
 
+// Region representation modes
+enum RegionRepresentationMode {
+	MASK,
+	PIXEL
+};
+
 // Class to represent a region
 class Region {
 	// The sparse matrix that contains a mask in which non-zero values 
 	// represent the pixels of the image that belong to this region.
 	SparseMat _mask;
 
+	// Alternate representation for the region, when it's composed of a single
+	// pixel.
+	Point _point;
+
 	// A pointer to the parent segmentation, because many useful data (like
 	// feature vectors) are there.
 	Segmentation *_parentSegmentation;
+
+	// The region representation mode
+	RegionRepresentationMode _representationMode;
 
 	// The index of this region in the parent segmentation. This avoids having
 	// to look up in where the feature vectors of this region are in the
@@ -48,9 +61,12 @@ class Region {
 	int _parentIdx;
 
 	public:
+		Region(Point point, int parentIdx);
 		Region(SparseMat mask, int parentIdx);
 		Mat getDescription(string descriptorID);
+		RegionRepresentationMode getRepresentationMode();
 		SparseMat getMask();
+		Point getPoint();
 		void setParent(Segmentation *parent);
 };
 
@@ -93,9 +109,10 @@ class Segmentation {
 		// Default constructors
 		Segmentation() {};
 		Segmentation(list<SparseMat> masks);
+		Segmentation(list<Point> points);
 		Segmentation(ThematicMap M);
 
-		// Copy and assignment constructors
+		// Copy and assignment
 		Segmentation(const Segmentation& other);
 		Segmentation operator=(const Segmentation& rhs);
 
@@ -108,6 +125,7 @@ class Segmentation {
 		Mat representation();
 		Size getMapSize();
 		void setPixalated(bool v=true);
+		bool isPixelated();
 
 		Segmentation cloneWithMask(SparseMat mask);
 		Segmentation cloneWithIndexes(vector<int> indexes);

@@ -15,7 +15,15 @@ LWIRImage::LWIRImage(std::vector<cv::Mat> bands) : RSImage(LWIR) {
 
 LWIRImage::LWIRImage() : RSImage(LWIR) {}
 
-cv::Mat LWIRImage::spectralSignature(cv::Mat mask, bool reduced) {
+cv::Mat LWIRImage::doGetSpectralSignature(cv::Mat *mask, cv::Point *point, 
+	bool reduced) {
+
+	// Check arguments
+	if (mask == NULL && point == NULL) {
+		FATAL_ERROR("Either mask or point needs to be provided to calculate \
+			spectral signature");
+	}
+
 	vector<Mat> &myBands = reduced ? this->reducedBands : this->bands;
 
 	int numBands = myBands.size();
@@ -25,10 +33,14 @@ cv::Mat LWIRImage::spectralSignature(cv::Mat mask, bool reduced) {
 	for (auto band : myBands) {
 		Mat B = (this->roi.area() > 0) ? band(this->roi) : band;
 
-		assert((B.size() == mask.size()) && 
-			"Mask is not the correct size");
-
-		sig.at<float>(0, c) = mean(B, mask)[0];
+		// Get the signature from mask or point
+		if (mask != NULL) {
+			assert((B.size() == mask->size()) && "Mask has wrong size");
+			sig.at<float>(0, c) = mean(B, *mask)[0];
+		}
+		else {
+			sig.at<float>(0, c) = B.at<float>(point->y, point->x);
+		}
 
 		c++;
 	}
@@ -36,9 +48,15 @@ cv::Mat LWIRImage::spectralSignature(cv::Mat mask, bool reduced) {
 	return sig;
 }
 
-cv::Mat LWIRImage::normalizedSpectralSignature(cv::Mat mask, bool reduced) {
-	Mat sig = this->spectralSignature(mask, reduced);
+cv::Mat LWIRImage::spectralSignature(cv::Mat mask, bool reduced) {
+	return doGetSpectralSignature(&mask, NULL, reduced);
+}
 
+cv::Mat LWIRImage::spectralSignature(cv::Point point, bool reduced) {
+	return doGetSpectralSignature(NULL, &point, reduced);
+}
+
+void LWIRImage::doNormalizeSpectralSignature(cv::Mat signature, bool reduced) {
 	// Determines the correct extreme values for normalization
 	float minVal, maxVal;
 	if (reduced) {
@@ -51,21 +69,26 @@ cv::Mat LWIRImage::normalizedSpectralSignature(cv::Mat mask, bool reduced) {
 	}
 
 	// Normalizes the values
-	for (int col = 0; col < sig.cols; col++) {
-		float val = sig.at<float>(0, col);
+	for (int col = 0; col < signature.cols; col++) {
+		float val = signature.at<float>(0, col);
 		float nVal = (val - minVal) / (maxVal - minVal);
 
-		sig.at<float>(0, col) = nVal;
+		signature.at<float>(0, col) = nVal;
 	}
+}
+
+cv::Mat LWIRImage::normalizedSpectralSignature(cv::Mat mask, bool reduced) {
+	Mat sig = this->spectralSignature(mask, reduced);
+	doNormalizeSpectralSignature(sig, reduced);
 
 	return sig;
 }
 
 cv::Mat LWIRImage::normalizedSpectralSignature(cv::Point point, bool reduced) {
-	Mat mask = Mat::zeros(this->size(), CV_8UC1);
-	mask.at<unsigned char>(point) = 255;
+	Mat sig = this->spectralSignature(point, reduced);
+	doNormalizeSpectralSignature(sig, reduced);
 
-	return this->normalizedSpectralSignature(mask, reduced);
+	return sig;
 }
 
 void LWIRImage::rescale(float scale, InterpolationMode mode) {

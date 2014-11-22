@@ -238,12 +238,12 @@ void System::segment() {
 	segmentationLWIR = segmentation::segmentLWIRPixelated(
 		lwir, vis);
 
-	// Save segmentation representation
-	_logger.saveImage("segmentation", segmentationVIS.representation());
-
 	// Assign images to segmentations
 	segmentationVIS.setImage(&vis);
 	segmentationLWIR.setImage(&lwir);
+
+	// Save segmentation representation
+	_logger.saveImage("segmentation", segmentationVIS.representation());
 }
 
 void System::describe() {
@@ -268,6 +268,7 @@ void System::describe() {
 	// is already described, and take a subset of it.
 	lwirTrainingSegmentation = segmentationLWIR.cloneWithMask(
 		trainingMapLWIR.getFullMask());
+	lwirTrainingSegmentation.setImage(&lwir);
 }
 
 // =============================================================================

@@ -27,6 +27,7 @@ class RSImage {
 	public:
 		RSImage(ImageType type) : _type(type) {};
 		ImageType getType() { return _type; };
+		virtual cv::Size size() = 0;
 };
 
 // Class to represent a VIS image
@@ -36,7 +37,7 @@ class VISImage : public RSImage {
 	public:
 		VISImage();
 		VISImage(cv::Mat vis);
-		cv::Size size();
+		cv::Size size() override;
 		cv::Mat asMat();
 		void rescale(float scale, InterpolationMode mode);
 		void setRoi(cv::Rect roi);
@@ -44,6 +45,12 @@ class VISImage : public RSImage {
 
 // Class to represent a LWIR image
 class LWIRImage : public RSImage {
+	private:
+		cv::Mat doGetSpectralSignature(cv::Mat *mask=NULL, 
+			cv::Point *point=NULL, bool reduced=false);
+
+		void doNormalizeSpectralSignature(cv::Mat signature, bool reduced);
+
 	public:
 		// Members
 		std::vector<cv::Mat> bands;
@@ -66,11 +73,15 @@ class LWIRImage : public RSImage {
 		cv::Mat equalized();
 		void minMaxAcrossBands(std::vector<cv::Mat> bands, float *minVal, 
 			float *maxVal);
+
+		// Spectral signature calculation
 		cv::Mat normalizedSpectralSignature(cv::Mat mask, bool reduced=false);
 		cv::Mat normalizedSpectralSignature(cv::Point point, 
 			bool reduced=false);
 		cv::Mat spectralSignature(cv::Mat mask, bool reduced=false);
-		cv::Size size();
+		cv::Mat spectralSignature(cv::Point point, bool reduced=false);
+
+		cv::Size size() override;
 		int numBands();
 		int numReducedBands();
 		void reduceDimensionality(int keep);

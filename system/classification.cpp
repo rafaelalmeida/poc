@@ -154,10 +154,19 @@ Mat Classifier::classify(Region region) {
 
 	_swatchClassification.stop();
 
-	// Fill the matrix
-	Mat mask = densify(region.getMask());
-	Mat classification = Mat::zeros(mask.size(), CV_8UC1);
-	classification += theClass * (mask / 255);
+	// Create the classification matrix
+	assert(_vis != NULL || _lwir != NULL);
+	Size S = (_vis != NULL) ? _vis->size() : _lwir->size();
+	Mat classification = Mat::zeros(S, CV_8UC1);
+
+	// Fill the classification matrix
+	if (region.getRepresentationMode() == PIXEL) {
+		classification.at<unsigned char>(region.getPoint()) = 255;
+	}
+	else {
+		Mat mask = densify(region.getMask());
+		classification += theClass * (mask / 255);
+	}
 
 	return classification;
 }

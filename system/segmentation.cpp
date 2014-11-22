@@ -142,15 +142,11 @@ Segmentation segmentation::segmentLWIRPixelated(LWIRImage& lwir,
 	resize(nonMissing, M, lwir.size(), 0, 0, INTER_NEAREST);
 
 	// Adds every pixel
-	list<SparseMat> pixels;
+	list<Point> pixels;
 	for (int row = 0; row < M.rows; row++) {
 		for (int col = 0; col < M.cols; col++) {
 			if (M.at<unsigned char>(row, col) == 255) {
-				int sizes[2] = {M.rows, M.cols};
-				SparseMat pixel(2, sizes, CV_8UC1);
-
-				*(pixel.ptr(row, col, true)) = 255;
-				pixels.push_back(pixel);
+				pixels.push_back(Point(col, row));
 			}
 		}
 	}
@@ -247,6 +243,15 @@ Segmentation::Segmentation(list<SparseMat> masks) {
 	this->setRegionsParent();
 }
 
+Segmentation::Segmentation(list<Point> points) {
+	int idx = 0;
+	for (auto p : points) {
+		this->_regions.push_back(Region(p, idx++));
+	}
+
+	this->setRegionsParent();
+}
+
 Segmentation::Segmentation(ThematicMap M) {
 	list<pair<SparseMat, int> > regions1 = M.enumerateRegions();
 	int idx = 0;
@@ -308,6 +313,8 @@ cv::Mat Segmentation::representation() {
 }
 
 cv::Size Segmentation::getMapSize() {
+	assert(_image != NULL);
+	return _image->size();
 	return densify(_regions.front().getMask()).size();
 }
 
@@ -323,9 +330,19 @@ SparseMat Region::getMask() {
 	return _mask;
 }
 
+Point Region::getPoint() {
+	return _point;
+}
+
 Region::Region(SparseMat mask, int parentIdx) 
 	: _mask(mask),
-	  _parentIdx(parentIdx) {}
+	  _parentIdx(parentIdx),
+	  _representationMode(MASK) {}
+
+Region::Region(Point point, int parentIdx) 
+	: _point(point),
+	  _parentIdx(parentIdx),
+	  _representationMode(PIXEL) {}
 
 Mat Region::getDescription(string descriptorID) {
 	// Check if parent has been 
@@ -369,6 +386,10 @@ void Segmentation::setPixalated(bool v) {
 	_pixelated = v;
 }
 
+bool Segmentation::isPixelated() {
+	return _pixelated;
+}
+
 Segmentation Segmentation::cloneWithMask(SparseMat mask) {
 	// Check eligibility
 	if (!_pixelated) {
@@ -387,13 +408,20 @@ Segmentation Segmentation::cloneWithMask(SparseMat mask) {
 	int idx = 0;
 	for (auto& r : _regions) {
 		// Check if region is in mask.
-		// IMPROVENT: This is not currently very efficient due to the
-		// allocation of a dense matrix for every region. If we guarantee that
-		// regions always have one pixel, we can find that pixel position and
-		// and check if that position in the mask is white.
-		if (countNonZero(densify(r.getMask()) & maskD) > 0) {
-			clonedRegions.push_back(r.getMask());
-			clonedRegionsIdx.push_back(idx);
+		if (r.getRepresentationMode() == PIXEL) {
+			Point P = r.getPoint();
+
+			// Check if pixel is in mask
+			if (maskD.at<unsigned char>(P) == 255) {
+				clonedRegions.push_back(r.getMask());
+				clonedRegionsIdx.push_back(idx);	
+			}
+		}
+		else {
+			if (countNonZero(densify(r.getMask()) & maskD) > 0) {
+				clonedRegions.push_back(r.getMask());
+				clonedRegionsIdx.push_back(idx);
+			}
 		}
 
 		// Increase the index
@@ -451,8 +479,10 @@ Segmentation Segmentation::cloneWithIndexes(vector<int> indexes) {
 	}
 
 	// Create the Segmentation object
+	assert(_image != NULL);
 	Segmentation cloned(clonedRegions);
 	cloned._descriptions = subFMs;
+	cloned.setImage(_image);
 	cloned.setRegionsParent();
 
 	return cloned;
@@ -502,4 +532,8 @@ void Segmentation::upcountDescription(Descriptor *descriptor) {
 
 Counter<string> Segmentation::getDescriptionCounts() {
 	return _regionsDescribed;
+}
+
+RegionRepresentationMode Region::getRepresentationMode() {
+	return _representationMode;
 }

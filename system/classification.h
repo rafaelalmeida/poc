@@ -42,6 +42,8 @@ namespace classification {
 		// probabilities for the DTREE classifier.
 		ThematicMap *_trainingMap = NULL;
 
+		cv::Size _mapSize;
+
 		// The descriptor it will use
 		Descriptor *_descriptor;
 

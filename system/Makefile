@@ -1,4 +1,4 @@
-CFLAGS = -O2
+CFLAGS = -g
 
 CFLAGS += `gdal-config --cflags gdal`
 CFLAGS += `pkg-config --cflags opencv`
