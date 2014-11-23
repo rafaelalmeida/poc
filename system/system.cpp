@@ -46,14 +46,17 @@ void System::run() {
 	ofstream *results = _logger.makeFile("results.txt");
 	*results << "MAP / AGREEMENT / KAPPA" << endl;
 
-	// Run k-fold cross validation
+	// Prepare k-fold
 	float bestKappa = -numeric_limits<float>::max();
 	int bestFold = -1; // Sentinel
 	vector<pair<string, Mat> > bestClassifications;
 	vector<ThematicMap> foldValidationMaps;
 	ThematicMap bestConsensus;
 
-	cerr << "running k-fold cross-validation (k = " << K_FOLDS << ")" << endl;
+	cerr << "initializing k-fold cross-validation (k = " << K_FOLDS << ")" << 
+		endl << endl;
+
+	// Run all folds
 	for (int fold = 0; fold < K_FOLDS; fold++) {
 		// Report progress
 		cerr << "running fold " << (fold+1) << " of " << K_FOLDS << endl;
@@ -255,7 +258,7 @@ void System::describe() {
 	descriptors.push_back(new MOMENTSDescriptor("MMT"));
 
 	// Describe the images
-	cerr << "describing images..." << endl;
+	cerr << "preparing to describe images..." << endl;
 	visTrainingSegmentation = Segmentation(trainingMapVIS);
 	visTrainingSegmentation.setImage(&vis);
 
@@ -291,9 +294,9 @@ void System::setupClassifiers(Ensemble& ensemble, VISImage& vis,
 	// List classifier engines
 	vector<ClassifierEngine> engines = {
 		ClassifierEngine::SVM,
-		//ClassifierEngine::KNN,
-		//ClassifierEngine::DTREE,
-		//ClassifierEngine::MLP
+		ClassifierEngine::KNN,
+		ClassifierEngine::DTREE,
+		ClassifierEngine::MLP
 	};
 
 	// Create the classifier <-> descriptor pairs and add them to the ensemble

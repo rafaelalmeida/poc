@@ -161,7 +161,8 @@ Mat Classifier::classify(Region region) {
 
 	// Fill the classification matrix
 	if (region.getRepresentationMode() == PIXEL) {
-		classification.at<unsigned char>(region.getPoint()) = 255;
+		classification.at<unsigned char>(region.getPoint()) = 
+			(unsigned char) theClass;
 	}
 	else {
 		Mat mask = densify(region.getMask());
