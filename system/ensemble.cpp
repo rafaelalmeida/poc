@@ -290,13 +290,6 @@ ThematicMap Ensemble::classify() {
 	// Report classification complete
 	cerr << "classification: done           " << endl;
 
-	// Report work done by each thread
-	cerr << "thread jobs done: ";
-	for (auto l : _worklog) {
-		cerr << l << " ";
-	}
-	cerr << endl;
-
 	// Get consensus
 	Mat consensus = Mat::zeros(mapSize, CV_8UC1);
 

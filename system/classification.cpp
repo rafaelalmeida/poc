@@ -35,8 +35,6 @@ void Classifier::train(Mat labels, Segmentation S) {
 		params.term_crit   = cvTermCriteria(CV_TERMCRIT_ITER, 100, 1e-6);
 
 		_svm.train(features, labels, Mat(), Mat(), params);
-
-		params = _svm.get_params();
 	}
 	else if (_engine == NBC) {
 		_nbc.train(features, labels, Mat(), Mat(), false);

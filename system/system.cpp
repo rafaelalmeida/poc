@@ -76,10 +76,6 @@ void System::run() {
 		Segmentation TS_LWIR = segmentationLWIR.cloneWithMask(
 			T_LWIR.getFullMask());
 
-		// Show classes counts in this fold
-		cerr << "Amount of pixels per class in fold: " << endl;
-		printClassHistogram(T_VIS);
-
 		// Build the ensemble
 		Ensemble E(MAJORITY_VOTING, segmentationVIS, segmentationLWIR,
 			TS_VIS, TS_LWIR, T_VIS, T_LWIR);
