@@ -30,7 +30,13 @@ void System::run() {
 	segment();
 
 	// Create descriptors
+	Stopwatch swatchDescr;
+	swatchDescr.start();
+
 	describe();
+
+	swatchDescr.stop();
+	descriptionTime = swatchDescr.read();
 
 	// Create k-fold splits
 	log("creating k-fold splits...");
@@ -100,7 +106,6 @@ void System::run() {
 		cerr << "agreement = " << a << ", kappa = " << k << endl;
 
 		// Register time taken
-		descriptionTime += E.getTotalDescriptionTime();
 		trainingTime += E.getTotalTrainingTime();
 		classificationTime += E.getTotalClassificationTime();
 
