@@ -183,46 +183,43 @@ cv::Mat ThematicMap::coloredMap() {
 	Mat map = Mat::zeros(_map.size(), CV_8UC3);
 
 	vector<vector<Point> > contours;
-	for (auto region : this->enumerateRegions()) {
-		// Determine which region to paint
-		Mat denseRegion = densify(region.first);
-		contours.clear();
-		findContours(denseRegion, contours, CV_RETR_EXTERNAL, 
-			CV_CHAIN_APPROX_NONE);
+	for (int row = 0; row < _map.rows; row++) {
+		for (int col = 0; col < _map.cols; col++) {
+			int label = (int) _map.at<unsigned char>(row, col);
 
-		// Select the right color to paint
-		int label = region.second;
-		Scalar color;
-		if (label == 0) { // UNCLASSIFIED
-			color = Scalar(0, 0, 0); // BLACK
-		}
-		else if (label == 1) { // ROAD
-			color = Scalar(255, 0, 255); // MAGENTA
-		}
-		else if (label == 2) { // TREES
-			color = Scalar(0, 255, 0); // GREEN
-		}
-		else if (label == 3) { // RED ROOF
-			color = Scalar(0, 0, 255); // RED
-		}
-		else if (label == 4) { // GREY ROOF
-			color = Scalar(255, 255, 0); // CYAN
-		}
-		else if (label == 5) { // CONCRETE ROOF
-			color = Scalar(128, 0, 128); // PURPLE
-		}
-		else if (label == 6) { // VEGETATION
-			color = Scalar(87, 139, 46); // SEA GREEN
-		}
-		else if (label == 7) { // BARE SOIL
-			color = Scalar(0, 255, 255); // YELLOW
-		}
-		else {
-			FATAL_ERROR("Error! Unknown label");
-		}
+			// Select the right color to paint
+			Vec3b color;
+			if (label == 0) { // UNCLASSIFIED
+				color = Vec3b(0, 0, 0); // BLACK
+			}
+			else if (label == 1) { // ROAD
+				color = Vec3b(255, 0, 255); // MAGENTA
+			}
+			else if (label == 2) { // TREES
+				color = Vec3b(0, 255, 0); // GREEN
+			}
+			else if (label == 3) { // RED ROOF
+				color = Vec3b(0, 0, 255); // RED
+			}
+			else if (label == 4) { // GREY ROOF
+				color = Vec3b(255, 255, 0); // CYAN
+			}
+			else if (label == 5) { // CONCRETE ROOF
+				color = Vec3b(128, 0, 128); // PURPLE
+			}
+			else if (label == 6) { // VEGETATION
+				color = Vec3b(87, 139, 46); // SEA GREEN
+			}
+			else if (label == 7) { // BARE SOIL
+				color = Vec3b(0, 255, 255); // YELLOW
+			}
+			else {
+				FATAL_ERROR("Error! Unknown label");
+			}
 
-		// Paint the region
-		drawContours(map, contours, -1, color, CV_FILLED);
+			// Paint the pixel
+			map.at<Vec3b>(row, col) = color;
+		}
 	}
 
 	return map;

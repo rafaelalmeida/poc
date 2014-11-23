@@ -142,6 +142,11 @@ void System::run() {
 
 	*results << "MAJORITY " << agreement << " " << kappa << endl;
 
+	// Save consensus map
+	log("generating thematic map...");
+	_logger.saveImage("final.png", 
+		blend(vis.asMat(), bestConsensus.coloredMap()));
+
 	// Stop timer and log total execution time
 	swatchMain.stop();
 	double totalTime = swatchMain.read();
@@ -246,6 +251,7 @@ void System::segment() {
 }
 
 void System::describe() {
+	descriptors.push_back(new ACCDescriptor("ACC"));
 	descriptors.push_back(new GCHDescriptor("GCH"));
 	descriptors.push_back(new BICDescriptor("BIC"));
 	descriptors.push_back(new LCHDescriptor("LCH"));
