@@ -21,6 +21,7 @@ void System::run() {
 
 	// Load and setup data
 	loadAndSetupData();
+	_logger.saveImage("training.png", trainingMapVIS.coloredMap());
 
 	// Reduce dimensionality of LWIR image
 	log("reducing LWIR dimensionality...");

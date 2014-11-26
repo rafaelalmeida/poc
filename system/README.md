@@ -21,6 +21,14 @@ wget https://www.dropbox.com/s/kkxogu2vjhbzf36/IEEE_GRSS_IADFTC_Contest2014_subs
 unzip IEEE_GRSS_IADFTC_Contest2014_subset.zip
 ```
 
+To add the full set:
+```
+mkdir data/fullset
+cd data/fullset
+https://www.dropbox.com/s/41xykmsmj4qbxde/IEEE_GRSS_IADFTC_Contest2014_full_data_set.zip
+unzip IEEE_GRSS_IADFTC_Contest2014_full_data_set.zip
+```
+
 ### Building and running
 
 To build, simply `make` from the `/system` directory. To run a sample,
