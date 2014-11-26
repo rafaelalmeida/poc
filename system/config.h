@@ -13,6 +13,11 @@ typedef struct {
 	char pathLWIR[MAX_PATH];
 	char pathTraining[MAX_PATH];
 
+	// Test set file paths
+	bool hasTestSet = false;
+	char pathVISTest[MAX_PATH];
+	char pathLWIRTest[MAX_PATH];
+
 	// ROI specification
 	int roiX;
 	int roiY;

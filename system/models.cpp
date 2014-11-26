@@ -57,6 +57,12 @@ cv::Mat LWIRImage::spectralSignature(cv::Point point, bool reduced) {
 }
 
 void LWIRImage::doNormalizeSpectralSignature(cv::Mat signature, bool reduced) {
+	// Check validness
+	if (reduced && !wasReduced) {
+		FATAL_ERROR(
+			"Reduced signature requested, but image has not been reduced");
+	}
+
 	// Determines the correct extreme values for normalization
 	float minVal, maxVal;
 	if (reduced) {
@@ -256,6 +262,8 @@ void LWIRImage::reduceDimensionality(int keep) {
 	// Finds extremes for normalization
 	this->minMaxAcrossBands(reducedBands, &(this->minValReduced), 
 		&(this->maxValReduced));
+
+	this->wasReduced = true;
 }
 
 void LWIRImage::minMaxAcrossBands(std::vector<cv::Mat> bands, float *minVal, 

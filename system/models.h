@@ -46,16 +46,12 @@ class VISImage : public RSImage {
 // Class to represent a LWIR image
 class LWIRImage : public RSImage {
 	private:
-		cv::Mat doGetSpectralSignature(cv::Mat *mask=NULL, 
-			cv::Point *point=NULL, bool reduced=false);
-
-		void doNormalizeSpectralSignature(cv::Mat signature, bool reduced);
-
-	public:
 		// Members
 		std::vector<cv::Mat> bands;
 		std::vector<cv::Mat> reducedBands;
 		cv::Rect roi;
+
+		bool wasReduced = false;
 
 		// Extreme values, for normalization purposes
 		float minVal;
@@ -64,6 +60,12 @@ class LWIRImage : public RSImage {
 		float minValReduced;
 		float maxValReduced;
 
+		cv::Mat doGetSpectralSignature(cv::Mat *mask=NULL, 
+			cv::Point *point=NULL, bool reduced=false);
+
+		void doNormalizeSpectralSignature(cv::Mat signature, bool reduced);
+
+	public:
 		// Constructors
 		LWIRImage();
 		LWIRImage(std::vector<cv::Mat> bands);

@@ -25,7 +25,7 @@ To add the full set:
 ```
 mkdir data/fullset
 cd data/fullset
-https://www.dropbox.com/s/41xykmsmj4qbxde/IEEE_GRSS_IADFTC_Contest2014_full_data_set.zip
+wget https://www.dropbox.com/s/41xykmsmj4qbxde/IEEE_GRSS_IADFTC_Contest2014_full_data_set.zip
 unzip IEEE_GRSS_IADFTC_Contest2014_full_data_set.zip
 ```
 

@@ -31,11 +31,17 @@ class System {
 	LWIRImage lwir;
 	Mat training;
 
+	VISImage visTest;
+	LWIRImage lwirTest;
+
 	ThematicMap trainingMapVIS;
 	ThematicMap trainingMapLWIR;
 
 	Segmentation segmentationVIS;
 	Segmentation segmentationLWIR;
+	
+	Segmentation segmentationVISTest;
+	Segmentation segmentationLWIRTest;
 
 	vector<Descriptor*> descriptors;
 

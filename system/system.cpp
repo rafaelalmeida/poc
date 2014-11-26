@@ -21,16 +21,12 @@ void System::run() {
 
 	// Load and setup data
 	loadAndSetupData();
-	_logger.saveImage("training.png", trainingMapVIS.coloredMap());
-
-	// Reduce dimensionality of LWIR image
-	log("reducing LWIR dimensionality...");
-	lwir.reduceDimensionality(LWIR_BANDS_TO_KEEP_ON_PCA);
+	_logger.saveImage("training", trainingMapVIS.coloredMap());
 
 	// Run segmentation phase
 	segment();
 
-	// Create descriptors
+	// Describe image
 	Stopwatch swatchDescr;
 	swatchDescr.start();
 
@@ -149,8 +145,8 @@ void System::run() {
 	*results << "MAJORITY " << agreement << " " << kappa << endl;
 
 	// Save consensus map
-	log("generating thematic map...");
-	_logger.saveImage("final.png", 
+	log("generating colored thematic map...");
+	_logger.saveImage("final", 
 		blend(vis.asMat(), bestConsensus.coloredMap()));
 
 	// Stop timer and log total execution time
@@ -191,11 +187,24 @@ void System::loadAndSetupData() {
 	log("loading training data...");
 	training = gdal_driver::loadTrainingData(_conf.pathTraining);
 
+	// Load images - test set
+	if (_conf.hasTestSet) {
+		log("loading VIS image (test set)...");
+		visTest = gdal_driver::loadVIS(_conf.pathVISTest);
+		log("loading LWIR image (test set)...");
+		lwirTest = gdal_driver::loadLWIR(_conf.pathLWIRTest);
+	}
+
 	// Rescale images if necessary
 	if (_conf.scaleVIS != 1.0 || _conf.scaleLWIR != 1.0) {
 		log("rescaling images...");
 		rescale(vis, lwir, _conf.scaleVIS, _conf.scaleLWIR, 
 			_conf.interpolationMode);
+
+		if (_conf.hasTestSet) {
+			rescale(visTest, lwirTest, _conf.scaleVIS, _conf.scaleLWIR, 
+				_conf.interpolationMode);
+		}
 	}
 
 	log("creating training thematic maps...");
@@ -218,6 +227,13 @@ void System::loadAndSetupData() {
 		log("applying ROIs to LWIR...");
 		lwir.setRoi(roi);
 	}
+
+	// Reduce dimensionality of LWIR image
+	log("reducing LWIR dimensionality...");
+	lwir.reduceDimensionality(LWIR_BANDS_TO_KEEP_ON_PCA);
+	if (_conf.hasTestSet) {
+		lwirTest.reduceDimensionality(LWIR_BANDS_TO_KEEP_ON_PCA);
+	}
 }
 
 void System::segment() {
@@ -239,21 +255,40 @@ void System::segment() {
 		segmentationVIS = segmentation::segmentVIS_SLIC(vis.asMat(), 
 			_conf.slicRegionSize, _conf.slicMinRegionSize, 
 			_conf.slicRegularization);
+
+		if (_conf.hasTestSet) {
+			segmentationVISTest = segmentation::segmentVIS_SLIC(
+				visTest.asMat(), 
+				_conf.slicRegionSize, 
+				_conf.slicMinRegionSize, 
+				_conf.slicRegularization);
+		}
 	}
 	else {
 		FATAL_ERROR("Unsupported segmentation mode");
 	}
 
 	// Create segmentation - LWIR
-	segmentationLWIR = segmentation::segmentLWIRPixelated(
-		lwir, vis);
+	segmentationLWIR = segmentation::segmentLWIRPixelated(lwir, vis);
+
+	if (_conf.hasTestSet) {
+		segmentationLWIRTest = segmentation::segmentLWIRPixelated(lwirTest, 
+			visTest);
+	}
 
 	// Assign images to segmentations
 	segmentationVIS.setImage(&vis);
 	segmentationLWIR.setImage(&lwir);
+	if (_conf.hasTestSet) {
+		segmentationVISTest.setImage(&visTest);
+		segmentationLWIRTest.setImage(&lwirTest);
+	}
 
 	// Save segmentation representation
-	_logger.saveImage("segmentation", segmentationVIS.representation());
+	_logger.saveImage("segmentation", _conf.hasTestSet ? 
+		segmentationVISTest.representation() :
+		segmentationVIS.representation()
+	);
 }
 
 void System::describe() {
@@ -272,6 +307,11 @@ void System::describe() {
 
 	list<Segmentation*> segmentations = {&segmentationVIS, &segmentationLWIR,
 		&visTrainingSegmentation};
+
+	if (_conf.hasTestSet) {
+		segmentations.push_back(&segmentationVISTest);
+		segmentations.push_back(&segmentationLWIRTest);
+	}
 
 	describeAll(segmentations, descriptors, _conf.parallel);
 
@@ -417,7 +457,7 @@ void System::reportDescriptionProcess(list<Segmentation*> segmentations,
 		// Clear the screen with an ANSI escape sequence
 		cerr << ANSI_CLEAR_SCREEN << std::flush;
 
-		int i = 0, n = segmentations.size();
+		int i = 1, n = segmentations.size();
 		for (auto S : segmentations) {
 			cerr << "Segmentation " << i << " of " << n << endl;
 			cerr << "===================" << endl;

@@ -15,6 +15,16 @@ void config::parse(char **argv, int argc, Configuration &config) {
 			strcpy(config.pathTraining, argv[++c]);
 		}
 
+		// File paths - test
+		else if (streq("--vis-test", argv[c])) {
+			config.hasTestSet = true;
+			strcpy(config.pathVISTest, argv[++c]);
+		}
+		else if (streq("--lwir-test", argv[c])) {
+			config.hasTestSet = true;
+			strcpy(config.pathLWIRTest, argv[++c]);
+		}
+
 		// ROI
 		else if (streq("--roiX", argv[c])) {
 			config.roiX = atoi(argv[++c]);
