@@ -76,6 +76,8 @@ class Ensemble {
 
 		// Methods
 		ThematicMap classify();
+		ThematicMap classify(Segmentation VIS, Segmentation LWIR);
+
 		std::vector<std::pair<std::string, cv::Mat> > 
 			individualClassifications();
 		void addClassifier(Classifier* c);

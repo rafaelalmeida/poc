@@ -54,12 +54,15 @@ void System::run() {
 	int bestFold = -1; // Sentinel
 	vector<pair<string, Mat> > bestClassifications;
 	vector<ThematicMap> foldValidationMaps;
+	Ensemble *bestEnsemble = NULL;
 	ThematicMap bestConsensus;
 
 	cerr << "initializing k-fold cross-validation (k = " << K_FOLDS << ")" << 
 		endl << endl;
 
 	// Run all folds
+	vector<Ensemble*> ensembles;
+	vector<Ensemble*> ensemblesTest;
 	for (int fold = 0; fold < K_FOLDS; fold++) {
 		// Report progress
 		cerr << "running fold " << (fold+1) << " of " << K_FOLDS << endl;
@@ -79,17 +82,26 @@ void System::run() {
 		Segmentation TS_LWIR = segmentationLWIR.cloneWithMask(
 			T_LWIR.getFullMask());
 
-		// Build the ensemble
-		Ensemble E(MAJORITY_VOTING, segmentationVIS, segmentationLWIR,
-			TS_VIS, TS_LWIR, T_VIS, T_LWIR);
-		E.setParallel(_conf.parallel);
-		setupClassifiers(E, vis, lwir, descriptors);
+		// Build the ensembles
+		Ensemble *E = new Ensemble(MAJORITY_VOTING, segmentationVIS, 
+			segmentationLWIR, TS_VIS, TS_LWIR, T_VIS, T_LWIR);
+		E->setParallel(_conf.parallel);
+		setupClassifiers(*E, vis, lwir, descriptors);
+
+		Ensemble *E_test = new Ensemble(MAJORITY_VOTING, segmentationVISTest, 
+			segmentationLWIRTest, TS_VIS, TS_LWIR, T_VIS, T_LWIR);
+		E->setParallel(_conf.parallel);
+		setupClassifiers(*E_test, visTest, lwirTest, descriptors);
+
+		ensembles.push_back(E);
+		ensemblesTest.push_back(E_test);
 
 		// Train the ensemble
-		E.train();
+		E->train();
+		E_test->train();
 
 		// Run the classification
-		ThematicMap C = E.classify();
+		ThematicMap C = E->classify();
 
 		// Use the current fold for validation
 		foldValidationMaps.push_back(V.asMat());
@@ -103,15 +115,16 @@ void System::run() {
 		cerr << "agreement = " << a << ", kappa = " << k << endl;
 
 		// Register time taken
-		trainingTime += E.getTotalTrainingTime();
-		classificationTime += E.getTotalClassificationTime();
+		trainingTime += E->getTotalTrainingTime();
+		classificationTime += E->getTotalClassificationTime();
 
 		// See if there is improvement
 		if (k > bestKappa) {
 			bestKappa = k;
 			bestFold = fold;
-			bestClassifications = E.individualClassifications();
+			bestClassifications = E->individualClassifications();
 			bestConsensus = C;
+			bestEnsemble = E_test;
 		}
 
 		// Separate visually from other folds
@@ -144,10 +157,18 @@ void System::run() {
 
 	*results << "MAJORITY " << agreement << " " << kappa << endl;
 
-	// Save consensus map
-	log("generating colored thematic map...");
-	_logger.saveImage("final", 
-		blend(vis.asMat(), bestConsensus.coloredMap()));
+	// Classify test set, if available
+	if (_conf.hasTestSet) {
+		log("classifying test set...");
+		ThematicMap T = bestEnsemble->classify();
+
+		_logger.saveImage("final", blend(visTest.asMat(), T.coloredMap()));
+	}
+	else {
+		log("generating colored thematic map...");
+		_logger.saveImage("final", 
+			blend(vis.asMat(), bestConsensus.coloredMap()));
+	}
 
 	// Stop timer and log total execution time
 	swatchMain.stop();
@@ -167,6 +188,11 @@ void System::run() {
 	// Destroy descriptors
 	for (auto d : descriptors) {
 		delete d;
+	}
+
+	// Destroy ensembles
+	for (auto e : ensembles) {
+		delete e;
 	}
 
 	// Print kappa and accuracy on stdout

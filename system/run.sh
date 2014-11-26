@@ -16,7 +16,7 @@ else
 	SCALE_LWIR=$2
 fi
 
-lldb -- ./bin/classify \
+./bin/classify \
 	--verbose \
 	--vis "data/subset/TelopsDatasetCityVisible_20cm_Subset.img" \
 	--lwir "data/subset/TelopsDatasetCityLWIR_Subset.img" \
@@ -32,4 +32,4 @@ lldb -- ./bin/classify \
 	--slic-auto-scale-parameters \
 	--resampling-method NEAREST \
 	--log-path "scratch/logs" \
-	#--parallel
+	--parallel
